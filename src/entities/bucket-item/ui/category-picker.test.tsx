@@ -29,3 +29,13 @@ test('31자 이상 이름을 추가하면 오류 문구가 나온다', () => {
   expect(screen.getByRole('alert').textContent).toContain('1~30자')
   expect(useBucketStore.getState().customCategories).toEqual(['독서'])
 })
+
+test('IME 조합 중 Enter(Safari keyCode 229)는 추가하지 않는다', () => {
+  render(<CategoryPicker value={null} onChange={vi.fn()} />)
+  const input = screen.getByLabelText('새 카테고리 이름')
+  fireEvent.change(input, { target: { value: '덕질' } })
+  fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 })
+  expect(useBucketStore.getState().customCategories).toEqual(['독서'])
+  fireEvent.keyDown(input, { key: 'Enter' })
+  expect(useBucketStore.getState().customCategories).toEqual(['독서', '덕질'])
+})

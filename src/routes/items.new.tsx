@@ -7,6 +7,7 @@ import { useFillBlanks } from '@/features/ai-fill'
 import { IdeaSheet } from '@/features/idea-suggest'
 import {
   StepForm,
+  type StepFormAction,
   initialStepFormState,
   stepFormReducer,
   toBucketItemInput,
@@ -17,7 +18,7 @@ export const Route = createFileRoute('/items/new')({ component: NewItemPage })
 
 function NewItemPage() {
   const [state, dispatch] = useReducer(stepFormReducer, initialStepFormState)
-  const { request, ...draftState } = useFillBlanks()
+  const { request, reset, ...draftState } = useFillBlanks()
   const categories = useBucketStore(useShallow(selectCategories))
   const addItem = useBucketStore((s) => s.addItem)
   const navigate = Route.useNavigate()
@@ -34,6 +35,12 @@ function NewItemPage() {
     void navigate({ to: '/' })
   }
 
+  // 제목이 바뀌면 이전 제목으로 만든 초안은 맞지 않는다
+  const dispatchStep = (action: StepFormAction) => {
+    if (action.type === 'decide' && action.field === 'title' && action.patch.title !== state.values.title) reset()
+    dispatch(action)
+  }
+
   // 아이디어 선택이 초안의 유일한 자동 호출이다
   const onPick = (title: string) => {
     const next = stepFormReducer(state, { type: 'decide', field: 'title', patch: { title } })
@@ -47,7 +54,7 @@ function NewItemPage() {
     <>
       <StepForm
         state={state}
-        dispatch={dispatch}
+        dispatch={dispatchStep}
         draftState={draftState}
         onFill={() => request({ item: state.values, blankFields: undecidedAiFields(state), categories })}
         onOpenIdeas={() => setIdeasOpen(true)}

@@ -31,14 +31,12 @@ test('AI 없이 7단계를 진행해 저장하면 목록으로 간다', async ()
   expect(item).toMatchObject({ title: '오로라 보기', why: '하늘이 보고 싶어서', category: '여행', status: '아이디어' })
 })
 
-test('safeParse가 실패하면 오류 문구를 보이고 저장하지 않는다', async () => {
-  const router = await open()
-  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '   ' } })
-  click('다음')
-  for (let i = 0; i < 6; i++) click('건너뛰기')
-  click('저장')
-
-  expect(screen.getByRole('alert').textContent).toContain('저장하지 못했어요')
-  expect(useBucketStore.getState().items).toEqual([])
-  expect(router.state.location.pathname).toBe('/items/new')
+test('공백 제목이면 [다음] 비활성, Enter로도 진행하지 않는다', async () => {
+  await open()
+  const title = screen.getByLabelText('어떤 일을 해보고 싶나요?')
+  fireEvent.change(title, { target: { value: '   ' } })
+  expect((screen.getByRole('button', { name: '다음' }) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.keyDown(title, { key: 'Enter' })
+  expect(screen.getByText('어떤 일을 해보고 싶나요?')).toBeTruthy()
+  expect(screen.queryByText('왜 하고 싶나요?')).toBeNull()
 })

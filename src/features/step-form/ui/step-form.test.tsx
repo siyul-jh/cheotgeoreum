@@ -41,6 +41,7 @@ test('제목 Enter → why 단계, 제목 카드가 아래에 생기고 누르�
   const title = screen.getByLabelText('어떤 일을 해보고 싶나요?')
   fireEvent.change(title, { target: { value: '오로라 보기' } })
   fireEvent.keyDown(title, { key: 'Enter', isComposing: true })
+  fireEvent.keyDown(title, { key: 'Enter', keyCode: 229 }) // Safari IME
   expect(screen.queryByText('왜 하고 싶나요?')).toBeNull()
 
   fireEvent.keyDown(title, { key: 'Enter' })
@@ -98,4 +99,14 @@ test("'빈 칸 채우기'는 제목 결정 후 보이고 pending 중에는 비�
   rerender({ status: 'pending', draft: null, error: null })
   expect((screen.getByRole('button', { name: 'AI 초안 만드는 중…' }) as HTMLButtonElement).disabled).toBe(true)
   expect((screen.getByLabelText('왜 하고 싶나요?') as HTMLTextAreaElement).disabled).toBe(false)
+})
+
+test('다른 카드를 눌러도 현재 단계에 입력하던 값은 남는다', async () => {
+  await renderForm(idle)
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 보기' } })
+  next()
+  fireEvent.change(screen.getByLabelText('왜 하고 싶나요?'), { target: { value: '직접 쓴 이유' } })
+  fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
+  next()
+  expect((screen.getByLabelText('왜 하고 싶나요?') as HTMLTextAreaElement).value).toBe('직접 쓴 이유')
 })

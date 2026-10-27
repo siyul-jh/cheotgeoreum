@@ -187,20 +187,10 @@ export function ItemEditForm({ item, onDone }: Props) {
                 aiFields.map((field) => {
                   const patch = draftToPatch(field, draft, values)
                   if (!patch) return null
-                  // 이미 채워진 다음 행동 칸은 덮어쓰지 않는다
-                  const safe =
-                    field === 'nextAction' && patch.nextAction
-                      ? {
-                          nextAction: {
-                            text: values.nextAction.text || patch.nextAction.text,
-                            dueDate: values.nextAction.dueDate ?? patch.nextAction.dueDate,
-                          },
-                        }
-                      : patch
                   return (
                     <div key={field} className="flex flex-col gap-1">
                       <span className="text-xs text-zinc-600">{AI_FIELD_LABELS[field]}</span>
-                      <AiSuggestionRow text={formatFieldValue(field, safe)} onUse={() => applyPatch(safe)} />
+                      <AiSuggestionRow text={formatFieldValue(field, patch)} onUse={() => applyPatch(patch)} />
                     </div>
                   )
                 })}

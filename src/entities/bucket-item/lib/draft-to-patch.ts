@@ -1,6 +1,8 @@
 import type { AiDraft, AiField, ItemValues } from '../model/schema'
 
-// 초안이 비었으면 null. nextAction은 초안이 null인 부분을 current로 채워 병합한다.
+// 병합 정책은 여기에만 둔다. 반영할 게 없으면 null
+// 스칼라: [사용]은 사용자가 보고 누르는 명시 동작이라 교체
+// prerequisites: 현재 목록 뒤에 덧붙임(같은 text 제외) / nextAction: 비어 있는 하위 칸만 채움
 export function draftToPatch(field: AiField, draft: AiDraft, current: ItemValues): Partial<ItemValues> | null {
   switch (field) {
     case 'why':
@@ -9,19 +11,15 @@ export function draftToPatch(field: AiField, draft: AiDraft, current: ItemValues
       return draft.category === null ? null : { category: draft.category }
     case 'targetPeriod':
       return draft.targetPeriod === null ? null : { targetPeriod: draft.targetPeriod }
-    case 'prerequisites':
-      return draft.prerequisites === null
-        ? null
-        : { prerequisites: draft.prerequisites.map((text) => ({ text, done: false })) }
+    case 'prerequisites': {
+      const added = (draft.prerequisites ?? []).filter((text) => !current.prerequisites.some((p) => p.text === text))
+      if (added.length === 0) return null
+      return { prerequisites: [...current.prerequisites, ...added.map((text) => ({ text, done: false }))] }
+    }
     case 'nextAction': {
-      const { nextAction } = draft
-      if (nextAction === null || (nextAction.text === null && nextAction.dueDate === null)) return null
-      return {
-        nextAction: {
-          text: nextAction.text ?? current.nextAction.text,
-          dueDate: nextAction.dueDate ?? current.nextAction.dueDate,
-        },
-      }
+      const { text, dueDate } = current.nextAction
+      const next = { text: text || (draft.nextAction?.text ?? ''), dueDate: dueDate ?? draft.nextAction?.dueDate ?? null }
+      return next.text === text && next.dueDate === dueDate ? null : { nextAction: next }
     }
   }
 }

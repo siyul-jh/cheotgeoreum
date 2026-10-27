@@ -45,7 +45,7 @@ export function CompanionsInput({ value, onChange }: Props) {
           maxLength={fieldLimits.companion}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key !== 'Enter' || e.nativeEvent.isComposing) return
+            if (e.key !== 'Enter' || e.nativeEvent.isComposing || e.keyCode === 229) return // 229: Safari IME
             e.preventDefault()
             add()
           }}

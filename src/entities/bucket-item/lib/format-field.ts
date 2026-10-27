@@ -1,3 +1,4 @@
+import { formatDate } from '@/shared/lib/date'
 import type { ItemField, ItemValues } from '../model/schema'
 
 const SKIPPED_LABEL = '건너뜀'
@@ -18,8 +19,10 @@ export function formatFieldValue(field: ItemField, values: Partial<ItemValues>):
     }
     case 'prerequisites':
       return values.prerequisites?.map((p) => p.text).join(', ') || SKIPPED_LABEL
-    case 'nextAction':
-      return [values.nextAction?.text, values.nextAction?.dueDate].filter(Boolean).join(' · ') || SKIPPED_LABEL
+    case 'nextAction': {
+      const dueDate = values.nextAction?.dueDate
+      return [values.nextAction?.text, dueDate && formatDate(dueDate)].filter(Boolean).join(' · ') || SKIPPED_LABEL
+    }
     case 'companions':
       return values.companions?.join(', ') || SKIPPED_LABEL
   }

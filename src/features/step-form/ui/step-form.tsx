@@ -53,6 +53,9 @@ const isAiField = (f: ItemField): f is AiField => AI_FIELDS.some((a) => a === f)
 
 export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onSave, saveError }: Props) {
   const { current, decided, values } = state
+  // 단계가 바뀌면 로컬 입력을 values로 초기화한다. 카드로 다른 단계를 열 때 patch로 넘기려고 여기 둔다
+  const [local, setLocal] = useState({ step: current, values })
+  if (local.step !== current) setLocal({ step: current, values })
   const pending = draftState.status === 'pending'
   const canFill = decided.includes('title') && undecidedAiFields(state).length > 0
   const panelRef = useRef<HTMLDivElement>(null)
@@ -100,7 +103,13 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
             )}
           </section>
         ) : (
-          <Step key={current} field={current} values={values} draft={draftState.draft}
+          <Step
+            key={current}
+            field={current}
+            values={values}
+            local={local.values}
+            edit={(patch) => setLocal((l) => ({ ...l, values: { ...l.values, ...patch } }))}
+            draft={draftState.draft}
             dispatch={dispatch}
             onOpenIdeas={onOpenIdeas}
           />
@@ -122,7 +131,9 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
                 <button
                   type="button"
                   className="surface flex w-full items-center gap-3 px-3 py-2 text-left text-sm"
-                  onClick={() => dispatch({ type: 'reopen', field: f })}
+                  onClick={() =>
+                    dispatch({ type: 'reopen', field: f, patch: current === null ? {} : { [current]: local.values[current] } })
+                  }
                 >
                   <span className="shrink-0 text-zinc-600">{LABELS[f]}</span>
                   <span className="min-w-0 flex-1 truncate">{formatFieldValue(f, values)}</span>
@@ -139,17 +150,16 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
 type StepProps = {
   field: ItemField
   values: ItemValues
+  local: ItemValues
+  edit: (patch: Partial<ItemValues>) => void
   draft: AiDraft | null
   dispatch: (a: StepFormAction) => void
   onOpenIdeas: () => void
 }
 
-// key={field}로 리마운트되어 열릴 때마다 로컬 입력이 values로 초기화된다
-function Step({ field, values, draft, dispatch, onOpenIdeas }: StepProps) {
-  const [local, setLocal] = useState(values)
-  const edit = (patch: Partial<ItemValues>) => setLocal((l) => ({ ...l, ...patch }))
+function Step({ field, values, local, edit, draft, dispatch, onOpenIdeas }: StepProps) {
   const legendId = useId()
-  const blocked = field === 'title' && local.title === ''
+  const blocked = field === 'title' && local.title.trim() === ''
   const decide = () => {
     if (!blocked) dispatch({ type: 'decide', field, patch: { [field]: local[field] } })
   }
@@ -172,7 +182,7 @@ function Step({ field, values, draft, dispatch, onOpenIdeas }: StepProps) {
           maxLength={fieldLimits.title}
           onChange={(e) => edit({ title: e.target.value })}
           onKeyDown={(e) => {
-            if (e.key !== 'Enter' || e.nativeEvent.isComposing) return
+            if (e.key !== 'Enter' || e.nativeEvent.isComposing || e.keyCode === 229) return // 229: Safari IME
             e.preventDefault()
             decide()
           }}

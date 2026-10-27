@@ -5,8 +5,9 @@ import { useBucketStore } from '@/entities/bucket-item'
 import { routeTree } from '@/routeTree.gen'
 
 const request = vi.fn()
+const reset = vi.fn()
 vi.mock('@/features/ai-fill', () => ({
-  useFillBlanks: () => ({ status: 'idle', draft: null, error: null, request }),
+  useFillBlanks: () => ({ status: 'idle', draft: null, error: null, request, reset }),
 }))
 vi.mock('@/features/idea-suggest', () => ({
   IdeaSheet: ({ onPick }: { onPick: (t: string) => void }) => (
@@ -18,6 +19,7 @@ vi.mock('@/features/idea-suggest', () => ({
 
 beforeEach(() => {
   request.mockClear()
+  reset.mockClear()
   useBucketStore.setState({ items: [], customCategories: [] })
 })
 afterEach(cleanup)
@@ -36,4 +38,22 @@ test('아이디어를 고르면 제목이 정해지고 초안을 자동 요청�
     item: { title: '오로라 보기' },
     blankFields: ['why', 'category', 'targetPeriod', 'prerequisites', 'nextActionText', 'nextActionDueDate'],
   })
+})
+
+test('결정한 제목이 바뀌면 이전 초안을 버린다', async () => {
+  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/items/new'] }) })
+  render(<RouterProvider router={router} />)
+  const title = () => screen.getByLabelText('어떤 일을 해보고 싶나요?')
+  fireEvent.change(await screen.findByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 보기' } })
+  fireEvent.click(screen.getByRole('button', { name: '다음' }))
+  reset.mockClear()
+
+  fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
+  fireEvent.click(screen.getByRole('button', { name: '다음' }))
+  expect(reset).not.toHaveBeenCalled()
+
+  fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
+  fireEvent.change(title(), { target: { value: '하프 마라톤' } })
+  fireEvent.click(screen.getByRole('button', { name: '다음' }))
+  expect(reset).toHaveBeenCalledOnce()
 })

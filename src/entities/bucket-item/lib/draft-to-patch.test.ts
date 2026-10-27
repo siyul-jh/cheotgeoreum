@@ -14,6 +14,24 @@ describe('draftToPatch', () => {
       prerequisites: [{ text: 'a', done: false }, { text: 'b', done: false }],
     })
   })
+  it('prerequisites는 현재 목록 뒤에 덧붙이고 같은 text는 뺀다', () => {
+    const withList: ItemValues = { ...current, prerequisites: [{ text: 'a', done: true }] }
+    expect(draftToPatch('prerequisites', { ...nullDraft, prerequisites: ['a', 'b'] }, withList)).toEqual({
+      prerequisites: [{ text: 'a', done: true }, { text: 'b', done: false }],
+    })
+    expect(draftToPatch('prerequisites', { ...nullDraft, prerequisites: ['a'] }, withList)).toBeNull()
+  })
+  it('스칼라는 현재 값이 있어도 교체', () => {
+    expect(draftToPatch('why', { ...nullDraft, why: '새 이유' }, { ...current, why: '쓴 이유' })).toEqual({ why: '새 이유' })
+  })
+  it('nextAction은 비어 있는 하위 칸만 채운다', () => {
+    const draft = { ...nullDraft, nextAction: { text: '다른 행동', dueDate: '2026-11-03' } }
+    expect(draftToPatch('nextAction', draft, current)).toEqual({
+      nextAction: { text: '예약', dueDate: '2026-11-03' },
+    })
+    const filled: ItemValues = { ...current, nextAction: { text: '예약', dueDate: '2026-11-01' } }
+    expect(draftToPatch('nextAction', draft, filled)).toBeNull()
+  })
   it('nextAction text null이면 현재 text 유지', () => {
     const draft = { ...nullDraft, nextAction: { text: null, dueDate: '2026-11-03' } }
     expect(draftToPatch('nextAction', draft, current)).toEqual({

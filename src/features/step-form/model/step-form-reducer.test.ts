@@ -54,6 +54,13 @@ describe('stepFormReducer', () => {
     expect(run([{ type: 'decide', field: 'category', patch: { category: '여행' } }], reopened).current).toBeNull()
   })
 
+  it('reopen의 patch는 값만 반영하고 결정 처리하지 않는다', () => {
+    const s = run([{ type: 'reopen', field: 'title', patch: { why: '쓰던 이유' } }], titled)
+    expect(s.values.why).toBe('쓰던 이유')
+    expect(s.decided).toEqual([])
+    expect(s.current).toBe('title')
+  })
+
   it('title skip은 무시한다', () => {
     expect(stepFormReducer(initialStepFormState, { type: 'skip', field: 'title' })).toBe(initialStepFormState)
   })
@@ -91,5 +98,17 @@ describe('undecidedAiFields', () => {
     )
     expect(undecidedAiFields(s)).toEqual(['category', 'targetPeriod', 'prerequisites'])
     expect(undecidedAiFields(initialStepFormState)).not.toContain('companions')
+  })
+  it('다시 연 칸에 값이 있으면 보내지 않는다', () => {
+    const s = run(
+      [
+        { type: 'decide', field: 'why', patch: { why: '이유' } },
+        { type: 'decide', field: 'nextAction', patch: { nextAction: { text: '검색', dueDate: null } } },
+        { type: 'reopen', field: 'why' },
+        { type: 'reopen', field: 'nextAction' },
+      ],
+      titled,
+    )
+    expect(undecidedAiFields(s)).toEqual(['category', 'targetPeriod', 'prerequisites', 'nextActionDueDate'])
   })
 })

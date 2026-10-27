@@ -1,6 +1,7 @@
 import {
   AI_FIELDS,
   type BlankField,
+  getBlankFields,
   type BucketItemInput,
   type ItemField,
   type ItemValues,
@@ -21,7 +22,7 @@ export type StepFormState = { values: ItemValues; decided: ItemField[]; current:
 export type StepFormAction =
   | { type: 'decide'; field: ItemField; patch: Partial<ItemValues> }
   | { type: 'skip'; field: ItemField }
-  | { type: 'reopen'; field: ItemField }
+  | { type: 'reopen'; field: ItemField; patch?: Partial<ItemValues> } // patch: 떠나는 단계의 입력(결정 처리 없음)
 
 export const initialStepFormState: StepFormState = {
   values: {
@@ -54,14 +55,20 @@ export function stepFormReducer(state: StepFormState, action: StepFormAction): S
         action.field,
       )
     case 'reopen':
-      return { ...state, decided: state.decided.filter((f) => f !== action.field), current: action.field }
+      return {
+        values: { ...state.values, ...action.patch },
+        decided: state.decided.filter((f) => f !== action.field),
+        current: action.field,
+      }
   }
 }
 
+// 결정하지 않았고 값도 비어 있는 칸만. 다시 연 칸에 값이 있으면 맥락으로 보낸다(AC2)
 export function undecidedAiFields(state: StepFormState): BlankField[] {
-  return AI_FIELDS.filter((f) => !state.decided.includes(f)).flatMap((f): BlankField[] =>
-    f === 'nextAction' ? ['nextActionText', 'nextActionDueDate'] : [f],
-  )
+  const blanks = getBlankFields(state.values)
+  return AI_FIELDS.filter((f) => !state.decided.includes(f))
+    .flatMap((f): BlankField[] => (f === 'nextAction' ? ['nextActionText', 'nextActionDueDate'] : [f]))
+    .filter((f) => blanks.includes(f))
 }
 
 export function toBucketItemInput(state: StepFormState, categories: string[]): BucketItemInput {

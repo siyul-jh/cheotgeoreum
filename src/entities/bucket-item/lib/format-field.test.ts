@@ -6,6 +6,9 @@ describe('formatFieldValue', () => {
     expect(formatFieldValue('targetPeriod', { targetPeriod: '2027-05' })).toBe('2027년 5월')
     expect(formatFieldValue('targetPeriod', { targetPeriod: '2027' })).toBe('2027년')
   })
+  it('nextAction 기한은 날짜 표기', () => {
+    expect(formatFieldValue('nextAction', { nextAction: { text: '검색', dueDate: '2026-11-03' } })).toBe('검색 · 11월 3일 (화)')
+  })
   it('빈 값은 건너뜀', () => {
     expect(formatFieldValue('why', { why: '' })).toBe('건너뜀')
     expect(formatFieldValue('category', { category: null })).toBe('건너뜀')

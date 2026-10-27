@@ -20,7 +20,7 @@ export function deriveDraftState(m: {
     : { status: 'error', draft: null, error: m.data.code }
 }
 
-export function useFillBlanks(): DraftState & { request: (input: FillBlanksInput) => void } {
+export function useFillBlanks(): DraftState & { request: (input: FillBlanksInput) => void; reset: () => void } {
   const mutation = useMutation({ mutationFn: (data: FillBlanksInput) => fillBlanks({ data }) })
   const [invalidInput, setInvalidInput] = useState(false)
 
@@ -32,5 +32,10 @@ export function useFillBlanks(): DraftState & { request: (input: FillBlanksInput
     else mutation.reset()
   }
 
-  return { ...deriveDraftState({ ...mutation, invalidInput }), request }
+  const reset = () => {
+    setInvalidInput(false)
+    mutation.reset()
+  }
+
+  return { ...deriveDraftState({ ...mutation, invalidInput }), request, reset }
 }
