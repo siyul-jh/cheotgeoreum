@@ -17,7 +17,7 @@ function Harness({ onFill }: { onFill: () => void }) {
   const [state, dispatch] = useReducer(stepFormReducer, initialStepFormState)
   const draftState = useDraftState()
   return (
-    <StepForm state={state} dispatch={dispatch} draftState={draftState} onFill={onFill} onSave={vi.fn()} saveError={null} />
+    <StepForm state={state} dispatch={dispatch} draftState={draftState} onFill={onFill} onOpenIdeas={vi.fn()} onSave={vi.fn()} saveError={null} />
   )
 }
 

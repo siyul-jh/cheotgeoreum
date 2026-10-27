@@ -24,6 +24,7 @@ type Props = {
   dispatch: (a: StepFormAction) => void
   draftState: DraftState
   onFill: () => void
+  onOpenIdeas: () => void
   onSave: () => void
   saveError: string | null
 }
@@ -50,7 +51,7 @@ const QUESTIONS: Record<ItemField, string> = {
 
 const isAiField = (f: ItemField): f is AiField => AI_FIELDS.some((a) => a === f)
 
-export function StepForm({ state, dispatch, draftState, onFill, onSave, saveError }: Props) {
+export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onSave, saveError }: Props) {
   const { current, decided, values } = state
   const pending = draftState.status === 'pending'
   const canFill = decided.includes('title') && undecidedAiFields(state).length > 0
@@ -99,7 +100,10 @@ export function StepForm({ state, dispatch, draftState, onFill, onSave, saveErro
             )}
           </section>
         ) : (
-          <Step key={current} field={current} values={values} draft={draftState.draft} dispatch={dispatch} />
+          <Step key={current} field={current} values={values} draft={draftState.draft}
+            dispatch={dispatch}
+            onOpenIdeas={onOpenIdeas}
+          />
         )}
       </div>
 
@@ -137,10 +141,11 @@ type StepProps = {
   values: ItemValues
   draft: AiDraft | null
   dispatch: (a: StepFormAction) => void
+  onOpenIdeas: () => void
 }
 
 // key={field}로 리마운트되어 열릴 때마다 로컬 입력이 values로 초기화된다
-function Step({ field, values, draft, dispatch }: StepProps) {
+function Step({ field, values, draft, dispatch, onOpenIdeas }: StepProps) {
   const [local, setLocal] = useState(values)
   const edit = (patch: Partial<ItemValues>) => setLocal((l) => ({ ...l, ...patch }))
   const legendId = useId()
@@ -172,6 +177,11 @@ function Step({ field, values, draft, dispatch }: StepProps) {
             decide()
           }}
         />
+      )}
+      {field === 'title' && (
+        <button type="button" className="btn" onClick={onOpenIdeas}>
+          뭘 적을지 모르겠어요
+        </button>
       )}
       {field === 'why' && (
         <textarea
