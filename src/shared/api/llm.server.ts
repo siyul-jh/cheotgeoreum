@@ -3,7 +3,7 @@ import { APICallError, generateText, NoObjectGeneratedError, NoOutputGeneratedEr
 import type { z } from 'zod'
 import type { LlmErrorCode, LlmResult } from '@/shared/lib/llm-result'
 
-export const LLM_TIMEOUT_MS = 60_000
+const LLM_TIMEOUT_MS = 60_000
 
 // env는 호출 시점에 읽는다(모듈 스코프 금지, Spike 6)
 export function getModel(): LanguageModel {
@@ -23,7 +23,7 @@ export function getProviderOptions(baseURL: string): { llm: { reasoningEffort: '
   return { llm: { reasoningEffort: 'low' } }
 }
 
-export function toLlmErrorCode(error: unknown): LlmErrorCode {
+function toLlmErrorCode(error: unknown): LlmErrorCode {
   if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) return 'timeout'
   if (NoObjectGeneratedError.isInstance(error) || NoOutputGeneratedError.isInstance(error)) return 'invalid_response'
   // 구분할 수 없는 404도 model_missing(문구에서 모델 이름과 /v1 경로를 함께 안내)
