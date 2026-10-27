@@ -35,9 +35,9 @@ function NewItemPage() {
     void navigate({ to: '/' })
   }
 
-  // 제목이 바뀌면 이전 제목으로 만든 초안은 맞지 않는다
+  // 제목이 바뀌면 이전 제목으로 만든 초안은 맞지 않는다. reopen patch로 바뀌는 경로도 포함
   const dispatchStep = (action: StepFormAction) => {
-    if (action.type === 'decide' && action.field === 'title' && action.patch.title !== state.values.title) reset()
+    if (action.type !== 'skip' && action.patch?.title !== undefined && action.patch.title !== state.values.title) reset()
     dispatch(action)
   }
 

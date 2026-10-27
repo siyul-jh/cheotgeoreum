@@ -13,6 +13,7 @@ export const fieldLimits = {
   nextActionText: 200,
   companion: 30,
   keyword: 50,
+  prerequisiteCount: 30,
 } as const
 
 export const IsoDateSchema = z.iso.date()
@@ -26,7 +27,7 @@ export const BucketItemInputSchema = z.object({
   targetPeriod: TargetPeriodSchema.nullable(),
   prerequisites: z
     .array(z.object({ text: z.string().trim().min(1).max(fieldLimits.prerequisite), done: z.boolean() }))
-    .max(30),
+    .max(fieldLimits.prerequisiteCount),
   nextAction: z.object({
     text: z.string().trim().max(fieldLimits.nextActionText),
     dueDate: IsoDateSchema.nullable(),

@@ -46,6 +46,11 @@ describe('draftToPatch', () => {
     const draft = { ...nullDraft, nextAction: { text: null, dueDate: null } }
     expect(draftToPatch('nextAction', draft, current)).toBeNull()
   })
+  it('prerequisites 초안 안의 중복도 한 번만 덧붙인다', () => {
+    const draft = { ...nullDraft, prerequisites: ['여권', '여권'] }
+    const empty: ItemValues = { ...current, prerequisites: [] }
+    expect(draftToPatch('prerequisites', draft, empty)?.prerequisites).toEqual([{ text: '여권', done: false }])
+  })
   it('prerequisites 덧붙이기는 30개 상한을 넘기지 않는다', () => {
     const full: ItemValues = {
       ...current,
