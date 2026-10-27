@@ -14,6 +14,7 @@ export const fieldLimits = {
   companion: 30,
   keyword: 50,
   prerequisiteCount: 30,
+  companionCount: 30,
 } as const
 
 export const IsoDateSchema = z.iso.date()
@@ -33,7 +34,7 @@ export const BucketItemInputSchema = z.object({
     dueDate: IsoDateSchema.nullable(),
   }),
   status: z.enum(STATUSES),
-  companions: z.array(z.string().trim().min(1).max(fieldLimits.companion)).max(30),
+  companions: z.array(z.string().trim().min(1).max(fieldLimits.companion)).max(fieldLimits.companionCount),
 })
 export type BucketItemInput = z.infer<typeof BucketItemInputSchema>
 

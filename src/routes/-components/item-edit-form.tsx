@@ -2,6 +2,7 @@ import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import {
+  AI_FIELDS,
   BucketItemInputSchema,
   CategoryPicker,
   CompanionsInput,
@@ -162,7 +163,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       <form.Subscribe selector={(s) => s.values}>
         {(values) => {
           const blanks = getBlankFields(values)
-          const aiFields = (Object.keys(AI_FIELD_LABELS) as AiField[]).filter((f) =>
+          const aiFields = AI_FIELDS.filter((f) =>
             blanks.some((b) => (f === 'nextAction' ? b.startsWith('nextAction') : b === f)),
           )
           const { draft } = draftState

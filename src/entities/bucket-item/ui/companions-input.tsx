@@ -5,8 +5,6 @@ import { selectCompanionNames, useBucketStore } from '../model/store'
 
 type Props = { value: string[]; onChange: (v: string[]) => void }
 
-const MAX_COMPANIONS = 30
-
 export function CompanionsInput({ value, onChange }: Props) {
   const names = useBucketStore(useShallow(selectCompanionNames))
   const listId = useId()
@@ -14,7 +12,7 @@ export function CompanionsInput({ value, onChange }: Props) {
 
   const add = () => {
     const name = draft.trim()
-    if (!name || value.includes(name) || value.length >= MAX_COMPANIONS) return
+    if (!name || value.includes(name) || value.length >= fieldLimits.companionCount) return
     onChange([...value, name])
     setDraft('')
   }

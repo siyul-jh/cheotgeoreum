@@ -3,14 +3,12 @@ import { fieldLimits, type ItemValues } from '../model/schema'
 
 type Props = { value: ItemValues['prerequisites']; onChange: (v: ItemValues['prerequisites']) => void }
 
-const MAX_PREREQUISITES = 30
-
 export function PrerequisitesInput({ value, onChange }: Props) {
   const [draft, setDraft] = useState('')
 
   const add = () => {
     const text = draft.trim()
-    if (!text || value.length >= MAX_PREREQUISITES) return
+    if (!text || value.length >= fieldLimits.prerequisiteCount) return
     onChange([...value, { text, done: false }])
     setDraft('')
   }
