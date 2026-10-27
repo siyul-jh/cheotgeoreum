@@ -1,11 +1,11 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { useBucketStore, type BucketItemInput } from '@/entities/bucket-item'
+import { useBucketStore, type AiDraft, type BucketItemInput } from '@/entities/bucket-item'
 import type { DraftState } from '@/shared/lib/llm-result'
 import { routeTree } from '@/routeTree.gen'
 
-const fill = vi.hoisted(() => ({ state: { status: 'idle', draft: null, error: null } as DraftState, request: vi.fn() }))
+const fill = vi.hoisted(() => ({ state: { status: 'idle', draft: null, error: null } as DraftState<AiDraft>, request: vi.fn() }))
 vi.mock('@/features/ai-fill', () => ({ useFillBlanks: () => ({ ...fill.state, request: fill.request }) }))
 
 const base: BucketItemInput = {

@@ -22,7 +22,7 @@ import { STEP_ORDER, undecidedAiFields, type StepFormAction, type StepFormState 
 type Props = {
   state: StepFormState
   dispatch: (a: StepFormAction) => void
-  draftState: DraftState
+  draftState: DraftState<AiDraft>
   onFill: () => void
   onOpenIdeas: () => void
   onSave: () => void

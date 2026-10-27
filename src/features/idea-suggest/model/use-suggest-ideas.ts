@@ -1,11 +1,12 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import type { DraftError } from '@/shared/lib/llm-result'
+import { deriveDraftState, type DraftState } from '@/shared/lib/llm-result'
 import { suggestIdeas, SuggestIdeasInputSchema, type SuggestIdeasInput } from '../api/suggest-ideas'
 
-export type IdeasState = { status: 'idle' | 'pending' | 'ready' | 'error'; ideas: string[]; error: DraftError | null }
-
-export function useSuggestIdeas(): IdeasState & { request: (input: SuggestIdeasInput) => void } {
+export function useSuggestIdeas(): Omit<DraftState<string[]>, 'draft'> & {
+  ideas: string[]
+  request: (input: SuggestIdeasInput) => void
+} {
   const mutation = useMutation({ mutationFn: (data: SuggestIdeasInput) => suggestIdeas({ data }) })
   const [invalidInput, setInvalidInput] = useState(false)
 
@@ -17,11 +18,6 @@ export function useSuggestIdeas(): IdeasState & { request: (input: SuggestIdeasI
     else mutation.reset()
   }
 
-  const { isPending, isError, data } = mutation
-  let state: IdeasState = { status: 'idle', ideas: [], error: null }
-  if (invalidInput) state = { status: 'error', ideas: [], error: 'invalid_input' }
-  else if (isPending) state = { status: 'pending', ideas: [], error: null }
-  else if (isError) state = { status: 'error', ideas: [], error: 'llm_unreachable' }
-  else if (data) state = data.ok ? { status: 'ready', ideas: data.data, error: null } : { status: 'error', ideas: [], error: data.code }
-  return { ...state, request }
+  const { draft, ...state } = deriveDraftState({ ...mutation, invalidInput })
+  return { ...state, ideas: draft ?? [], request }
 }

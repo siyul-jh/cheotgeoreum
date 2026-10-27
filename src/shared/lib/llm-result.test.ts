@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import type { AiDraft } from '@/entities/bucket-item'
-import { deriveDraftState } from './use-fill-blanks'
+import { deriveDraftState } from './llm-result'
 
-const draft: AiDraft = { why: '이유', category: null, targetPeriod: null, prerequisites: null, nextAction: null }
+const draft = { why: '이유' }
 const base = { isPending: false, isError: false, data: undefined, invalidInput: false }
 
 describe('deriveDraftState', () => {

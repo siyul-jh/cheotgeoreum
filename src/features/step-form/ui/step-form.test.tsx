@@ -8,10 +8,10 @@ import type { DraftState } from '@/shared/lib/llm-result'
 import { initialStepFormState, stepFormReducer } from '../model/step-form-reducer'
 import { StepForm } from './step-form'
 
-const idle: DraftState = { status: 'idle', draft: null, error: null }
+const idle: DraftState<AiDraft> = { status: 'idle', draft: null, error: null }
 
 // 초안 상태를 바깥에서 바꿔도 StepForm이 리마운트되지 않도록 store로 주입한다
-const useDraftState = create<DraftState>(() => idle)
+const useDraftState = create<DraftState<AiDraft>>(() => idle)
 
 function Harness({ onFill }: { onFill: () => void }) {
   const [state, dispatch] = useReducer(stepFormReducer, initialStepFormState)
@@ -22,13 +22,13 @@ function Harness({ onFill }: { onFill: () => void }) {
 }
 
 // StepForm의 닫기(Link)가 라우터 컨텍스트를 요구한다
-async function renderForm(draftState: DraftState, onFill: () => void = vi.fn()) {
+async function renderForm(draftState: DraftState<AiDraft>, onFill: () => void = vi.fn()) {
   useDraftState.setState(draftState, true)
   const rootRoute = createRootRoute({ component: () => <Harness onFill={onFill} /> })
   const router = createRouter({ routeTree: rootRoute, history: createMemoryHistory() })
   render(<RouterProvider router={router} />)
   await screen.findByText('어떤 일을 해보고 싶나요?')
-  return { rerender: (ds: DraftState) => act(() => useDraftState.setState(ds, true)) }
+  return { rerender: (ds: DraftState<AiDraft>) => act(() => useDraftState.setState(ds, true)) }
 }
 
 const next = () => fireEvent.click(screen.getByRole('button', { name: '다음' }))
