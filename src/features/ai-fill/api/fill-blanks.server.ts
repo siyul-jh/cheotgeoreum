@@ -77,7 +77,6 @@ export async function runFillBlanks(input: FillBlanksInput, model: LanguageModel
   const today = DateTime.now().toISODate()
   const { nextAction, ...rest } = item
   const blank = new Set<string>(blankFields)
-  // 맥락: 빈 칸을 뺀 나머지 값
   const context = Object.fromEntries(
     Object.entries({ ...rest, nextActionText: nextAction.text, nextActionDueDate: nextAction.dueDate }).filter(
       ([key]) => !blank.has(key),
