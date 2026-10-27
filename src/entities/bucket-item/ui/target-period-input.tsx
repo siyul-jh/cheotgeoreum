@@ -6,12 +6,13 @@ export function TargetPeriodInput({ value, onChange }: Props) {
   const [year = '', month = ''] = value?.split('-') ?? []
   const thisYear = DateTime.now().year
   const years = Array.from({ length: 31 }, (_, i) => thisYear + i)
+  const changeYear = (y: string) => onChange(y ? (month ? `${y}-${month}` : y) : null)
 
   return (
     <div className="grid grid-cols-2 gap-2">
       <label className="flex flex-col gap-1 text-sm">
         연도
-        <select className="field" value={year} onChange={(e) => onChange(e.target.value || null)}>
+        <select className="field" value={year} onChange={(e) => changeYear(e.target.value)}>
           <option value="">연도 미정</option>
           {years.map((y) => (
             <option key={y} value={y}>
