@@ -1,0 +1,41 @@
+import { DateTime } from 'luxon'
+
+type Props = { value: string | null; onChange: (v: string | null) => void }
+
+export function TargetPeriodInput({ value, onChange }: Props) {
+  const [year = '', month = ''] = value?.split('-') ?? []
+  const thisYear = DateTime.now().year
+  const years = Array.from({ length: 31 }, (_, i) => thisYear + i)
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <label className="flex flex-col gap-1 text-sm">
+        연도
+        <select className="field" value={year} onChange={(e) => onChange(e.target.value || null)}>
+          <option value="">연도 미정</option>
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}년
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="flex flex-col gap-1 text-sm">
+        월
+        <select
+          className="field"
+          value={month}
+          disabled={!year}
+          onChange={(e) => onChange(e.target.value ? `${year}-${e.target.value}` : year)}
+        >
+          <option value="">월 미정</option>
+          {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map((m) => (
+            <option key={m} value={m}>
+              {Number(m)}월
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  )
+}
