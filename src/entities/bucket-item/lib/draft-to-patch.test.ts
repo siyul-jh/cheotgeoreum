@@ -46,4 +46,12 @@ describe('draftToPatch', () => {
     const draft = { ...nullDraft, nextAction: { text: null, dueDate: null } }
     expect(draftToPatch('nextAction', draft, current)).toBeNull()
   })
+  it('prerequisites 덧붙이기는 30개 상한을 넘기지 않는다', () => {
+    const full: ItemValues = {
+      ...current,
+      prerequisites: Array.from({ length: 28 }, (_, i) => ({ text: `과제${i}`, done: false })),
+    }
+    const draft = { ...nullDraft, prerequisites: ['a', 'b', 'c'] }
+    expect(draftToPatch('prerequisites', draft, full)?.prerequisites).toHaveLength(30)
+  })
 })

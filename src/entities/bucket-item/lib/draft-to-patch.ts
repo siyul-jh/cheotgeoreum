@@ -12,7 +12,10 @@ export function draftToPatch(field: AiField, draft: AiDraft, current: ItemValues
     case 'targetPeriod':
       return draft.targetPeriod === null ? null : { targetPeriod: draft.targetPeriod }
     case 'prerequisites': {
-      const added = (draft.prerequisites ?? []).filter((text) => !current.prerequisites.some((p) => p.text === text))
+      // 스키마 상한(30)을 넘기면 저장 검증에서 실패하므로 남은 자리만큼만 덧붙인다
+      const added = (draft.prerequisites ?? [])
+        .filter((text) => !current.prerequisites.some((p) => p.text === text))
+        .slice(0, Math.max(0, 30 - current.prerequisites.length))
       if (added.length === 0) return null
       return { prerequisites: [...current.prerequisites, ...added.map((text) => ({ text, done: false }))] }
     }
