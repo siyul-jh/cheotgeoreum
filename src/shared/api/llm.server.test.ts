@@ -118,6 +118,12 @@ describe('getProviderOptions', () => {
       llm: { reasoningEffort: 'low' },
     })
   })
+  it('nvidia.com 자체도 NIM', () => {
+    expect(getProviderOptions('https://nvidia.com/v1')).toEqual({ llm: { reasoningEffort: 'low' } })
+  })
+  it('nvidia.com으로 끝나기만 하는 다른 도메인이면 undefined', () => {
+    expect(getProviderOptions('https://evilnvidia.com/v1')).toBeUndefined()
+  })
   it('로컬이면 undefined', () => {
     expect(getProviderOptions('http://localhost:11434/v1')).toBeUndefined()
   })

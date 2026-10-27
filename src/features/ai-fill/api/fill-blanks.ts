@@ -4,8 +4,12 @@ import { BlankFieldSchema, BucketItemInputSchema, fieldLimits } from '@/entities
 
 export const FillBlanksInputSchema = z.object({
   item: BucketItemInputSchema.omit({ status: true, companions: true }),
-  blankFields: z.array(BlankFieldSchema).min(1),
-  categories: z.array(z.string().max(fieldLimits.category)).min(1), // 개수 max 없음 (addCategory가 길이 보장)
+  blankFields: z
+    .array(BlankFieldSchema)
+    .min(1)
+    .max(BlankFieldSchema.options.length)
+    .refine((fields) => new Set(fields).size === fields.length, '중복된 칸'),
+  categories: z.array(z.string().max(fieldLimits.category)).min(1).max(100), // 서버 함수 입력 크기 상한
 })
 export type FillBlanksInput = z.infer<typeof FillBlanksInputSchema>
 

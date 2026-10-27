@@ -17,7 +17,9 @@ export function getModel(): LanguageModel {
 // clear_thinking은 NIM이 400 "Unsupported parameter(s)"로 거부해 보내지 않는다(T0b)
 export function getProviderOptions(baseURL: string): { llm: { reasoningEffort: 'low' } } | undefined {
   // ponytail: NIM 전용 파라미터. self-hosted NIM이면 조건 수정
-  if (!URL.canParse(baseURL) || !new URL(baseURL).hostname.endsWith('nvidia.com')) return undefined
+  if (!URL.canParse(baseURL)) return undefined
+  const { hostname } = new URL(baseURL)
+  if (hostname !== 'nvidia.com' && !hostname.endsWith('.nvidia.com')) return undefined
   return { llm: { reasoningEffort: 'low' } }
 }
 
