@@ -1,0 +1,12 @@
+node_modules
+dist
+.output
+.tanstack
+.env*
+!.env.example
+scratch/
+.omc/*
+!.omc/skills
+!.omc/plans
+!.omc/specs
+.omc/plans/.omc
