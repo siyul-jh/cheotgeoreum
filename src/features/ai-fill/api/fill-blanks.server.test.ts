@@ -40,6 +40,10 @@ describe('sanitizeDraft', () => {
   it.each(['2027-13', '2099', '2025', '내년'])('targetPeriod %s는 null', (targetPeriod) => {
     expect(sanitize({ targetPeriod }).targetPeriod).toBeNull()
   })
+  it('올해의 지난 달 targetPeriod는 null, 이번 달은 유지', () => {
+    expect(sanitize({ targetPeriod: '2026-09' }).targetPeriod).toBeNull()
+    expect(sanitize({ targetPeriod: '2026-10' }).targetPeriod).toBe('2026-10')
+  })
   it.each(['2026', '2056-12'])('targetPeriod %s는 유지', (targetPeriod) => {
     expect(sanitize({ targetPeriod }).targetPeriod).toBe(targetPeriod)
   })

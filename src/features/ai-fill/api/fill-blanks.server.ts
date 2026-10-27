@@ -63,7 +63,8 @@ export function sanitizeDraft(
       wants('targetPeriod') &&
       TargetPeriodSchema.safeParse(targetPeriod).success &&
       targetYear >= thisYear &&
-      targetYear <= thisYear + TARGET_YEAR_RANGE
+      targetYear <= thisYear + TARGET_YEAR_RANGE &&
+      (targetPeriod.length === 4 || targetPeriod >= today.slice(0, 7)) // YYYY-MM은 이번 달부터
         ? targetPeriod
         : null,
     prerequisites: wants('prerequisites') && prerequisites.length > 0 ? prerequisites : null,
