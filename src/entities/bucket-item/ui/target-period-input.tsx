@@ -7,7 +7,7 @@ export function TargetPeriodInput({ value, onChange }: Props) {
   const thisYear = DateTime.now().year
   const range = Array.from({ length: 31 }, (_, i) => thisYear + i)
   // 범위 밖 값(지난 연도 등)은 맨 앞에 둔다. 없으면 '연도 미정'으로 보인다
-  const years = year && !range.includes(Number(year)) ? [Number(year), ...range] : range
+  const years = /^\d{4}$/.test(year) && !range.includes(Number(year)) ? [Number(year), ...range] : range
   const changeYear = (y: string) => onChange(y ? (month ? `${y}-${month}` : y) : null)
 
   return (

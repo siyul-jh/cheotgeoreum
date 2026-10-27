@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Link, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import stylesUrl from '@/styles.css?url'
 
@@ -14,6 +14,15 @@ export const Route = createRootRoute({
   }),
   shellComponent: RootDocument,
   component: RootLayout,
+  // 저장 데이터가 깨진 항목 등 예상 못한 오류에서 기본 오류 화면 대신 목록으로 돌아갈 길을 준다
+  errorComponent: () => (
+    <main className="mx-auto min-h-dvh w-full max-w-md px-4 py-6">
+      <p>이 화면을 열지 못했어요.</p>
+      <Link to="/" className="underline">
+        목록으로
+      </Link>
+    </main>
+  ),
 })
 
 function RootLayout() {

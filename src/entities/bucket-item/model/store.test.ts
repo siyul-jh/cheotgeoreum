@@ -97,4 +97,13 @@ describe('persist', () => {
     expect(s().customCategories).toEqual([])
     expect(selectCompanionNames(s())).toEqual([])
   })
+
+  it('다른 version으로 저장된 상태를 읽어도 메모리 상태를 비우지 않는다', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    s().addItem(input({ title: '내 항목' }))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 2 }))
+    await useBucketStore.persist.rehydrate()
+    expect(s().items.map((i) => i.title)).toEqual(['내 항목'])
+    err.mockRestore()
+  })
 })

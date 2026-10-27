@@ -63,11 +63,15 @@ export const useBucketStore = create<BucketStore>()(
       version: 1, // version을 올리면 migrate 필수: 없으면 빈 상태로 덮어써 전체 유실
       // 항목 단위로 거르지 않는다: 버린 항목은 다음 set에서 저장소에서도 영구 유실된다
       merge: (persisted, current) => {
-        const p = typeof persisted === 'object' && persisted !== null ? persisted : {}
+        // version 불일치(migrate 없음)면 persisted가 undefined로 온다. 메모리를 비우면 다음 set이 저장소까지 덮어쓴다
+        if (typeof persisted !== 'object' || persisted === null) return current
+        const p = persisted
         return {
           ...current,
-          items: 'items' in p && Array.isArray(p.items) ? p.items : [],
-          customCategories: 'customCategories' in p && Array.isArray(p.customCategories) ? p.customCategories : [],
+          // ponytail: 배열 여부만 본다. 항목 형식은 저장 시 safeParse가 지킨다
+          items: 'items' in p && Array.isArray(p.items) ? (p.items as BucketItem[]) : [],
+          customCategories:
+            'customCategories' in p && Array.isArray(p.customCategories) ? (p.customCategories as string[]) : [],
         }
       },
     },
