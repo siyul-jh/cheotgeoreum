@@ -28,15 +28,22 @@ const throwingModel = (error: unknown) =>
   })
 const run = (model: MockLanguageModelV4) => generateStructured({ model, schema, system: 's', prompt: 'p', temperature: 0 })
 
-// T0b 실측 후 교체: 아래 오류 fixture는 NIM 응답을 가정한 값이다.
+// T0b 실측(2026-10-27, NIM integrate.api.nvidia.com). APICallError.message는 모두 ''였다. 403은 미측정 가정값
 const URL = 'https://integrate.api.nvidia.com/v1/chat/completions'
 const apiError = (statusCode: number, responseBody: string) =>
-  new APICallError({ message: `HTTP ${statusCode}`, url: URL, requestBodyValues: {}, statusCode, responseBody })
+  new APICallError({ message: '', url: URL, requestBodyValues: {}, statusCode, responseBody })
 const econnrefused = new APICallError({
   message: 'Cannot connect to API: connect ECONNREFUSED 127.0.0.1:11434',
   url: URL,
   requestBodyValues: {},
   cause: Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:11434'), { code: 'ECONNREFUSED' }),
+  isRetryable: true,
+})
+const enotfound = new APICallError({
+  message: 'Cannot connect to API: getaddrinfo ENOTFOUND llm.invalid',
+  url: 'https://llm.invalid/v1/chat/completions',
+  requestBodyValues: {},
+  cause: Object.assign(new Error('getaddrinfo ENOTFOUND llm.invalid'), { code: 'ENOTFOUND' }),
   isRetryable: true,
 })
 
@@ -64,15 +71,19 @@ describe('generateStructured', () => {
   ])('%s이면 timeout', async (_, error) => {
     expect(await run(throwingModel(error))).toEqual({ ok: false, code: 'timeout' })
   })
-  it('404이면 model_missing', async () => {
-    const error = apiError(404, '{"status":404,"title":"Not Found","detail":"Function not found for account"}')
+  it.each([
+    ['잘못된 모델', apiError(404, '404 page not found\n')],
+    ['/v1 누락', apiError(404, '')],
+  ])('404(%s)이면 model_missing', async (_, error) => {
     expect(await run(throwingModel(error))).toEqual({ ok: false, code: 'model_missing' })
   })
   it.each([
-    ['401', apiError(401, '{"status":401,"title":"Unauthorized","detail":"Authentication failed"}')],
+    ['400', apiError(400, '{"message":"Validation: Unsupported parameter(s): `clear_thinking`","type":"Bad Request","code":400}')],
+    ['401', apiError(401, '{"status":401,"title":"Unauthorized","detail":"Invalid JWT serialization: Missing dot delimiter(s)"}')],
     ['403', apiError(403, '{"status":403,"title":"Forbidden"}')],
     ['429', apiError(429, '{"status":429,"title":"Too Many Requests"}')],
     ['ECONNREFUSED', econnrefused],
+    ['ENOTFOUND', enotfound],
     ['fetch failed', new TypeError('fetch failed')],
     ['알 수 없는 오류', new Error('boom')],
   ])('%s이면 llm_unreachable', async (_, error) => {
@@ -95,14 +106,16 @@ describe('generateStructured', () => {
       },
     }).chatModel('m')
     expect(await generateStructured({ model, schema, system: 's', prompt: 'p', temperature: 0 })).toEqual({ ok: true, data: { answer: '네' } })
-    expect(body).toMatchObject({ reasoning_effort: 'low', clear_thinking: true })
+    expect(body).toMatchObject({ reasoning_effort: 'low' })
+    // T0b: NIM이 clear_thinking을 400(Unsupported parameter)으로 거부한다
+    expect(body).not.toHaveProperty('clear_thinking')
   })
 })
 
 describe('getProviderOptions', () => {
   it('NIM 호스트면 객체', () => {
     expect(getProviderOptions('https://integrate.api.nvidia.com/v1')).toEqual({
-      llm: { reasoningEffort: 'low', clear_thinking: true },
+      llm: { reasoningEffort: 'low' },
     })
   })
   it('로컬이면 undefined', () => {

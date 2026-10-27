@@ -14,10 +14,11 @@ export function getModel(): LanguageModel {
 }
 
 // reasoning_effort는 reasoningEffort로 넘긴다. snake_case 키는 provider가 undefined로 덮어써 body에서 빠진다
-export function getProviderOptions(baseURL: string): { llm: { reasoningEffort: 'low'; clear_thinking: true } } | undefined {
+// clear_thinking은 NIM이 400 "Unsupported parameter(s)"로 거부해 보내지 않는다(T0b)
+export function getProviderOptions(baseURL: string): { llm: { reasoningEffort: 'low' } } | undefined {
   // ponytail: NIM 전용 파라미터. self-hosted NIM이면 조건 수정
   if (!URL.canParse(baseURL) || !new URL(baseURL).hostname.endsWith('nvidia.com')) return undefined
-  return { llm: { reasoningEffort: 'low', clear_thinking: true } }
+  return { llm: { reasoningEffort: 'low' } }
 }
 
 export function toLlmErrorCode(error: unknown): LlmErrorCode {
