@@ -58,9 +58,28 @@ export const useBucketStore = create<BucketStore>()(
         }))
       },
     }),
-    { name: STORAGE_KEY, version: 1 },
+    {
+      name: STORAGE_KEY,
+      version: 1, // version을 올리면 migrate 필수: 없으면 빈 상태로 덮어써 전체 유실
+      // 항목 단위로 거르지 않는다: 버린 항목은 다음 set에서 저장소에서도 영구 유실된다
+      merge: (persisted, current) => {
+        const p = typeof persisted === 'object' && persisted !== null ? persisted : {}
+        return {
+          ...current,
+          items: 'items' in p && Array.isArray(p.items) ? p.items : [],
+          customCategories: 'customCategories' in p && Array.isArray(p.customCategories) ? p.customCategories : [],
+        }
+      },
+    },
   ),
 )
+
+// 다른 탭이 저장하면 다시 읽는다. 안 하면 이 탭의 다음 set이 다른 탭 변경을 덮어쓴다
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) void useBucketStore.persist.rehydrate()
+  })
+}
 
 export const selectCategories = (s: BucketStore): string[] => [...DEFAULT_CATEGORIES, ...s.customCategories]
 

@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore, type BucketItemInput } from '@/entities/bucket-item'
 import type { DraftState } from '@/shared/lib/llm-result'
@@ -51,6 +51,23 @@ test('제목을 비우면 오류가 나고 store는 바뀌지 않는다', async 
   click('저장')
   await screen.findByRole('alert')
   expect(item().title).toBe('오로라 보기')
+})
+
+test('저장된 값이 스키마에 맞지 않아도 편집 화면이 열린다', async () => {
+  useBucketStore.setState({ items: [{ ...base, title: '   ', targetPeriod: '내년', id, createdAt: '2026-10-27T00:00:00.000Z' }] })
+  await open()
+  expect(screen.getByText('항목 편집')).toBeDefined()
+  expect((screen.getByLabelText('항목') as HTMLInputElement).value).toBe('   ')
+})
+
+test('편집 중 사용자 카테고리가 삭제되면 category null로 저장한다', async () => {
+  useBucketStore.getState().addCategory('덕질')
+  useBucketStore.getState().updateItem(id, { ...base, category: '덕질' })
+  const router = await open()
+  act(() => useBucketStore.getState().deleteCategory('덕질'))
+  click('저장')
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+  expect(item().category).toBeNull()
 })
 
 test('삭제는 확인 단계를 거친다', async () => {

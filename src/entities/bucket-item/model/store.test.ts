@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_CATEGORIES, UNCATEGORIZED_FILTER, type BucketItemInput } from './schema'
 import { STORAGE_KEY, selectCategories, selectCompanionNames, useBucketStore } from './store'
 
@@ -77,4 +77,24 @@ it('변경이 localStorage에 반영된다', () => {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: { title: string }[] }; version: number }
   expect(saved.version).toBe(1)
   expect(saved.state.items[0]?.title).toBe('저장됨')
+})
+
+describe('persist', () => {
+  const save = (state: unknown) => localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, version: 1 }))
+
+  it('다른 탭이 저장하면 그 내용을 다시 읽는다', async () => {
+    s().addItem(input({ title: '이 탭' }))
+    save({ items: [{ ...input({ title: '다른 탭' }), id: 'x', createdAt: '2026-10-27T00:00:00.000Z' }], customCategories: ['덕질'] })
+    window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }))
+    await vi.waitFor(() => expect(s().items.map((i) => i.title)).toEqual(['다른 탭']))
+    expect(s().customCategories).toEqual(['덕질'])
+  })
+
+  it('저장된 items·customCategories가 배열이 아니면 빈 목록', async () => {
+    save({ items: 'x', customCategories: null })
+    await useBucketStore.persist.rehydrate()
+    expect(s().items).toEqual([])
+    expect(s().customCategories).toEqual([])
+    expect(selectCompanionNames(s())).toEqual([])
+  })
 })

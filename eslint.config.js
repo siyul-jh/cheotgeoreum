@@ -12,6 +12,7 @@ export default defineConfig(
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       'react-hooks/exhaustive-deps': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }], // 구조 분해로 키 제거
     },
   },
 )

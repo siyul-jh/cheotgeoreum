@@ -39,19 +39,17 @@ export function ItemEditForm({ item, onDone }: Props) {
   const deleteItem = useBucketStore((s) => s.deleteItem)
   const { request, ...draftState } = useFillBlanks()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  // 저장된 값이 스키마에 안 맞아도 화면은 열리고, 저장 시 검증 오류로 보인다
+  const { id, createdAt, ...defaultValues } = item
 
   const form = useForm({
-    defaultValues: BucketItemInputSchema.parse(item), // id·createdAt 제거
+    defaultValues,
     validators: { onSubmit: BucketItemInputSchema },
     onSubmit: ({ value }) => {
-      const parsed = BucketItemInputSchema.safeParse(value)
-      if (!parsed.success) {
-        setSaveError('저장하지 못했어요. 비어 있거나 형식이 맞지 않는 칸이 있어요.')
-        return
-      }
-      const { category } = parsed.data
-      updateItem(item.id, { ...parsed.data, category: category !== null && categories.includes(category) ? category : null })
+      // validator를 통과했으므로 parse는 trim 변환만 한다
+      const parsed = BucketItemInputSchema.parse(value)
+      const { category } = parsed
+      updateItem(id, { ...parsed, category: category !== null && categories.includes(category) ? category : null })
       onDone()
     },
   })
@@ -69,7 +67,6 @@ export function ItemEditForm({ item, onDone }: Props) {
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault()
-        setSaveError(null)
         void form.handleSubmit()
       }}
     >
@@ -214,7 +211,7 @@ export function ItemEditForm({ item, onDone }: Props) {
 
       <form.Subscribe selector={(s) => s.errorMap.onSubmit}>
         {(err) =>
-          (err || saveError) && (
+          err && (
             <p role="alert" className="text-sm text-red-700">
               저장하지 못했어요. 비어 있거나 형식이 맞지 않는 칸이 있어요.
             </p>
@@ -234,7 +231,7 @@ export function ItemEditForm({ item, onDone }: Props) {
               type="button"
               className="btn flex-1"
               onClick={() => {
-                deleteItem(item.id)
+                deleteItem(id)
                 onDone()
               }}
             >
