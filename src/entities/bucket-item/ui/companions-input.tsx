@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
+import { XIcon } from '@/shared/ui/x-icon'
 import { fieldLimits } from '../model/schema'
 import { selectCompanionNames, useBucketStore } from '../model/store'
 
@@ -21,15 +22,16 @@ export function CompanionsInput({ value, onChange }: Props) {
     <div className="flex flex-col gap-3">
       <ul className="flex flex-wrap gap-2" aria-label="함께할 사람">
         {value.map((name) => (
-          <li key={name} className="surface flex items-center gap-1 py-1 pl-3 pr-1 text-sm">
+          <li key={name} className="flex items-center rounded-full border border-edge bg-card py-1 pl-3.5 text-sm">
             {name}
+            {/* 보이는 칩은 작게, 누르는 영역은 44px */}
             <button
               type="button"
-              className="btn"
+              className="-my-2 flex size-11 items-center justify-center rounded-full text-mute"
               aria-label={`${name} 삭제`}
               onClick={() => onChange(value.filter((n) => n !== name))}
             >
-              ×
+              <XIcon className="size-3.5" />
             </button>
           </li>
         ))}
@@ -38,6 +40,7 @@ export function CompanionsInput({ value, onChange }: Props) {
         <input
           className="field"
           aria-label="함께할 사람 이름"
+          placeholder="이름"
           list={listId}
           value={draft}
           maxLength={fieldLimits.companion}

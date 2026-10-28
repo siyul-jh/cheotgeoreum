@@ -70,6 +70,7 @@ export function CategoryPicker({ value, onChange }: Props) {
         <input
           className="field"
           aria-label="새 카테고리 이름"
+          placeholder="새 카테고리 (예: 독서)"
           value={draft}
           maxLength={fieldLimits.category}
           onChange={(e) => setDraft(e.target.value)}

@@ -118,3 +118,19 @@ test('pending이면 버튼이 비활성화된다', async () => {
   await open()
   expect((screen.getByRole('button', { name: /만드는 중/ }) as HTMLButtonElement).disabled).toBe(true)
 })
+
+test('그룹마다 라벨은 하나, 추가 입력칸에는 예시가 있고 저장 바는 하단에 고정된다', async () => {
+  useBucketStore.getState().updateItem(id, { ...base, companions: ['엄마'] })
+  await open()
+  expect(screen.getAllByText('다음 행동')).toHaveLength(1)
+  expect(screen.getAllByText('목표 시기')).toHaveLength(1)
+  expect(screen.queryByText('연도')).toBeNull()
+  const period = screen.getByRole('group', { name: '목표 시기' })
+  expect(within(period).getByLabelText('연도')).toBeDefined()
+  for (const name of ['새 카테고리 이름', '선행 과제', '함께할 사람 이름', '할 일']) {
+    expect((screen.getByLabelText(name) as HTMLInputElement).placeholder).not.toBe('')
+  }
+  expect(screen.getByRole('button', { name: '엄마 삭제' }).className).not.toMatch(/\bbtn\b/)
+  expect(screen.getByRole('button', { name: '여권 삭제' }).className).not.toMatch(/\bbtn\b/)
+  expect(screen.getByRole('button', { name: '저장' }).closest('.sticky')).not.toBeNull()
+})

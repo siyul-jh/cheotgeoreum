@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { XIcon } from '@/shared/ui/x-icon'
 import { fieldLimits, type ItemValues } from '../model/schema'
 
 type Props = { value: ItemValues['prerequisites']; onChange: (v: ItemValues['prerequisites']) => void }
@@ -28,11 +29,11 @@ export function PrerequisitesInput({ value, onChange }: Props) {
             <span className={`min-w-0 flex-1 break-words ${p.done ? 'text-mute line-through' : ''}`}>{p.text}</span>
             <button
               type="button"
-              className="btn"
+              className="-my-2 -mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-mute"
               aria-label={`${p.text} 삭제`}
               onClick={() => onChange(value.filter((_, j) => j !== i))}
             >
-              ×
+              <XIcon className="size-4" />
             </button>
           </li>
         ))}
@@ -41,6 +42,7 @@ export function PrerequisitesInput({ value, onChange }: Props) {
         <input
           className="field"
           aria-label="선행 과제"
+          placeholder="예: 여권 갱신"
           value={draft}
           maxLength={fieldLimits.prerequisite}
           onChange={(e) => setDraft(e.target.value)}

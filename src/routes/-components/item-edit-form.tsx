@@ -73,7 +73,7 @@ export function ItemEditForm({ item, onDone }: Props) {
     >
       <form.Field name="title">
         {(f) => (
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex flex-col gap-1.5 text-[13px] text-mute">
             항목
             <input
               className="field"
@@ -86,7 +86,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Field>
       <form.Field name="status">
         {(f) => (
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex flex-col gap-1.5 text-[13px] text-mute">
             상태
             <select
               className="field"
@@ -107,7 +107,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Field>
       <form.Field name="why">
         {(f) => (
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex flex-col gap-1.5 text-[13px] text-mute">
             왜
             <textarea
               className="field"
@@ -121,40 +121,40 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Field>
       <form.Field name="category">
         {(f) => (
-          <fieldset className="flex flex-col gap-1 text-sm">
-            <legend>카테고리</legend>
+          <fieldset className="flex flex-col gap-1.5 text-sm">
+            <legend className="mb-1.5 text-[13px] text-mute">카테고리</legend>
             <CategoryPicker value={f.state.value} onChange={f.handleChange} />
           </fieldset>
         )}
       </form.Field>
       <form.Field name="targetPeriod">
         {(f) => (
-          <fieldset className="flex flex-col gap-1 text-sm">
-            <legend>목표 시기</legend>
+          <fieldset className="flex flex-col gap-1.5 text-sm">
+            <legend className="mb-1.5 text-[13px] text-mute">목표 시기</legend>
             <TargetPeriodInput value={f.state.value} onChange={f.handleChange} />
           </fieldset>
         )}
       </form.Field>
       <form.Field name="prerequisites">
         {(f) => (
-          <fieldset className="flex flex-col gap-1 text-sm">
-            <legend>선행 과제</legend>
+          <fieldset className="flex flex-col gap-1.5 text-sm">
+            <legend className="mb-1.5 text-[13px] text-mute">선행 과제</legend>
             <PrerequisitesInput value={f.state.value} onChange={f.handleChange} />
           </fieldset>
         )}
       </form.Field>
       <form.Field name="nextAction">
         {(f) => (
-          <fieldset className="flex flex-col gap-1 text-sm">
-            <legend>다음 행동</legend>
+          <fieldset className="flex flex-col gap-1.5 text-sm">
+            <legend className="mb-1.5 text-[13px] text-mute">다음 행동</legend>
             <NextActionInput value={f.state.value} onChange={f.handleChange} />
           </fieldset>
         )}
       </form.Field>
       <form.Field name="companions">
         {(f) => (
-          <fieldset className="flex flex-col gap-1 text-sm">
-            <legend>함께할 사람</legend>
+          <fieldset className="flex flex-col gap-1.5 text-sm">
+            <legend className="mb-1.5 text-[13px] text-mute">함께할 사람</legend>
             <CompanionsInput value={f.state.value} onChange={f.handleChange} />
           </fieldset>
         )}
@@ -177,7 +177,7 @@ export function ItemEditForm({ item, onDone }: Props) {
               {blanks.length > 0 && (
                 <button
                   type="button"
-                  className="btn"
+                  className="btn press"
                   disabled={draftState.status === 'pending'}
                   onClick={() => request({ item: values, blankFields: blanks, categories })}
                 >
@@ -200,27 +200,23 @@ export function ItemEditForm({ item, onDone }: Props) {
         }}
       </form.Subscribe>
 
-      <form.Subscribe selector={(s) => s.errorMap.onSubmit}>
-        {(err) =>
-          err && (
-            <p role="alert" className="text-sm text-danger">
-              저장하지 못했어요. 비어 있거나 형식이 맞지 않는 칸이 있어요.
-            </p>
-          )
-        }
-      </form.Subscribe>
-
-      <button type="submit" className="btn btn-primary">
-        저장
-      </button>
-
-      {confirmingDelete ? (
-        <div role="alertdialog" aria-label="삭제 확인" className="surface flex flex-col gap-2 p-3">
-          <p className="text-sm">정말 삭제할까요?</p>
-          <div className="flex gap-2">
+      {/* 긴 폼 맨 아래까지 내리지 않아도 저장·삭제할 수 있게 하단에 붙인다 */}
+      <div className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t border-line bg-night/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+        <form.Subscribe selector={(s) => s.errorMap.onSubmit}>
+          {(err) =>
+            err && (
+              <p role="alert" className="text-sm text-danger">
+                저장하지 못했어요. 비어 있거나 형식이 맞지 않는 칸이 있어요.
+              </p>
+            )
+          }
+        </form.Subscribe>
+        {confirmingDelete ? (
+          <div role="alertdialog" aria-label="삭제 확인" className="flex items-center gap-2">
+            <p className="flex-1 text-sm">정말 삭제할까요?</p>
             <button
               type="button"
-              className="btn flex-1"
+              className="btn press border-danger bg-transparent text-danger"
               onClick={() => {
                 deleteItem(id)
                 onDone()
@@ -228,16 +224,21 @@ export function ItemEditForm({ item, onDone }: Props) {
             >
               삭제
             </button>
-            <button type="button" className="btn flex-1" onClick={() => setConfirmingDelete(false)}>
+            <button type="button" className="btn press" onClick={() => setConfirmingDelete(false)}>
               취소
             </button>
           </div>
-        </div>
-      ) : (
-        <button type="button" className="btn" onClick={() => setConfirmingDelete(true)}>
-          삭제
-        </button>
-      )}
+        ) : (
+          <div className="flex gap-2">
+            <button type="submit" className="btn btn-primary press flex-1">
+              저장
+            </button>
+            <button type="button" className="btn press bg-transparent" onClick={() => setConfirmingDelete(true)}>
+              삭제
+            </button>
+          </div>
+        )}
+      </div>
     </form>
   )
 }

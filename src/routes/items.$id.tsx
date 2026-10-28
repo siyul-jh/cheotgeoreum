@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useBucketStore } from '@/entities/bucket-item'
+import { XIcon } from '@/shared/ui/x-icon'
 import { ItemEditForm } from './-components/item-edit-form'
 
 export const Route = createFileRoute('/items/$id')({ component: EditItemPage })
@@ -23,10 +24,14 @@ function EditItemPage() {
   return (
     <div className="flex flex-col gap-4">
       <header className="flex items-center gap-3">
-        <Link to="/" aria-label="닫기" className="btn inline-flex items-center">
-          ✕
+        <Link
+          to="/"
+          aria-label="닫기"
+          className="press flex size-11 shrink-0 items-center justify-center rounded-full bg-card"
+        >
+          <XIcon className="size-[18px]" />
         </Link>
-        <h1 className="font-bold">항목 편집</h1>
+        <h1 className="font-title text-xl font-bold">항목 편집</h1>
       </header>
       <ItemEditForm key={item.id} item={item} onDone={() => void navigate({ to: '/' })} />
     </div>
