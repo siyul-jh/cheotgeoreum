@@ -46,7 +46,7 @@ test('제목 Enter → why 단계, 제목 카드가 아래에 생기고 누르�
 
   fireEvent.keyDown(title, { key: 'Enter' })
   expect(screen.getByText('왜 하고 싶나요?')).toBeTruthy()
-  expect(screen.getByText('2 / 7')).toBeTruthy()
+  expect(screen.getByRole('img', { name: '7단계 중 1단계 완료' })).toBeTruthy()
   const card = screen.getByRole('button', { name: /항목\s*오로라 보기/ })
 
   fireEvent.click(card)

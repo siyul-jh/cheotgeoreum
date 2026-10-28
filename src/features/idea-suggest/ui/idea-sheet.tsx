@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { fieldLimits, selectCategories, useBucketStore } from '@/entities/bucket-item'
 import { LLM_ERROR_MESSAGES } from '@/shared/lib/llm-result'
+import { XIcon } from '@/shared/ui/x-icon'
 import { useSuggestIdeas } from '../model/use-suggest-ideas'
 
 type Props = { onPick: (title: string) => void; onClose: () => void }
@@ -30,9 +31,14 @@ export function IdeaSheet({ onPick, onClose }: Props) {
     >
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <h2 className="flex-1 text-lg font-bold">아이디어 추천</h2>
-          <button type="button" className="btn" aria-label="닫기" onClick={() => ref.current?.close()}>
-            ✕
+          <h2 className="flex-1 font-title text-xl font-bold">아이디어 추천</h2>
+          <button
+            type="button"
+            className="press flex size-11 items-center justify-center rounded-full bg-ai"
+            aria-label="닫기"
+            onClick={() => ref.current?.close()}
+          >
+            <XIcon className="size-[18px]" />
           </button>
         </div>
         <label htmlFor={keywordId} className="text-sm text-mute">
@@ -59,7 +65,7 @@ export function IdeaSheet({ onPick, onClose }: Props) {
         </select>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary press"
           disabled={status === 'pending'}
           onClick={() =>
             request({
@@ -80,7 +86,11 @@ export function IdeaSheet({ onPick, onClose }: Props) {
           <ul className="flex flex-col gap-2" aria-label="추천 아이디어">
             {ideas.map((idea) => (
               <li key={idea}>
-                <button type="button" className="surface w-full px-3 py-2 text-left" onClick={() => onPick(idea)}>
+                <button
+                  type="button"
+                  className="press drop min-h-12 w-full rounded-[14px] border border-edge bg-ai px-3.5 py-2.5 text-left"
+                  onClick={() => onPick(idea)}
+                >
                   {idea}
                 </button>
               </li>

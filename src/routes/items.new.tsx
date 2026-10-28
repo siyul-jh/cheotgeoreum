@@ -13,6 +13,7 @@ import {
   toBucketItemInput,
   undecidedAiFields,
 } from '@/features/step-form'
+import { StarBurst, StarIcon } from '@/shared/ui/star-icon'
 
 export const Route = createFileRoute('/items/new')({ component: NewItemPage })
 
@@ -24,6 +25,7 @@ function NewItemPage() {
   const navigate = Route.useNavigate()
   const [saveError, setSaveError] = useState<string | null>(null)
   const [ideasOpen, setIdeasOpen] = useState(false)
+  const [savedTitle, setSavedTitle] = useState<string | null>(null)
 
   const onSave = () => {
     const parsed = BucketItemInputSchema.safeParse(toBucketItemInput(state, categories))
@@ -32,6 +34,12 @@ function NewItemPage() {
       return
     }
     addItem(parsed.data)
+    // 축하는 모션을 허용한 환경에서만 보인다. 모션 축소(또는 matchMedia 없는 환경)면 바로 목록으로
+    if (window.matchMedia?.('(prefers-reduced-motion: no-preference)').matches) {
+      setSavedTitle(parsed.data.title)
+      setTimeout(() => void navigate({ to: '/' }), 1200)
+      return
+    }
     void navigate({ to: '/' })
   }
 
@@ -48,6 +56,19 @@ function NewItemPage() {
     setIdeasOpen(false)
     const blankFields = undecidedAiFields(next)
     if (blankFields.length > 0) request({ item: next.values, blankFields, categories })
+  }
+
+  if (savedTitle !== null) {
+    return (
+      <div role="status" className="rise flex min-h-[70dvh] flex-col items-center justify-center gap-[18px] text-center">
+        <div className="relative flex size-20 items-center justify-center">
+          <StarBurst count={10} dx={90} dy={90} delay={0.3} className="left-[34px] top-[34px]" />
+          <StarIcon fill="currentColor" className="ascend size-14 text-gold" />
+        </div>
+        <p className="font-title text-[26px] font-bold">새 별이 떴어요</p>
+        <p className="max-w-full break-words text-[15px] text-mute">{savedTitle}</p>
+      </div>
+    )
   }
 
   return (

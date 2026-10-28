@@ -126,6 +126,21 @@
   }
 }
 
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes ascend {
+  to {
+    transform: translateY(-40px) scale(1.4);
+  }
+}
+
 /* 흩어지는 별은 움직일 때만 보인다 */
 .burst {
   opacity: 0;
@@ -147,6 +162,12 @@
   }
   .burst {
     animation: burst 0.9s ease-out both;
+  }
+  .glow {
+    animation: glow 1.6s ease-in-out infinite;
+  }
+  .ascend {
+    animation: ascend 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
 }
 

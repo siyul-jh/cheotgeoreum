@@ -17,6 +17,8 @@ import {
 } from '@/entities/bucket-item'
 import { LLM_ERROR_MESSAGES, type DraftState } from '@/shared/lib/llm-result'
 import { AiSuggestionRow } from '@/shared/ui/ai-suggestion-row'
+import { StarIcon } from '@/shared/ui/star-icon'
+import { XIcon } from '@/shared/ui/x-icon'
 import { STEP_ORDER, undecidedAiFields, type StepFormAction, type StepFormState } from '../model/step-form-reducer'
 
 type Props = {
@@ -68,13 +70,35 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
   return (
     <div className="flex flex-col gap-4">
       <header className="flex items-center gap-3">
-        <Link to="/" aria-label="닫기" className="btn inline-flex items-center">
-          ✕
+        <Link
+          to="/"
+          aria-label="닫기"
+          className="press flex size-11 shrink-0 items-center justify-center rounded-full bg-card"
+        >
+          <XIcon className="size-[18px]" />
         </Link>
-        <h1 className="flex-1 font-bold">새 항목</h1>
-        <span className="text-sm text-mute">
-          {current === null ? '완료' : `${STEP_ORDER.indexOf(current) + 1} / ${STEP_ORDER.length}`}
-        </span>
+        <h1 className="sr-only">새 꿈</h1>
+        <div
+          role="img"
+          aria-label={`${STEP_ORDER.length}단계 중 ${decided.length}단계 완료`}
+          className="flex flex-1 items-center justify-between"
+        >
+          {STEP_ORDER.map((f) =>
+            // key: 채워질 때 새로 마운트돼야 pop이 돈다
+            decided.includes(f) ? (
+              <StarIcon key={`${f}-on`} fill="currentColor" className="pop size-4 text-gold" />
+            ) : (
+              <StarIcon
+                key={`${f}-off`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinejoin="round"
+                className={`size-4 ${f === current ? 'glow text-gold' : 'text-dim'}`}
+              />
+            ),
+          )}
+        </div>
       </header>
 
       {draftState.error && (
@@ -90,9 +114,9 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
 
       <div ref={panelRef} tabIndex={-1} className="outline-none">
         {current === null ? (
-          <section className="surface flex flex-col gap-3 p-4">
-            <h2 className="text-lg font-bold">이렇게 저장할까요?</h2>
-            <button type="button" className="btn btn-primary" onClick={onSave}>
+          <section className="rise flex flex-col gap-4">
+            <h2 className="font-title text-[28px] font-bold leading-snug">이렇게 저장할까요?</h2>
+            <button type="button" className="btn btn-primary press min-h-[54px] text-base" onClick={onSave}>
               저장
             </button>
             <p className="text-sm text-mute">상태는 '아이디어'로 저장 · 나중에 변경</p>
@@ -117,26 +141,26 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
       </div>
 
       {canFill && (
-        <button type="button" className="btn" disabled={pending} onClick={onFill}>
+        <button type="button" className="btn press" disabled={pending} onClick={onFill}>
           {pending ? 'AI 초안 만드는 중…' : '빈 칸 채우기 (AI)'}
         </button>
       )}
 
       {decided.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-sm text-mute">결정한 칸 · 누르면 수정</h2>
+          <h2 className="text-[13px] text-mute">정한 칸 · 누르면 고칠 수 있어요</h2>
           <ul className="flex flex-col gap-2">
             {[...decided].reverse().map((f) => (
               <li key={f}>
                 <button
                   type="button"
-                  className="surface flex w-full items-center gap-3 px-3 py-2 text-left text-sm"
+                  className="surface press drop flex min-h-12 w-full flex-col items-start gap-0.5 rounded-[14px] px-3.5 py-2.5 text-left"
                   onClick={() =>
                     dispatch({ type: 'reopen', field: f, patch: current === null ? {} : { [current]: local.values[current] } })
                   }
                 >
-                  <span className="shrink-0 text-mute">{LABELS[f]}</span>
-                  <span className="min-w-0 flex-1 truncate">{formatFieldValue(f, values)}</span>
+                  <span className="text-xs text-mute">{LABELS[f]}</span>
+                  <span className="w-full min-w-0 break-words text-[15px]">{formatFieldValue(f, values)}</span>
                 </button>
               </li>
             ))}
@@ -167,14 +191,14 @@ function Step({ field, values, local, edit, draft, dispatch, onOpenIdeas }: Step
     draft && isAiField(field) ? draftToPatch(field, draft, { ...values, [field]: local[field] }) : null
 
   return (
-    <fieldset className="flex flex-col gap-3">
-      <legend id={legendId} className="mb-3 text-lg font-bold">
+    <fieldset className="rise flex flex-col gap-3">
+      <legend id={legendId} className="mb-4 font-title text-[28px] font-bold leading-snug">
         {QUESTIONS[field]}
       </legend>
 
       {field === 'title' && (
         <input
-          className="field"
+          className="field min-h-[54px] text-[17px]"
           aria-labelledby={legendId}
           autoFocus
           placeholder="예: 아이슬란드에서 오로라 보기"
@@ -189,7 +213,7 @@ function Step({ field, values, local, edit, draft, dispatch, onOpenIdeas }: Step
         />
       )}
       {field === 'title' && (
-        <button type="button" className="btn" onClick={onOpenIdeas}>
+        <button type="button" className="btn press" onClick={onOpenIdeas}>
           뭘 적을지 모르겠어요
         </button>
       )}
@@ -221,11 +245,20 @@ function Step({ field, values, local, edit, draft, dispatch, onOpenIdeas }: Step
       {suggestion && <AiSuggestionRow text={formatFieldValue(field, suggestion)} onUse={() => edit(suggestion)} />}
 
       <div className="flex gap-2">
-        <button type="button" className="btn btn-primary flex-1" disabled={blocked} onClick={decide}>
+        <button
+          type="button"
+          className="btn btn-primary press min-h-[54px] flex-1 text-base"
+          disabled={blocked}
+          onClick={decide}
+        >
           다음
         </button>
         {field !== 'title' && (
-          <button type="button" className="btn" onClick={() => dispatch({ type: 'skip', field })}>
+          <button
+            type="button"
+            className="btn press min-h-[54px] bg-transparent px-5"
+            onClick={() => dispatch({ type: 'skip', field })}
+          >
             건너뛰기
           </button>
         )}

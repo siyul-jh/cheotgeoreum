@@ -1,11 +1,14 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore } from '@/entities/bucket-item'
 import { routeTree } from '@/routeTree.gen'
 
 beforeEach(() => useBucketStore.setState({ items: [], customCategories: [] }))
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 
 async function open() {
   const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/items/new'] }) })
@@ -39,4 +42,17 @@ test('공백 제목이면 [다음] 비활성, Enter로도 진행하지 않는다
   fireEvent.keyDown(title, { key: 'Enter' })
   expect(screen.getByText('어떤 일을 해보고 싶나요?')).toBeTruthy()
   expect(screen.queryByText('왜 하고 싶나요?')).toBeNull()
+})
+
+test('모션을 허용하면 "새 별이 떴어요"를 보인 뒤 목록으로 간다', async () => {
+  vi.stubGlobal('matchMedia', (q: string) => ({ matches: q === '(prefers-reduced-motion: no-preference)' }))
+  const router = await open()
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 보기' } })
+  click('다음')
+  for (let i = 0; i < 6; i++) click('건너뛰기')
+  click('저장')
+  expect(screen.getByRole('status').textContent).toContain('새 별이 떴어요')
+  expect(useBucketStore.getState().items).toHaveLength(1)
+  expect(router.state.location.pathname).toBe('/items/new')
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'), { timeout: 2000 })
 })
