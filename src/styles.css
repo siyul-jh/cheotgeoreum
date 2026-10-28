@@ -126,6 +126,11 @@
   }
 }
 
+/* 흩어지는 별은 움직일 때만 보인다 */
+.burst {
+  opacity: 0;
+}
+
 /* 모션 축소 설정이면 애니메이션 클래스는 아무 일도 하지 않는다(요소는 최종 상태로 보인다) */
 @media (prefers-reduced-motion: no-preference) {
   .rise {
