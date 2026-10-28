@@ -26,7 +26,7 @@ export function IdeaSheet({ onPick, onClose }: Props) {
       ref={ref}
       aria-label="아이디어 추천"
       onClose={onClose}
-      className="m-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-2xl p-4 backdrop:bg-black/40"
+      className="m-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-[20px] border-t border-line bg-card p-4 text-ink backdrop:bg-black/60"
     >
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
@@ -35,7 +35,7 @@ export function IdeaSheet({ onPick, onClose }: Props) {
             ✕
           </button>
         </div>
-        <label htmlFor={keywordId} className="text-sm text-zinc-600">
+        <label htmlFor={keywordId} className="text-sm text-mute">
           키워드 (선택)
         </label>
         <input
@@ -46,7 +46,7 @@ export function IdeaSheet({ onPick, onClose }: Props) {
           placeholder="예: 바다, 혼자, 도전"
           onChange={(e) => setKeyword(e.target.value)}
         />
-        <label htmlFor={categoryId} className="text-sm text-zinc-600">
+        <label htmlFor={categoryId} className="text-sm text-mute">
           카테고리 (선택)
         </label>
         <select id={categoryId} className="field" value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -72,7 +72,7 @@ export function IdeaSheet({ onPick, onClose }: Props) {
           {status === 'pending' ? '아이디어 찾는 중…' : status === 'ready' ? '다시 추천받기' : '추천받기'}
         </button>
         {error && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-danger">
             {LLM_ERROR_MESSAGES[error]}
           </p>
         )}

@@ -78,7 +78,7 @@ function ListPage() {
       </div>
 
       {visible.length === 0 ? (
-        <p className="surface p-6 text-center text-sm text-zinc-600">
+        <p className="surface p-6 text-center text-sm text-mute">
           {items.length === 0
             ? '아직 항목이 없어요. "+ 새 항목"으로 첫 버킷리스트를 적어 보세요.'
             : '조건에 맞는 항목이 없어요.'}

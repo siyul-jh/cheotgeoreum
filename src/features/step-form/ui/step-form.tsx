@@ -72,13 +72,13 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
           ✕
         </Link>
         <h1 className="flex-1 font-bold">새 항목</h1>
-        <span className="text-sm text-zinc-600">
+        <span className="text-sm text-mute">
           {current === null ? '완료' : `${STEP_ORDER.indexOf(current) + 1} / ${STEP_ORDER.length}`}
         </span>
       </header>
 
       {draftState.error && (
-        <div role="alert" className="surface flex items-start gap-3 bg-red-50 p-3 text-sm">
+        <div role="alert" className="surface flex items-start gap-3 border-danger/50 p-3 text-sm">
           <p className="min-w-0 flex-1 break-words">{LLM_ERROR_MESSAGES[draftState.error]}</p>
           {canFill && (
             <button type="button" className="btn shrink-0" onClick={onFill}>
@@ -95,9 +95,9 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
             <button type="button" className="btn btn-primary" onClick={onSave}>
               저장
             </button>
-            <p className="text-sm text-zinc-600">상태는 '아이디어'로 저장 · 나중에 변경</p>
+            <p className="text-sm text-mute">상태는 '아이디어'로 저장 · 나중에 변경</p>
             {saveError && (
-              <p role="alert" className="text-sm text-red-700">
+              <p role="alert" className="text-sm text-danger">
                 {saveError}
               </p>
             )}
@@ -124,7 +124,7 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
 
       {decided.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-sm text-zinc-600">결정한 칸 · 누르면 수정</h2>
+          <h2 className="text-sm text-mute">결정한 칸 · 누르면 수정</h2>
           <ul className="flex flex-col gap-2">
             {[...decided].reverse().map((f) => (
               <li key={f}>
@@ -135,7 +135,7 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
                     dispatch({ type: 'reopen', field: f, patch: current === null ? {} : { [current]: local.values[current] } })
                   }
                 >
-                  <span className="shrink-0 text-zinc-600">{LABELS[f]}</span>
+                  <span className="shrink-0 text-mute">{LABELS[f]}</span>
                   <span className="min-w-0 flex-1 truncate">{formatFieldValue(f, values)}</span>
                 </button>
               </li>
@@ -221,7 +221,7 @@ function Step({ field, values, local, edit, draft, dispatch, onOpenIdeas }: Step
       {suggestion && <AiSuggestionRow text={formatFieldValue(field, suggestion)} onUse={() => edit(suggestion)} />}
 
       <div className="flex gap-2">
-        <button type="button" className="btn btn-primary flex-1 disabled:opacity-50" disabled={blocked} onClick={decide}>
+        <button type="button" className="btn btn-primary flex-1" disabled={blocked} onClick={decide}>
           다음
         </button>
         {field !== 'title' && (

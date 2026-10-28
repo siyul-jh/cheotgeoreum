@@ -10,7 +10,11 @@ export const Route = createRootRoute({
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: '첫걸음' },
     ],
-    links: [{ rel: 'stylesheet', href: stylesUrl }],
+    links: [
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+      { rel: 'stylesheet', href: stylesUrl },
+    ],
   }),
   shellComponent: RootDocument,
   component: RootLayout,
@@ -41,8 +45,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="ko">
       <head>
         <HeadContent />
+        {/* head links로 넣으면 TanStack이 precedence를 붙여 React가 로드까지 렌더를 멈춘다(jsdom 테스트에선 영영). 일반 link로 둔다 */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+        />
       </head>
-      <body className="overflow-x-hidden bg-zinc-50 text-zinc-900">
+      <body className="overflow-x-hidden bg-night font-sans text-ink">
         {children}
         <Scripts />
       </body>

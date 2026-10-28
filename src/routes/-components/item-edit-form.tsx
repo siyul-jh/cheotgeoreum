@@ -170,7 +170,7 @@ export function ItemEditForm({ item, onDone }: Props) {
           return (
             <section className="flex flex-col gap-2">
               {draftState.error && (
-                <p role="alert" className="surface bg-red-50 p-3 text-sm">
+                <p role="alert" className="surface border-danger/50 p-3 text-sm">
                   {LLM_ERROR_MESSAGES[draftState.error]}
                 </p>
               )}
@@ -190,7 +190,7 @@ export function ItemEditForm({ item, onDone }: Props) {
                   if (!patch) return null
                   return (
                     <div key={field} className="flex flex-col gap-1">
-                      <span className="text-xs text-zinc-600">{AI_FIELD_LABELS[field]}</span>
+                      <span className="text-xs text-mute">{AI_FIELD_LABELS[field]}</span>
                       <AiSuggestionRow text={formatFieldValue(field, patch)} onUse={() => applyPatch(patch)} />
                     </div>
                   )
@@ -203,7 +203,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       <form.Subscribe selector={(s) => s.errorMap.onSubmit}>
         {(err) =>
           err && (
-            <p role="alert" className="text-sm text-red-700">
+            <p role="alert" className="text-sm text-danger">
               저장하지 못했어요. 비어 있거나 형식이 맞지 않는 칸이 있어요.
             </p>
           )

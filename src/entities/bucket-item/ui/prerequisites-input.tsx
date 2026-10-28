@@ -20,12 +20,12 @@ export function PrerequisitesInput({ value, onChange }: Props) {
           <li key={i} className="flex items-center gap-2">
             <input
               type="checkbox"
-              className="size-5 shrink-0"
+              className="size-5 shrink-0 accent-gold"
               aria-label={`${p.text} 완료`}
               checked={p.done}
               onChange={(e) => onChange(value.map((q, j) => (j === i ? { ...q, done: e.target.checked } : q)))}
             />
-            <span className={`min-w-0 flex-1 break-words ${p.done ? 'text-zinc-500 line-through' : ''}`}>{p.text}</span>
+            <span className={`min-w-0 flex-1 break-words ${p.done ? 'text-mute line-through' : ''}`}>{p.text}</span>
             <button
               type="button"
               className="btn"
