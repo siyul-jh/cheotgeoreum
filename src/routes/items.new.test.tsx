@@ -73,6 +73,14 @@ test('저장하면 "새 별이 떴어요"에 머물고 스스로 목록으로 �
   expect(screen.getByRole('button', { name: '하나 더 적기' })).toBeTruthy()
 })
 
+test('축하 화면에 공유될 카드 이미지를 미리 보여 준다', async () => {
+  URL.createObjectURL = vi.fn(() => 'blob:card')
+  URL.revokeObjectURL = vi.fn()
+  await saveTitleOnly()
+  const img = await screen.findByRole('img', { name: '오로라 보기 별 카드' })
+  expect(img.getAttribute('src')).toBe('blob:card')
+})
+
 test('모션 축소 환경에서도 축하 화면과 버튼이 보인다', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false }))
   const router = await saveTitleOnly()

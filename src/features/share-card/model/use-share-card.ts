@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { BucketItemInput } from '@/entities/bucket-item'
 import { createCardPng } from '../lib/draw-card'
 import { shareCard } from './share-card'
@@ -10,6 +10,23 @@ export function useShareCard(item: BucketItemInput) {
     png.catch(() => null) // 실패는 [공유하기]를 누를 때 알린다
     return png
   })
+  // 축하 화면 미리보기: 같은 PNG를 object URL로 보인다. 화면을 떠나면 해제
+  const [preview, setPreview] = useState<string | null>(null)
+  useEffect(() => {
+    let url: string | null = null
+    let live = true
+    card
+      .then((png) => {
+        if (!live) return
+        url = URL.createObjectURL(png)
+        setPreview(url)
+      })
+      .catch(() => null) // 실패면 미리보기 없이 둔다
+    return () => {
+      live = false
+      if (url) URL.revokeObjectURL(url)
+    }
+  }, [card])
   const [pending, setPending] = useState(false)
   const [notice, setNotice] = useState('')
 
@@ -25,5 +42,5 @@ export function useShareCard(item: BucketItemInput) {
     }
   }
 
-  return { share, pending, notice }
+  return { share, pending, notice, preview }
 }

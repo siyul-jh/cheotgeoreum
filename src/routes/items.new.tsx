@@ -14,7 +14,6 @@ import {
   toBucketItemInput,
   undecidedAiFields,
 } from '@/features/step-form'
-import { StarBurst, StarIcon } from '@/shared/ui/star-icon'
 
 export const Route = createFileRoute('/items/new')({ component: NewItemRoute })
 
@@ -83,16 +82,15 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
 
 // 사용자가 고를 때까지 머문다. 모션 축소면 애니메이션 클래스만 꺼지고(styles.css) 화면·버튼은 같다
 function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: () => void }) {
-  const { share, pending, notice } = useShareCard(item)
+  const { share, pending, notice, preview } = useShareCard(item)
   return (
-    <div className="rise mx-auto flex min-h-[70dvh] max-w-md flex-col items-center justify-center gap-[18px] text-center">
-      <div role="status" className="flex w-full flex-col items-center gap-[18px]">
-        <div className="relative flex size-20 items-center justify-center">
-          <StarBurst count={10} dx={90} dy={90} delay={0.3} className="left-[34px] top-[34px]" />
-          <StarIcon fill="currentColor" className="ascend size-14 text-gold" />
-        </div>
-        <p className="font-title text-[26px] font-bold">새 별이 떴어요</p>
-        <p className="max-w-full break-words text-[15px] text-mute">{item.title}</p>
+    <div className="rise mx-auto flex max-w-md flex-col items-center gap-[18px] text-center">
+      <p role="status" className="font-title text-[26px] font-bold">
+        새 별이 떴어요
+      </p>
+      {/* 공유될 카드(9:16) 미리보기. 그리는 동안은 같은 크기의 빈 틀 */}
+      <div className="surface aspect-[9/16] h-[min(56dvh,480px)] overflow-hidden rounded-[20px] p-0">
+        {preview && <img src={preview} alt={`${item.title} 별 카드`} className="rise size-full object-cover" />}
       </div>
       {/* 버튼은 화면 폭과 상관없이 한 줄에 하나씩 */}
       <div className="mt-4 flex w-full flex-col gap-2">
