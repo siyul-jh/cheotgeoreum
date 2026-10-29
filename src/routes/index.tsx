@@ -199,7 +199,7 @@ function ListPage() {
             <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute md:shrink-0">
               <span className="shrink-0">카테고리</span>
               <select
-                className="field select text-sm md:w-36"
+                className="field select md:w-36"
                 value={category ?? ''}
                 onChange={(e) => void navigate({ search: (prev) => ({ ...prev, category: e.target.value || undefined }) })}
               >

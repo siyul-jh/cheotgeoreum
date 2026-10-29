@@ -63,6 +63,8 @@
     background: var(--color-card);
     color: var(--color-ink);
     padding: 0.5rem 0.875rem;
+    /* iOS Safari는 16px 미만 입력에 포커스하면 화면을 확대한다. label의 작은 글자(13px)를 상속하지 않게 고정 */
+    font-size: 1rem;
   }
   .field::placeholder {
     color: var(--color-mute);
