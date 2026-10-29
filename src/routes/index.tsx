@@ -149,17 +149,13 @@ function ListPage() {
                         : '새 꿈을 띄우고 첫걸음을 정해 보세요.'}
                     </p>
                   </div>
-                  {needsStep ? (
+                  {needsStep && (
                     <Link
                       to="/items/$id"
                       params={{ id: needsStep.id }}
                       className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
                     >
                       다음 행동 정하기
-                    </Link>
-                  ) : (
-                    <Link to="/items/new" className={`btn btn-primary press inline-flex items-center ${HERO_ACTION}`}>
-                      + 새 꿈
                     </Link>
                   )}
                 </div>
