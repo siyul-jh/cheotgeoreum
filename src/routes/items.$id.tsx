@@ -23,7 +23,7 @@ function EditItemPage() {
 
   // 넓은 화면에서 입력칸이 지나치게 늘어나지 않게 폭을 제한한다
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-4">
+    <div className="mx-auto flex max-w-2xl flex-col gap-5">
       <header className="flex items-center gap-3">
         <Link
           to="/"
