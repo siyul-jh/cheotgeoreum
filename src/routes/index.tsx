@@ -18,10 +18,10 @@ import { StarBurst } from '@/shared/ui/star-icon'
 
 type ListSearch = { category?: string; status?: Status }
 
-const TABS: { label: string; status?: Status }[] = [
+// 상태 칩: [전체] + 모든 상태. 완료는 목록에서 '이룬 꿈'으로 부른다
+const CHIPS: { label: string; status?: Status }[] = [
   { label: '전체' },
-  { label: '진행 중', status: '진행 중' },
-  { label: '이룬 꿈', status: '완료' },
+  ...STATUSES.map((s) => ({ label: s === '완료' ? '이룬 꿈' : s, status: s })),
 ]
 
 // 배경 별 좌표(%) — 시안 390×844 화면 기준을 비율로 옮김
@@ -125,33 +125,30 @@ function ListPage() {
             </section>
           )}
 
-          {/* 휴대폰: 1줄 탭·새 꿈, 2줄 필터 두 칸. md 이상: 탭 · 필터 · 새 꿈 한 줄. DOM 순서는 휴대폰 화면 순서.
-              reading-flow는 md에서 탭 순서를 시각 순서에 맞추는 향상용(미지원이면 DOM 순서로 이동) */}
-          <div className="grid grid-cols-[1fr_auto] items-center gap-2 [grid-template-areas:'tabs_new'_'filters_filters'] md:grid-cols-[auto_1fr_auto] md:gap-3 md:[grid-template-areas:'tabs_filters_new'] md:[reading-flow:grid-rows]">
-            <div className="flex gap-1.5 [grid-area:tabs]">
-              {TABS.map((t) => {
-                const on = status === t.status
+          {/* 상태 칩 한 줄(휴대폰은 가로 스크롤, py-1은 포커스 링이 잘리지 않게) → 카테고리·새 꿈. md 이상은 한 줄 */}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+            <div
+              role="group"
+              aria-label="상태"
+              className="-mx-4 -my-1 flex gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] md:mx-0 md:flex-1 md:flex-wrap md:overflow-visible md:px-0"
+            >
+              {CHIPS.map((c) => {
+                const on = status === c.status
                 return (
                   <button
-                    key={t.label}
+                    key={c.label}
                     type="button"
                     aria-pressed={on}
-                    onClick={() => void navigate({ search: (prev) => ({ ...prev, status: t.status }) })}
-                    className={`press h-9 whitespace-nowrap rounded-full px-3 text-sm ${on ? 'bg-ink font-bold text-night' : 'border border-edge'}`}
+                    onClick={() => void navigate({ search: (prev) => ({ ...prev, status: c.status }) })}
+                    className={`press h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-sm ${on ? 'bg-ink font-bold text-night' : 'border border-edge'}`}
                   >
-                    {t.label}
+                    {c.label}
                   </button>
                 )
               })}
             </div>
-            <Link
-              to="/items/new"
-              className="btn btn-primary press inline-flex shrink-0 items-center whitespace-nowrap text-sm [grid-area:new]"
-            >
-              + 새 꿈
-            </Link>
-            <div className="grid grid-cols-2 gap-2 [grid-area:filters] md:flex md:justify-end">
-              <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute">
+            <div className="flex items-center gap-2">
+              <label className="flex min-w-0 flex-1 items-center gap-2 text-[13px] text-mute">
                 <span className="shrink-0">카테고리</span>
                 <select
                   className="field select text-sm md:w-36"
@@ -167,23 +164,9 @@ function ListPage() {
                   <option value={UNCATEGORIZED_FILTER}>{UNCATEGORIZED_LABEL}</option>
                 </select>
               </label>
-              <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute">
-                <span className="shrink-0">상태</span>
-                <select
-                  className="field select text-sm md:w-32"
-                  value={status ?? ''}
-                  onChange={(e) =>
-                    void navigate({ search: (prev) => ({ ...prev, status: STATUSES.find((s) => s === e.target.value) }) })
-                  }
-                >
-                  <option value="">전체</option>
-                  {STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Link to="/items/new" className="btn btn-primary press inline-flex shrink-0 items-center whitespace-nowrap text-sm">
+                + 새 꿈
+              </Link>
             </div>
           </div>
         </div>

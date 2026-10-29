@@ -78,12 +78,18 @@ test('다음 행동이 있는 항목이 없으면 오늘의 첫걸음을 숨긴�
   expect(screen.queryByRole('region', { name: '오늘의 첫걸음' })).toBeNull()
 })
 
-test('카테고리·상태 필터는 접지 않고 항상 보인다', async () => {
-  const router = await open()
+test('상태 칩은 모든 상태를 한 줄로 고르고, 카테고리 select는 항상 보인다', async () => {
+  const router = await open('/?category=__none__')
+  const chips = screen.getByRole('group', { name: '상태' })
+  const names = Array.from(chips.querySelectorAll('button'), (b) => b.textContent)
+  expect(names).toEqual(['전체', '아이디어', '계획', '진행 중', '이룬 꿈', '보류', '포기'])
+  expect(screen.queryByRole('combobox', { name: /상태/ })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '보류' }))
+  expect(router.state.location.search).toEqual({ category: '__none__', status: '보류' })
+  await waitFor(() => expect(screen.getByRole('button', { name: '보류' }).getAttribute('aria-pressed')).toBe('true'))
+
   const category = screen.getByRole('combobox', { name: /카테고리/ })
-  const status = screen.getByRole('combobox', { name: /상태/ })
   expect(category.closest('details')).toBeNull()
-  expect(status.closest('details')).toBeNull()
-  fireEvent.change(status, { target: { value: '완료' } })
-  expect(router.state.location.search).toEqual({ status: '완료' })
+  fireEvent.change(category, { target: { value: '' } })
+  expect(router.state.location.search).toEqual({ status: '보류' })
 })
