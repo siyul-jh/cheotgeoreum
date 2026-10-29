@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRootRoute, createRouter } from '@tanstack/react-router'
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { useReducer } from 'react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { create } from 'zustand'
@@ -109,4 +109,20 @@ test('다른 카드를 눌러도 현재 단계에 입력하던 값은 남는다'
   fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
   next()
   expect((screen.getByLabelText('왜 하고 싶나요?') as HTMLTextAreaElement).value).toBe('직접 쓴 이유')
+})
+
+test('정한 칸은 다시 열어 고쳐도 단계 순서(최근 단계가 위)를 지킨다', async () => {
+  await renderForm(idle)
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 보기' } })
+  next()
+  fireEvent.change(screen.getByLabelText('왜 하고 싶나요?'), { target: { value: '하늘이 보고 싶어서' } })
+  next()
+  const order = () => within(screen.getByText(/^정한 칸/).closest('section')!).getAllByRole('button').map((b) => b.textContent)
+  const before = order()
+  expect(before).toEqual(['왜하늘이 보고 싶어서', '항목오로라 보기'])
+
+  fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 꼭 보기' } })
+  next()
+  expect(order()).toEqual(['왜하늘이 보고 싶어서', '항목오로라 꼭 보기'])
 })

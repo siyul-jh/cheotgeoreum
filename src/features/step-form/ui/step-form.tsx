@@ -151,7 +151,8 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
         <section className="flex flex-col gap-2">
           <h2 className="text-[13px] text-mute">정한 칸 · 누르면 고칠 수 있어요</h2>
           <ul className="flex flex-col gap-2">
-            {[...decided].reverse().map((f) => (
+            {/* 정한 순서가 아니라 단계 순서로 고정(최근 단계가 위). 다시 열어 고쳐도 자리가 바뀌지 않는다 */}
+            {[...STEP_ORDER].reverse().filter((f) => decided.includes(f)).map((f) => (
               <li key={f}>
                 <button
                   type="button"
