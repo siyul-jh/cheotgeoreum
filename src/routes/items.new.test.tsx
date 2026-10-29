@@ -174,8 +174,11 @@ test('공유 시트를 못 쓰면 PNG를 저장하고 문구를 복사했다고 
   Object.assign(navigator, { clipboard: { writeText } })
   const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
   await saveTitleOnly()
-  fireEvent.click(await shareButton())
+  const button = await shareButton()
+  button.focus()
+  fireEvent.click(button)
   expect(await screen.findByText('이미지를 저장하고 문구를 복사했어요')).toBeTruthy()
   expect(download).toHaveBeenCalledTimes(1)
   expect(writeText).toHaveBeenCalledWith('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')
+  expect(document.activeElement).toBe(button) // 안내가 바뀌어도 포커스를 제목으로 빼앗지 않는다
 })

@@ -80,13 +80,16 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
   )
 }
 
+// 컴포넌트 밖에 두어 ref가 바뀌지 않게: 처음 붙을 때만 포커스를 옮긴다(다시 그릴 때마다 포커스를 빼앗지 않게)
+const focusOnMount = (el: HTMLElement | null) => el?.focus()
+
 // 사용자가 고를 때까지 머문다. 모션 축소면 애니메이션 클래스만 꺼지고(styles.css) 화면·버튼은 같다
 function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: () => void }) {
   const { share, pending, notice, preview } = useShareCard(item)
   return (
     <div className="rise mx-auto flex max-w-md flex-col items-center gap-[18px] text-center">
       {/* 저장 버튼이 사라지며 포커스가 body로 떨어지지 않게 제목으로 옮긴다(스크린 리더가 읽는다) */}
-      <h1 ref={(el) => el?.focus()} tabIndex={-1} className="font-title text-[26px] font-bold outline-none">
+      <h1 ref={focusOnMount} tabIndex={-1} className="font-title text-[26px] font-bold outline-none">
         새 별이 떴어요
       </h1>
       {/* 공유될 카드(9:16) 미리보기. 그리는 동안은 같은 크기의 빈 틀 */}
