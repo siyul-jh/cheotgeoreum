@@ -1,9 +1,12 @@
 import type { CSSProperties, SVGProps } from 'react'
 
+// 18×18 기준. 공유 카드(canvas Path2D)도 같은 모양을 쓴다
+export const STAR_PATH = 'M9 1.8l2.1 4.6 5 .6-3.7 3.4 1 4.9L9 12.8l-4.4 2.5 1-4.9L1.9 7l5-.6z'
+
 export function StarIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg aria-hidden="true" viewBox="0 0 18 18" {...props}>
-      <path d="M9 1.8l2.1 4.6 5 .6-3.7 3.4 1 4.9L9 12.8l-4.4 2.5 1-4.9L1.9 7l5-.6z" />
+      <path d={STAR_PATH} />
     </svg>
   )
 }
