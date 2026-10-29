@@ -97,27 +97,23 @@ export function drawCard(ctx: CanvasRenderingContext2D, item: BucketItemInput) {
     blocks.push({ gap: 28, height: 60, draw: (top) => text(period, CX, top, `500 42px ${BODY_FONT}`, GOLD) })
   }
 
-  // 카테고리·상태 칩 한 줄
-  const chips = [item.category, item.status].filter((c) => c !== null)
-  ctx.font = `500 34px ${BODY_FONT}`
-  const chipWidths = chips.map((c) => measure(c) + 64)
-  const chipsWidth = chipWidths.reduce((a, b) => a + b, 0) + (chips.length - 1) * 16
-  blocks.push({
-    gap: 40,
-    height: 72,
-    draw: (top) => {
-      let x = CX - chipsWidth / 2
-      chips.forEach((chip, i) => {
+  if (item.category) {
+    const chip = item.category
+    ctx.font = `500 34px ${BODY_FONT}`
+    const width = measure(chip) + 64
+    blocks.push({
+      gap: 40,
+      height: 72,
+      draw: (top) => {
         ctx.strokeStyle = EDGE
         ctx.lineWidth = 2
         ctx.beginPath()
-        ctx.roundRect(x, top, chipWidths[i], 72, 36)
+        ctx.roundRect(CX - width / 2, top, width, 72, 36)
         ctx.stroke()
-        text(chip, x + chipWidths[i] / 2, top + 17, `500 34px ${BODY_FONT}`, MUTE)
-        x += chipWidths[i] + 16
-      })
-    },
-  })
+        text(chip, CX, top + 17, `500 34px ${BODY_FONT}`, MUTE)
+      },
+    })
+  }
 
   if (item.why) {
     ctx.font = `40px ${BODY_FONT}`
@@ -194,7 +190,7 @@ export async function createCardPng(item: BucketItemInput): Promise<Blob> {
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('canvas 2d를 쓸 수 없어요')
   const fields = ['targetPeriod', 'prerequisites', 'nextAction', 'companions'] as const
-  await loadFonts(`${item.title}${item.why}${item.category ?? ''}${item.status}${fields.map((f) => formatFieldValue(f, item)).join('')} 첫걸음 선행 과제 다음 행동 함께할 사람`)
+  await loadFonts(`${item.title}${item.why}${item.category ?? ''}${fields.map((f) => formatFieldValue(f, item)).join('')} 첫걸음 선행 과제 다음 행동 함께할 사람`)
   drawCard(ctx, item)
   return new Promise((resolve, reject) =>
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('PNG를 만들지 못했어요'))), 'image/png'),

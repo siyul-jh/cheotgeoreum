@@ -35,10 +35,10 @@ const base: BucketItemInput = {
 beforeEach(() => vi.stubGlobal('Path2D', class {}))
 afterEach(() => vi.unstubAllGlobals())
 
-test('제목만 있으면 제목·상태와 하단 로고만 쓴다', () => {
+test('제목만 있으면 제목과 하단 로고만 쓴다(상태는 쓰지 않는다)', () => {
   const { ctx, texts } = fakeContext()
   drawCard(ctx, base)
-  expect(texts).toEqual(['오로라 보기', '아이디어', '첫걸음'])
+  expect(texts).toEqual(['오로라 보기', '첫걸음'])
 })
 
 test('모든 항목이 있으면 모두 쓴다', () => {
@@ -56,7 +56,6 @@ test('모든 항목이 있으면 모두 쓴다', () => {
     '오로라 보기',
     '2027년 3월까지',
     '여행',
-    '아이디어',
     '하늘이 보고 싶어서',
     '선행 과제',
     '여권, 적금',
@@ -74,7 +73,7 @@ test.each([
 ] as const)('목표 시기는 종류대로 쓴다(까지를 덧붙이지 않는다) %o', (targetPeriod, text) => {
   const { ctx, texts } = fakeContext()
   drawCard(ctx, { ...base, targetPeriod })
-  expect(texts).toEqual(['오로라 보기', text, '아이디어', '첫걸음'])
+  expect(texts).toEqual(['오로라 보기', text, '첫걸음'])
 })
 
 test('긴 제목과 왜는 3줄에서 말줄임한다', () => {
