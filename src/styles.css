@@ -125,6 +125,16 @@
       }
     }
   }
+  /* popover를 여는 버튼(popovertarget)이 암묵적 앵커라 그 아래에 붙인다. 넘치면 위·반대쪽으로 뒤집는다.
+     anchor positioning 미지원 브라우저는 popover 기본값대로 화면 가운데에 뜬다 */
+  @supports (position-area: bottom) {
+    .anchored {
+      inset: auto;
+      margin: 0.25rem 0;
+      position-area: bottom span-right;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    }
+  }
   :where(a, button, input, select, textarea, summary):focus-visible {
     outline: 2px solid var(--color-gold);
     outline-offset: 2px;
