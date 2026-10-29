@@ -70,11 +70,14 @@ export const AI_FIELDS = ['why', 'category', 'targetPeriod', 'prerequisites', 'n
 export type AiField = (typeof AI_FIELDS)[number]
 
 // LLM 출력 스키마: 모든 키 required + nullable, 제약 없음(strict json_schema 호환)
+// targetPeriod는 평평하게: start는 from, end는 to, range는 둘 다. 서버 sanitize가 TargetPeriod로 바꾼다
 export const AiDraftSchema = z.object({
   why: z.string().nullable(),
   category: z.string().nullable(),
-  targetPeriod: z.string().nullable(),
+  targetPeriod: z.object({ kind: z.string().nullable(), from: z.string().nullable(), to: z.string().nullable() }).nullable(),
   prerequisites: z.array(z.string()).nullable(),
   nextAction: z.object({ text: z.string().nullable(), dueDate: z.string().nullable() }).nullable(),
 })
-export type AiDraft = z.infer<typeof AiDraftSchema>
+export type AiRawDraft = z.infer<typeof AiDraftSchema>
+// sanitize를 거쳐 클라이언트가 받는 초안
+export type AiDraft = Omit<AiRawDraft, 'targetPeriod'> & { targetPeriod: TargetPeriod | null }

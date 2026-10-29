@@ -102,13 +102,14 @@ test('빈 칸 채우기는 비어 있는 칸에만 제안을 보이고 사용하
   fill.state = {
     status: 'ready',
     error: null,
-    draft: { why: '하늘이 보고 싶어서', category: '여행', targetPeriod: '2027', prerequisites: ['다른 것'], nextAction: null },
+    draft: { why: '하늘이 보고 싶어서', category: '여행', targetPeriod: { kind: 'end', at: '2027' }, prerequisites: ['다른 것'], nextAction: null },
   }
   await open()
   click(/빈 칸 채우기/)
   expect(fill.request).toHaveBeenCalledOnce()
   // 선행 과제는 이미 있어 제안이 없다
   expect(screen.queryByText('다른 것')).toBeNull()
+  expect(screen.getByText('2027년까지')).toBeDefined()
   fireEvent.click(screen.getAllByRole('button', { name: '사용' })[0]!)
   expect((screen.getByLabelText('왜') as HTMLTextAreaElement).value).toBe('하늘이 보고 싶어서')
 })

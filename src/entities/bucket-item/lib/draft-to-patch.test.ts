@@ -9,6 +9,11 @@ const current: ItemValues = {
 const nullDraft: AiDraft = { why: null, category: null, targetPeriod: null, prerequisites: null, nextAction: null }
 
 describe('draftToPatch', () => {
+  it('targetPeriod는 종류 그대로 교체', () => {
+    const targetPeriod = { kind: 'range', from: '2027', to: '2028' } as const
+    expect(draftToPatch('targetPeriod', { ...nullDraft, targetPeriod }, current)).toEqual({ targetPeriod })
+    expect(draftToPatch('targetPeriod', nullDraft, current)).toBeNull()
+  })
   it('prerequisites를 done:false 객체로 변환', () => {
     expect(draftToPatch('prerequisites', { ...nullDraft, prerequisites: ['a', 'b'] }, current)).toEqual({
       prerequisites: [{ text: 'a', done: false }, { text: 'b', done: false }],
