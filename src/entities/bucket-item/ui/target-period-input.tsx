@@ -25,9 +25,11 @@ export function TargetPeriodInput({ value, onChange }: Props) {
     if (k !== 'range') onChange(from ? { kind: k, at: from } : null)
     else onChange(from || end ? { kind: 'range', from, to: end } : null)
   }
+  // 이때까지 → 기간이면 그 시점은 끝이다(시작으로 옮기면 '…까지'가 '…부터'로 뒤집힌다)
   const changeKind = (k: PeriodKind) => {
-    setEmptyKind(k)
-    if (value) emit(k, first, null)
+    if (!value) setEmptyKind(k)
+    else if (value.kind === 'end' && k === 'range') emit(k, null, first)
+    else emit(k, first, null)
   }
 
   return (

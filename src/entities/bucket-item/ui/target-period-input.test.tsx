@@ -104,3 +104,10 @@ test('이때까지 값의 연도를 미정으로 바꿔도 종류는 이때까�
   fireEvent.change(select('연도'), { target: { value: '' } })
   expect(radio('이때까지').checked).toBe(true)
 })
+
+test('이때까지에서 기간으로 바꾸면 그 시점은 끝이 된다', () => {
+  const onChange = vi.fn()
+  render(<TargetPeriodInput value={{ kind: 'end', at: `${y + 1}-02` }} onChange={onChange} />)
+  fireEvent.click(radio('기간'))
+  expect(onChange).toHaveBeenCalledWith({ kind: 'range', from: null, to: `${y + 1}-02` })
+})
