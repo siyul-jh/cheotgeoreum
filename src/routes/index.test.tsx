@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test } from 'vitest'
 import { useBucketStore, type BucketItemInput } from '@/entities/bucket-item'
 import { routeTree } from '@/routeTree.gen'
@@ -15,7 +15,7 @@ const base: BucketItemInput = {
 async function open(path = '/') {
   const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
   render(<RouterProvider router={router} />)
-  await screen.findByRole('link', { name: '+ 새 꿈' })
+  await screen.findByRole('heading', { name: '첫걸음', level: 1 })
   return router
 }
 
@@ -76,10 +76,42 @@ test('오늘의 첫걸음: 기한 빠른 항목을 보이고 [했어요]면 다�
   expect(screen.getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
 })
 
-test('다음 행동이 있는 항목이 없으면 오늘의 첫걸음을 숨긴다', async () => {
+test('다음 행동 후보가 없으면 빈 히어로가 다음 행동이 빈 진행 중·계획 항목 편집으로 안내한다', async () => {
+  const store = useBucketStore.getState()
+  store.addItem({ ...base, nextAction: { text: '', dueDate: null } })
+  const id = store.addItem({ ...base, title: '하프 마라톤', status: '계획', nextAction: { text: '', dueDate: null } })
+  await open()
+  const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
+  expect(hero.textContent).toContain('다음 행동을 정해 보세요')
+  expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
+})
+
+test('그런 항목도 없으면 빈 히어로는 새 꿈 링크를, 항목이 0개면 히어로 없이 빈 목록 안내만 보인다', async () => {
   useBucketStore.getState().addItem({ ...base, nextAction: { text: '', dueDate: null } })
   await open()
-  expect(screen.queryByRole('region', { name: '오늘의 첫걸음' })).toBeNull()
+  const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
+  expect(within(hero).getByRole('link', { name: '+ 새 꿈' }).getAttribute('href')).toBe('/items/new')
+
+  act(() => useBucketStore.setState({ items: [] }))
+  await waitFor(() => expect(screen.queryByRole('region', { name: '오늘의 첫걸음' })).toBeNull())
+  expect(screen.getByText(/아직 띄운 꿈이 없어요/)).toBeTruthy()
+})
+
+test('머리줄: 보이는 제목, 이룬 수 요약, 새 꿈 버튼', async () => {
+  const store = useBucketStore.getState()
+  store.addItem(base)
+  store.addItem({ ...base, status: '완료' })
+  store.addItem({ ...base, status: '포기' })
+  await open()
+  const title = screen.getByRole('heading', { name: '첫걸음', level: 1 })
+  expect(title.className).not.toMatch(/sr-only/)
+  const header = title.closest('header')!
+  expect(header.textContent).toContain('3개 중 1개 이룸')
+  expect(within(header).getByRole('link', { name: '+ 새 꿈' }).getAttribute('href')).toBe('/items/new')
+  expect(within(screen.getByRole('group', { name: '상태' }).parentElement!).queryByRole('link')).toBeNull()
+
+  act(() => useBucketStore.setState({ items: [] }))
+  await waitFor(() => expect(header.textContent).not.toContain('개 이룸'))
 })
 
 test('상태 칩은 모든 상태를 한 줄로 고르고, 카테고리 select는 항상 보인다', async () => {

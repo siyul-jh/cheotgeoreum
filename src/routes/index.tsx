@@ -25,6 +25,10 @@ const CHIPS: { label: string; status?: Status }[] = [
   ...STATUSES.map((s) => ({ label: s === '완료' ? '이룬 꿈' : s, status: s })),
 ]
 
+// 히어로 한 줄: 휴대폰은 세로, md 이상은 글 왼쪽 · 버튼 오른쪽(세로 가운데)
+const HERO_ROW = 'flex flex-col gap-2.5 md:flex-row md:items-center md:gap-6'
+const HERO_ACTION = 'shrink-0 self-start md:self-center'
+
 // 배경 별 좌표(%) — 시안 390×844 화면 기준을 비율로 옮김
 const SKY = [
   [6, 5],
@@ -55,6 +59,11 @@ function ListPage() {
   // [했어요]로 다음 행동이 비면 오늘의 첫걸음 후보에서 빠지므로, 축하할 항목을 따로 기억한다
   const [stepped, setStepped] = useState<BucketItem | null>(null)
   const today = pickTodayStep(items)
+  const doneCount = items.filter((i) => i.status === '완료').length
+  // 후보가 없을 때 히어로가 안내할 항목: 다음 행동이 빈 첫 진행 중·계획 항목
+  const needsStep = items.find(
+    (i) => (i.status === '진행 중' || i.status === '계획') && i.nextAction.text.trim() === '',
+  )
 
   const save = ({ id, createdAt, ...input }: BucketItem, patch: Partial<BucketItemInput>) =>
     updateItem(id, { ...input, ...patch })
@@ -77,61 +86,99 @@ function ListPage() {
         ))}
       </div>
 
-      {/* 모든 폭에서 위쪽 패널 → 아래 카드 grid. DOM 순서가 시각·탭 순서와 같다 */}
+      {/* 머리줄 → 히어로 → 필터 → 카드. DOM 순서가 시각·탭 순서와 같다 */}
       <div className="relative flex flex-col gap-5">
-        <h1 className="sr-only">첫걸음</h1>
+        <header className="flex min-h-11 items-center gap-3">
+          <h1 className="shrink-0 font-title text-2xl font-bold">첫걸음</h1>
+          {items.length > 0 && (
+            <p className="min-w-0 truncate text-sm text-mute">{`${items.length}개 중 ${doneCount}개 이룸`}</p>
+          )}
+          <Link
+            to="/items/new"
+            className="btn btn-primary press ml-auto inline-flex shrink-0 items-center whitespace-nowrap text-sm"
+          >
+            + 새 꿈
+          </Link>
+        </header>
 
         <div className="flex flex-col gap-5">
-          {(stepped || today) && (
+          {/* 항목이 하나라도 있으면 늘 보인다(후보가 없으면 빈 상태). md 이상은 글 왼쪽 · 버튼 오른쪽 */}
+          {items.length > 0 && (
             <section aria-labelledby={heroId} className="surface flex flex-col gap-2.5 rounded-[20px] p-[18px]">
               <h2 id={heroId} className="text-[13px] text-mute">
                 오늘의 첫걸음
               </h2>
               {stepped ? (
-                <div key="stepped" role="status" className="rise relative flex flex-col gap-2.5">
+                <div key="stepped" role="status" className={`rise relative ${HERO_ROW}`}>
                   <StarBurst count={8} dx={70} dy={50} className="left-10 top-5" />
-                  <p className="font-title text-2xl font-bold leading-snug">한 걸음 나아갔어요</p>
-                  <p className="break-words text-sm text-mute">
-                    {stepped.title}에 별 하나가 더 켜졌어요. 다음 첫걸음을 정해 볼까요?
-                  </p>
+                  <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+                    <p className="font-title text-2xl font-bold leading-snug">한 걸음 나아갔어요</p>
+                    <p className="break-words text-sm text-mute">
+                      {stepped.title}에 별 하나가 더 켜졌어요. 다음 첫걸음을 정해 볼까요?
+                    </p>
+                  </div>
                   <Link
                     to="/items/$id"
                     params={{ id: stepped.id }}
-                    className="btn press inline-flex items-center self-start border-gold bg-transparent font-bold text-gold"
+                    className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
                   >
                     다음 행동 정하기
                   </Link>
                 </div>
-              ) : (
-                today && (
-                  <div key={today.id} className="rise flex flex-col gap-2.5">
+              ) : today ? (
+                <div key={today.id} className={`rise ${HERO_ROW}`}>
+                  <div className="flex min-w-0 flex-1 flex-col gap-2.5">
                     <p className="break-words font-title text-2xl font-bold leading-snug">{today.nextAction.text}</p>
                     <p className="break-words text-sm text-gold">
                       {today.title}
                       {today.nextAction.dueDate && ` · ${formatDate(today.nextAction.dueDate)}까지`}
                     </p>
-                    <button
-                      type="button"
-                      className="btn btn-primary press self-start"
-                      onClick={() => {
-                        save(today, { nextAction: { text: '', dueDate: null } })
-                        setStepped(today)
-                      }}
-                    >
-                      했어요
-                    </button>
                   </div>
-                )
+                  <button
+                    type="button"
+                    className={`btn btn-primary press ${HERO_ACTION}`}
+                    onClick={() => {
+                      save(today, { nextAction: { text: '', dueDate: null } })
+                      setStepped(today)
+                    }}
+                  >
+                    했어요
+                  </button>
+                </div>
+              ) : (
+                <div key="empty" className={`rise ${HERO_ROW}`}>
+                  <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+                    <p className="font-title text-2xl font-bold leading-snug">다음 행동을 정해 보세요</p>
+                    <p className="break-words text-sm text-mute">
+                      {needsStep
+                        ? `${needsStep.title}의 첫걸음을 정하면 여기에 보여요.`
+                        : '새 꿈을 띄우고 첫걸음을 정해 보세요.'}
+                    </p>
+                  </div>
+                  {needsStep ? (
+                    <Link
+                      to="/items/$id"
+                      params={{ id: needsStep.id }}
+                      className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
+                    >
+                      다음 행동 정하기
+                    </Link>
+                  ) : (
+                    <Link to="/items/new" className={`btn btn-primary press inline-flex items-center ${HERO_ACTION}`}>
+                      + 새 꿈
+                    </Link>
+                  )}
+                </div>
               )}
             </section>
           )}
 
-          {/* 상태 칩 한 줄(휴대폰은 가로 스크롤, py-1은 포커스 링이 잘리지 않게) → 카테고리·새 꿈. md 이상은 한 줄 */}
+          {/* 상태 칩 한 줄(넘치면 가로 스크롤, py·px 여백은 포커스 링이 잘리지 않게) → 카테고리. md 이상은 칩 왼쪽 · 카테고리 오른쪽 한 줄 */}
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
             <div
               role="group"
               aria-label="상태"
-              className="-mx-4 -my-1 flex gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] md:mx-0 md:flex-1 md:flex-wrap md:overflow-visible md:px-0"
+              className="-mx-4 -my-1 flex gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] md:-mx-1 md:min-w-0 md:flex-1 md:px-1"
             >
               {CHIPS.map((c) => {
                 const on = status === c.status
@@ -149,27 +196,22 @@ function ListPage() {
                 )
               })}
             </div>
-            <div className="flex items-center gap-2">
-              <label className="flex min-w-0 flex-1 items-center gap-2 text-[13px] text-mute">
-                <span className="shrink-0">카테고리</span>
-                <select
-                  className="field select text-sm md:w-36"
-                  value={category ?? ''}
-                  onChange={(e) => void navigate({ search: (prev) => ({ ...prev, category: e.target.value || undefined }) })}
-                >
-                  <option value="">전체</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                  <option value={UNCATEGORIZED_FILTER}>{UNCATEGORIZED_LABEL}</option>
-                </select>
-              </label>
-              <Link to="/items/new" className="btn btn-primary press inline-flex shrink-0 items-center whitespace-nowrap text-sm">
-                + 새 꿈
-              </Link>
-            </div>
+            <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute md:shrink-0">
+              <span className="shrink-0">카테고리</span>
+              <select
+                className="field select text-sm md:w-36"
+                value={category ?? ''}
+                onChange={(e) => void navigate({ search: (prev) => ({ ...prev, category: e.target.value || undefined }) })}
+              >
+                <option value="">전체</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+                <option value={UNCATEGORIZED_FILTER}>{UNCATEGORIZED_LABEL}</option>
+              </select>
+            </label>
           </div>
         </div>
 
