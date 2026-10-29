@@ -8,7 +8,7 @@ afterEach(cleanup)
 beforeEach(() => useBucketStore.setState({ items: [], customCategories: [] }))
 
 const base: BucketItemInput = {
-  title: '오로라 보기', why: '', category: null, targetPeriod: '2028-02', prerequisites: [],
+  title: '오로라 보기', why: '', category: null, targetPeriod: { kind: 'start', at: '2028-02' }, prerequisites: [],
   nextAction: { text: '항공권 검색', dueDate: '2026-11-01' }, status: '아이디어', companions: [],
 }
 

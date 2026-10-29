@@ -5,6 +5,7 @@ import {
   UNCATEGORIZED_FILTER,
   UNCATEGORIZED_LABEL,
   fieldLimits,
+  PeriodPointSchema,
   type BucketItem,
   type BucketItemInput,
 } from './schema'
@@ -27,6 +28,20 @@ function requestPersistOnce() {
   requestedPersist = true
   // ponytail: 백업 대신 eviction 완화만
   void navigator.storage?.persist?.()
+}
+
+// version 1 → 2: targetPeriod 문자열을 start로. 항목은 하나도 버리지 않고, 형식이 이상한 값만 null로 둔다
+function migrate(persisted: unknown, version: number): unknown {
+  // 모르는 version(더 새 앱이 저장한 것 등)은 throw: migrate가 값을 돌려주면 zustand가 곧바로 저장소에 다시 써서 덮어쓴다
+  if (version !== 1) throw new Error(`알 수 없는 저장 version ${version}`)
+  if (typeof persisted !== 'object' || persisted === null || !('items' in persisted) || !Array.isArray(persisted.items))
+    return persisted
+  const items: unknown[] = persisted.items.map((item: unknown) => {
+    if (typeof item !== 'object' || item === null || !('targetPeriod' in item)) return item
+    const at = PeriodPointSchema.safeParse(item.targetPeriod)
+    return { ...item, targetPeriod: at.success ? { kind: 'start', at: at.data } : null }
+  })
+  return { ...persisted, items }
 }
 
 export const useBucketStore = create<BucketStore>()(
@@ -60,10 +75,11 @@ export const useBucketStore = create<BucketStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 1, // version을 올리면 migrate 필수: 없으면 빈 상태로 덮어써 전체 유실
+      version: 2, // version을 올리면 migrate도 함께: 없으면 빈 상태로 덮어써 전체 유실
+      migrate,
       // 항목 단위로 거르지 않는다: 버린 항목은 다음 set에서 저장소에서도 영구 유실된다
       merge: (persisted, current) => {
-        // version 불일치(migrate 없음)면 persisted가 undefined로 온다. 메모리를 비우면 다음 set이 저장소까지 덮어쓴다
+        // 옮기지 못한 상태면 persisted가 undefined로 온다. 메모리를 비우면 다음 set이 저장소까지 덮어쓴다
         if (typeof persisted !== 'object' || persisted === null) return current
         return {
           ...current,

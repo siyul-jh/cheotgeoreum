@@ -4,7 +4,7 @@ import {
   AiDraftSchema,
   fieldLimits,
   IsoDateSchema,
-  TargetPeriodSchema,
+  PeriodPointSchema,
   type AiDraft,
   type BlankField,
 } from '@/entities/bucket-item'
@@ -61,7 +61,7 @@ export function sanitizeDraft(
     category: wants('category') && category !== null && categories.includes(category) ? category : null,
     targetPeriod:
       wants('targetPeriod') &&
-      TargetPeriodSchema.safeParse(targetPeriod).success &&
+      PeriodPointSchema.safeParse(targetPeriod).success &&
       targetYear >= thisYear &&
       targetYear <= thisYear + TARGET_YEAR_RANGE &&
       (targetPeriod.length === 4 || targetPeriod >= today.slice(0, 7)) // YYYY-MM은 이번 달부터

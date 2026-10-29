@@ -3,6 +3,13 @@ import type { ItemField, ItemValues } from '../model/schema'
 
 const SKIPPED_LABEL = '건너뜀'
 
+// range는 입력 중 한쪽이 빌 수 있다(저장 전). 빈 쪽은 ?로
+const formatPoint = (point: string | null) => {
+  if (!point) return '?'
+  const [year, month] = point.split('-')
+  return month ? `${year}년 ${Number(month)}월` : `${year}년`
+}
+
 export function formatFieldValue(field: ItemField, values: Partial<ItemValues>): string {
   switch (field) {
     case 'title':
@@ -14,8 +21,14 @@ export function formatFieldValue(field: ItemField, values: Partial<ItemValues>):
     case 'targetPeriod': {
       const period = values.targetPeriod
       if (!period) return SKIPPED_LABEL
-      const [year, month] = period.split('-')
-      return month ? `${year}년 ${Number(month)}월` : `${year}년`
+      switch (period.kind) {
+        case 'start':
+          return `${formatPoint(period.at)}쯤`
+        case 'end':
+          return `${formatPoint(period.at)}까지`
+        case 'range':
+          return `${formatPoint(period.from)} ~ ${formatPoint(period.to)}`
+      }
     }
     case 'prerequisites':
       return values.prerequisites?.map((p) => p.text).join(', ') || SKIPPED_LABEL

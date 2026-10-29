@@ -23,7 +23,7 @@ describe('getBlankFields', () => {
   })
   it('nextAction.text만 있으면 dueDate만', () => {
     const v: ItemValues = {
-      ...empty, why: 'w', category: '여행', targetPeriod: '2027',
+      ...empty, why: 'w', category: '여행', targetPeriod: { kind: 'start', at: '2027' },
       prerequisites: [{ text: 'a', done: false }], nextAction: { text: '예약', dueDate: null },
     }
     expect(getBlankFields(v)).toEqual(['nextActionDueDate'])

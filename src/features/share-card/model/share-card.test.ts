@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { shareCard } from './share-card'
 
-const item = { title: '오로라 보기', targetPeriod: '2027-03' }
-const TEXT = '내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기 (2027년 3월)'
+const item = { title: '오로라 보기', targetPeriod: { kind: 'start', at: '2027-03' } as const }
+const TEXT = '내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기 (2027년 3월쯤)'
 const png = new Blob(['png'], { type: 'image/png' })
 const downloads: { download: string; href: string }[] = []
 

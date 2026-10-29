@@ -1,9 +1,12 @@
 import { DateTime } from 'luxon'
+import type { TargetPeriod } from '../model/schema'
 
-type Props = { value: string | null; onChange: (v: string | null) => void }
+type Props = { value: TargetPeriod | null; onChange: (v: TargetPeriod | null) => void }
 
-export function TargetPeriodInput({ value, onChange }: Props) {
-  const [year = '', month = ''] = value?.split('-') ?? []
+export function TargetPeriodInput({ value, onChange: emit }: Props) {
+  const point = value === null ? null : value.kind === 'range' ? value.from : value.at
+  const onChange = (p: string | null) => emit(p ? { kind: 'start', at: p } : null)
+  const [year = '', month = ''] = point?.split('-') ?? []
   const thisYear = DateTime.now().year
   const range = Array.from({ length: 31 }, (_, i) => thisYear + i)
   // 범위 밖 값(지난 연도 등)은 맨 앞에 둔다. 없으면 '연도 미정'으로 보인다

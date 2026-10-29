@@ -10,7 +10,7 @@ export function draftToPatch(field: AiField, draft: AiDraft, current: ItemValues
     case 'category':
       return draft.category === null ? null : { category: draft.category }
     case 'targetPeriod':
-      return draft.targetPeriod === null ? null : { targetPeriod: draft.targetPeriod }
+      return draft.targetPeriod === null ? null : { targetPeriod: { kind: 'start', at: draft.targetPeriod } }
     case 'prerequisites': {
       // 스키마 상한을 넘기면 저장 검증에서 실패하므로 남은 자리만큼만 덧붙인다
       const added = [...new Set(draft.prerequisites)]

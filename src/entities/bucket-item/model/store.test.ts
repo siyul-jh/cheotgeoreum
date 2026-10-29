@@ -75,12 +75,12 @@ it('selectCompanionNames: 중복 제거 후 정렬', () => {
 it('변경이 localStorage에 반영된다', () => {
   s().addItem(input({ title: '저장됨' }))
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: { title: string }[] }; version: number }
-  expect(saved.version).toBe(1)
+  expect(saved.version).toBe(2)
   expect(saved.state.items[0]?.title).toBe('저장됨')
 })
 
 describe('persist', () => {
-  const save = (state: unknown) => localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, version: 1 }))
+  const save = (state: unknown) => localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, version: 2 }))
 
   it('다른 탭이 저장하면 그 내용을 다시 읽는다', async () => {
     s().addItem(input({ title: '이 탭' }))
@@ -98,12 +98,43 @@ describe('persist', () => {
     expect(selectCompanionNames(s())).toEqual([])
   })
 
-  it('다른 version으로 저장된 상태를 읽어도 메모리 상태를 비우지 않는다', async () => {
-    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+  it('모르는 version으로 저장된 상태는 메모리도 저장소도 덮어쓰지 않는다', async () => {
     s().addItem(input({ title: '내 항목' }))
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 2 }))
+    const future = JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 })
+    localStorage.setItem(STORAGE_KEY, future)
     await useBucketStore.persist.rehydrate()
     expect(s().items.map((i) => i.title)).toEqual(['내 항목'])
-    err.mockRestore()
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(future)
+  })
+
+  // AC-T2: version 1 저장본을 그대로 넣고 다시 읽는다
+  it('version 1 저장본: 항목을 하나도 버리지 않고 문자열 targetPeriod는 start가 된다', async () => {
+    const v1 = {
+      state: {
+        items: [
+          { ...input({ title: '월까지', targetPeriod: null }), targetPeriod: '2027-05', id: 'a', createdAt: '2026-10-01T00:00:00.000Z' },
+          { ...input({ title: '연만', targetPeriod: null }), targetPeriod: '2028', id: 'b', createdAt: '2026-10-02T00:00:00.000Z' },
+          { ...input({ title: '없음' }), id: 'c', createdAt: '2026-10-03T00:00:00.000Z' },
+          { ...input({ title: '이상한 값', targetPeriod: null }), targetPeriod: '내년', id: 'd', createdAt: '2026-10-04T00:00:00.000Z' },
+          { ...input({ title: '숫자', targetPeriod: null }), targetPeriod: 2027, id: 'e', createdAt: '2026-10-05T00:00:00.000Z' },
+        ],
+        customCategories: ['덕질'],
+      },
+      version: 1,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v1))
+    await useBucketStore.persist.rehydrate()
+    expect(s().items.map((i) => [i.id, i.title, i.targetPeriod])).toEqual([
+      ['a', '월까지', { kind: 'start', at: '2027-05' }],
+      ['b', '연만', { kind: 'start', at: '2028' }],
+      ['c', '없음', null],
+      ['d', '이상한 값', null],
+      ['e', '숫자', null],
+    ])
+    expect(s().customCategories).toEqual(['덕질'])
+    // 옮긴 결과가 version 2로 다시 저장된다
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: unknown[] }; version: number }
+    expect(saved.version).toBe(2)
+    expect(saved.state.items).toHaveLength(5)
   })
 })

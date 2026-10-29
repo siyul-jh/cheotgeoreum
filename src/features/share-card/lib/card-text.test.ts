@@ -9,10 +9,15 @@ describe('buildShareText', () => {
     expect(buildShareText({ title: '오로라 보기', targetPeriod: null })).toBe('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')
   })
   it('목표 시기가 있으면 괄호로 붙인다', () => {
-    expect(buildShareText({ title: '오로라 보기', targetPeriod: '2027-03' })).toBe(
-      '내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기 (2027년 3월)',
+    expect(buildShareText({ title: '오로라 보기', targetPeriod: { kind: 'start', at: '2027-03' } })).toBe(
+      '내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기 (2027년 3월쯤)',
     )
-    expect(buildShareText({ title: '마라톤', targetPeriod: '2028' })).toBe('내 버킷리스트에 새 별이 떴어요 ✦ 마라톤 (2028년)')
+    expect(buildShareText({ title: '마라톤', targetPeriod: { kind: 'end', at: '2028' } })).toBe(
+      '내 버킷리스트에 새 별이 떴어요 ✦ 마라톤 (2028년까지)',
+    )
+    expect(buildShareText({ title: '세계 일주', targetPeriod: { kind: 'range', from: '2027-02', to: '2027-08' } })).toBe(
+      '내 버킷리스트에 새 별이 떴어요 ✦ 세계 일주 (2027년 2월 ~ 2027년 8월)',
+    )
   })
 })
 

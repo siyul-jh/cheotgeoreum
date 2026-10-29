@@ -47,8 +47,17 @@ test('제목만 있으면 제목과 하단 로고만 쓴다', () => {
 
 test('목표 시기·왜·카테고리는 있을 때 쓴다', () => {
   const { ctx, texts } = fakeContext()
-  drawCard(ctx, { ...base, targetPeriod: '2027-03', why: '하늘이 보고 싶어서', category: '여행' })
+  drawCard(ctx, { ...base, targetPeriod: { kind: 'end', at: '2027-03' }, why: '하늘이 보고 싶어서', category: '여행' })
   expect(texts).toEqual(['오로라 보기', '2027년 3월까지', '하늘이 보고 싶어서', '여행', '첫걸음'])
+})
+
+test.each([
+  [{ kind: 'start', at: '2027-03' }, '2027년 3월쯤'],
+  [{ kind: 'range', from: '2027', to: '2028' }, '2027년 ~ 2028년'],
+] as const)('목표 시기는 종류대로 쓴다(까지를 덧붙이지 않는다) %o', (targetPeriod, text) => {
+  const { ctx, texts } = fakeContext()
+  drawCard(ctx, { ...base, targetPeriod })
+  expect(texts).toEqual(['오로라 보기', text, '첫걸음'])
 })
 
 test('긴 제목과 왜는 3줄에서 말줄임한다', () => {

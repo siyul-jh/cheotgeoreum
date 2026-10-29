@@ -82,7 +82,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, item: BucketItemInput) {
     y += 40
     ctx.font = `500 42px ${BODY_FONT}`
     ctx.fillStyle = GOLD
-    ctx.fillText(`${formatFieldValue('targetPeriod', item)}까지`, CX, y)
+    ctx.fillText(formatFieldValue('targetPeriod', item), CX, y)
     y += 60
   }
 
@@ -141,7 +141,7 @@ export async function createCardPng(item: BucketItemInput): Promise<Blob> {
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('canvas 2d를 쓸 수 없어요')
   const period = item.targetPeriod ? formatFieldValue('targetPeriod', item) : ''
-  await loadFonts(`${item.title}${item.why}${item.category ?? ''}${period}까지 첫걸음`)
+  await loadFonts(`${item.title}${item.why}${item.category ?? ''}${period} 첫걸음`)
   drawCard(ctx, item)
   return new Promise((resolve, reject) =>
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('PNG를 만들지 못했어요'))), 'image/png'),

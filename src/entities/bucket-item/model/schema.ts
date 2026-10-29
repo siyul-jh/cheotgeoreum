@@ -18,7 +18,27 @@ export const fieldLimits = {
 } as const
 
 export const IsoDateSchema = z.iso.date()
-export const TargetPeriodSchema = z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/)
+export const PeriodPointSchema = z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/) // YYYY 또는 YYYY-MM
+
+// 연만 있으면 시작은 1월, 끝은 12월로 비교한다(2027-03 ~ 2027 허용)
+const isPeriodOrdered = (from: string, to: string) =>
+  (from.length === 4 ? `${from}-01` : from) <= (to.length === 4 ? `${to}-12` : to)
+
+// start: 이때쯤 / end: 이때까지 / range: 기간
+export const TargetPeriodSchema = z
+  .discriminatedUnion('kind', [
+    z.object({ kind: z.literal('start'), at: PeriodPointSchema }),
+    z.object({ kind: z.literal('end'), at: PeriodPointSchema }),
+    // 입력 중 한쪽만 고른 상태를 폼 값으로 담으려고 nullable. 저장·단계 확정은 아래 refine이 막는다
+    z.object({ kind: z.literal('range'), from: PeriodPointSchema.nullable(), to: PeriodPointSchema.nullable() }),
+  ])
+  .refine((p) => p.kind !== 'range' || (p.from !== null && p.to !== null), '시작과 끝을 모두 골라 주세요')
+  .refine(
+    (p) => p.kind !== 'range' || p.from === null || p.to === null || isPeriodOrdered(p.from, p.to),
+    '끝이 시작보다 빨라요',
+  )
+export type TargetPeriod = z.infer<typeof TargetPeriodSchema>
+export type PeriodKind = TargetPeriod['kind']
 
 // 빈 값 규칙: 자유 텍스트 '' / 선택·형식 값 null
 export const BucketItemInputSchema = z.object({

@@ -54,7 +54,7 @@ test('제목을 비우면 오류가 나고 store는 바뀌지 않는다', async 
 })
 
 test('저장된 값이 스키마에 맞지 않아도 편집 화면이 열린다', async () => {
-  useBucketStore.setState({ items: [{ ...base, title: '   ', targetPeriod: '내년', id, createdAt: '2026-10-27T00:00:00.000Z' }] })
+  useBucketStore.setState({ items: [{ ...base, title: '   ', targetPeriod: { kind: 'start', at: '내년' }, id, createdAt: '2026-10-27T00:00:00.000Z' }] })
   await open()
   expect(screen.getByText('항목 편집')).toBeDefined()
   expect((screen.getByLabelText('항목') as HTMLInputElement).value).toBe('   ')
