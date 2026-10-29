@@ -27,7 +27,7 @@ export function CompanionsInput({ value, onChange }: Props) {
             {/* 보이는 칩은 작게, 누르는 영역은 44px */}
             <button
               type="button"
-              className="-my-2 flex size-11 items-center justify-center rounded-full text-mute"
+              className="press -my-2 flex size-11 items-center justify-center rounded-full text-mute"
               aria-label={`${name} 삭제`}
               onClick={() => onChange(value.filter((n) => n !== name))}
             >

@@ -29,7 +29,7 @@ export function PrerequisitesInput({ value, onChange }: Props) {
             <span className={`min-w-0 flex-1 break-words ${p.done ? 'text-mute line-through' : ''}`}>{p.text}</span>
             <button
               type="button"
-              className="-my-2 -mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-mute"
+              className="press -my-2 -mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-mute"
               aria-label={`${p.text} 삭제`}
               onClick={() => onChange(value.filter((_, j) => j !== i))}
             >

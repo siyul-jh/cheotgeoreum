@@ -6,12 +6,14 @@
   --color-card: #1b202a;
   --color-line: #2a303c;
   --color-edge: #3a4150;
+  --color-edge-hi: #4b5466;
   --color-ai: #232a36;
   --color-ink: #edeae3;
   --color-mute: #a9aeb8;
   --color-faint: #7c8392;
   --color-dim: #5a6272;
   --color-gold: #f2c14e;
+  --color-gold-hi: #f7d47f;
   --color-gold-edge: #3a3424;
   --color-danger: #f4a09a;
   --font-sans: 'Noto Sans KR', sans-serif;
@@ -71,6 +73,27 @@
   :where(a, button, input, select, textarea, summary):focus-visible {
     outline: 2px solid var(--color-gold);
     outline-offset: 2px;
+  }
+
+  /* hover는 마우스 환경에서만(터치 기기 hover 고착 방지), disabled 제외.
+     배경은 inset 그림자로 살짝 밝힌다: bg-transparent 같은 유틸리티 배경 위에도 보이고, 유틸리티 테두리색(border-gold 등)은 그대로 둔다 */
+  @media (hover: hover) {
+    :is(.btn, .press):not(:disabled):hover,
+    .surface:has(> a:hover) {
+      cursor: pointer;
+      box-shadow: inset 0 0 0 100vmax rgb(255 255 255 / 0.06);
+    }
+    :is(.btn, .field):not(:disabled):hover {
+      border-color: var(--color-edge-hi);
+    }
+    .surface:is(.press:hover, :has(> a:hover)) {
+      border-color: var(--color-edge);
+    }
+    .btn-primary:not(:disabled):hover {
+      background-color: var(--color-gold-hi);
+      border-color: var(--color-gold-hi);
+      box-shadow: none;
+    }
   }
 }
 
@@ -171,22 +194,20 @@
   }
 }
 
-/* 상태 전환 애니메이션은 지원 브라우저에서만, 모션 축소 설정이면 끈다. */
-@supports (corner-shape: squircle) {
-  @media (prefers-reduced-motion: no-preference) {
-    .btn,
-    .surface {
-      transition: background-color 150ms, border-color 150ms;
-    }
-  }
-}
-
-/* .btn 전환을 덮어쓰므로 색 전환도 함께 둔다 */
+/* 상태 전환·눌림은 모션 축소 설정이면 끈다(색은 즉시 바뀐다).
+   눌림은 transform 대신 scale 속성: drop/rise 애니메이션의 fill(transform)에 덮이지 않는다 */
 @media (prefers-reduced-motion: no-preference) {
-  .press {
-    transition: transform 0.12s ease, background-color 0.2s ease, border-color 0.2s ease;
+  .btn,
+  .press,
+  .surface,
+  .field {
+    transition:
+      scale 0.12s ease,
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
   }
-  .press:active {
-    transform: scale(0.96);
+  :is(.btn, .press):not(:disabled):active {
+    scale: 0.97;
   }
 }
