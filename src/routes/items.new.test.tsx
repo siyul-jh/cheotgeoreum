@@ -2,14 +2,19 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore } from '@/entities/bucket-item'
+import { createCardPng } from '@/features/share-card/lib/draw-card'
 import { routeTree } from '@/routeTree.gen'
 
 // jsdom에는 canvas가 없다. 카드 그리기는 draw-card 단위 테스트가 맡는다
 vi.mock('@/features/share-card/lib/draw-card', () => ({
-  createCardPng: async () => new Blob(['png'], { type: 'image/png' }),
+  createCardPng: vi.fn(async () => new Blob(['png'], { type: 'image/png' })),
 }))
 
-beforeEach(() => useBucketStore.setState({ items: [], customCategories: [] }))
+beforeEach(() => {
+  useBucketStore.setState({ items: [], customCategories: [] })
+  URL.createObjectURL = vi.fn(() => 'blob:card')
+  URL.revokeObjectURL = vi.fn()
+})
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
@@ -24,6 +29,12 @@ async function open() {
   return router
 }
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }))
+// [공유하기]는 카드가 준비된 뒤에 켜진다
+async function shareButton() {
+  const button = screen.getByRole('button', { name: '공유하기' }) as HTMLButtonElement
+  await waitFor(() => expect(button.disabled).toBe(false))
+  return button
+}
 
 test('AI 없이 7단계를 진행해 저장하고 [목록으로]로 목록에 간다', async () => {
   const router = await open()
@@ -103,10 +114,9 @@ test('저장하면 "새 별이 떴어요"에 머물고 스스로 목록으로 �
   expect(screen.getByRole('button', { name: '하나 더 적기' })).toBeTruthy()
 })
 
-test('축하 화면에 공유될 카드 이미지를 미리 보여 준다', async () => {
-  URL.createObjectURL = vi.fn(() => 'blob:card')
-  URL.revokeObjectURL = vi.fn()
+test('축하 화면은 제목에 포커스를 두고 공유될 카드 이미지를 미리 보여 준다', async () => {
   await saveTitleOnly()
+  expect(document.activeElement).toBe(screen.getByRole('heading', { name: '새 별이 떴어요', level: 1 }))
   const img = await screen.findByRole('img', { name: '오로라 보기 별 카드' })
   expect(img.getAttribute('src')).toBe('blob:card')
 })
@@ -134,7 +144,7 @@ test('[공유하기]는 공유 시트를 여는 동안 비활성이다', async (
   const share = vi.fn((data: ShareData) => new Promise<void>((resolve) => (finish = () => resolve(void data))))
   Object.assign(navigator, { canShare: () => true, share })
   await saveTitleOnly()
-  const button = screen.getByRole('button', { name: '공유하기' }) as HTMLButtonElement
+  const button = await shareButton()
   fireEvent.click(button)
   await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
   expect(button.disabled).toBe(true)
@@ -146,20 +156,25 @@ test('[공유하기]는 공유 시트를 여는 동안 비활성이다', async (
 test('공유 시트를 닫으면 오류 문구가 없다', async () => {
   Object.assign(navigator, { canShare: () => true, share: () => Promise.reject(new DOMException('cancel', 'AbortError')) })
   await saveTitleOnly()
-  const button = screen.getByRole('button', { name: '공유하기' }) as HTMLButtonElement
+  const button = await shareButton()
   fireEvent.click(button)
   await waitFor(() => expect(button.disabled).toBe(false))
   expect(screen.queryByText(/이미지를|못했어요/)).toBeNull()
 })
 
+test('카드를 만들지 못하면 [공유하기]는 꺼진 채 이유를 보인다', async () => {
+  vi.mocked(createCardPng).mockRejectedValueOnce(new Error('canvas'))
+  await saveTitleOnly()
+  expect(await screen.findByText('이미지를 만들지 못했어요')).toBeTruthy()
+  expect((screen.getByRole('button', { name: '공유하기' }) as HTMLButtonElement).disabled).toBe(true)
+})
+
 test('공유 시트를 못 쓰면 PNG를 저장하고 문구를 복사했다고 알린다', async () => {
   const writeText = vi.fn(async (text: string) => void text)
   Object.assign(navigator, { clipboard: { writeText } })
-  URL.createObjectURL = vi.fn(() => 'blob:card')
-  URL.revokeObjectURL = vi.fn()
   const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
   await saveTitleOnly()
-  click('공유하기')
+  fireEvent.click(await shareButton())
   expect(await screen.findByText('이미지를 저장하고 문구를 복사했어요')).toBeTruthy()
   expect(download).toHaveBeenCalledTimes(1)
   expect(writeText).toHaveBeenCalledWith('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')

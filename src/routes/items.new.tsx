@@ -85,22 +85,23 @@ function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: ()
   const { share, pending, notice, preview } = useShareCard(item)
   return (
     <div className="rise mx-auto flex max-w-md flex-col items-center gap-[18px] text-center">
-      <p role="status" className="font-title text-[26px] font-bold">
+      {/* 저장 버튼이 사라지며 포커스가 body로 떨어지지 않게 제목으로 옮긴다(스크린 리더가 읽는다) */}
+      <h1 ref={(el) => el?.focus()} tabIndex={-1} className="font-title text-[26px] font-bold outline-none">
         새 별이 떴어요
-      </p>
+      </h1>
       {/* 공유될 카드(9:16) 미리보기. 그리는 동안은 같은 크기의 빈 틀 */}
       <div className="surface aspect-[9/16] h-[min(56dvh,480px)] overflow-hidden rounded-[20px] p-0">
         {preview && <img src={preview} alt={`${item.title} 별 카드`} className="rise size-full object-cover" />}
       </div>
       {/* 버튼은 화면 폭과 상관없이 한 줄에 하나씩 */}
       <div className="mt-4 flex w-full flex-col gap-2">
-        <button type="button" className="btn btn-primary" disabled={pending} onClick={() => void share()}>
+        <button type="button" className="btn btn-primary press" disabled={pending} onClick={() => void share()}>
           공유하기
         </button>
-        <Link to="/" className="btn flex items-center justify-center">
+        <Link to="/" className="btn press flex items-center justify-center">
           목록으로
         </Link>
-        <button type="button" className="btn" onClick={onAnother}>
+        <button type="button" className="btn press" onClick={onAnother}>
           하나 더 적기
         </button>
       </div>
