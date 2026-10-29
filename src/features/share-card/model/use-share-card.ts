@@ -33,6 +33,8 @@ export function useShareCard(item: BucketItemInput) {
     setNotice('')
     try {
       setNotice((await shareCard(card.png, item)) ?? '')
+    } catch {
+      setNotice('공유하지 못했어요')
     } finally {
       setPending(false)
     }

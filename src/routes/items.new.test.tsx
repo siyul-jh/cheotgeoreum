@@ -157,9 +157,12 @@ test('공유 시트를 닫으면 오류 문구가 없다', async () => {
   Object.assign(navigator, { canShare: () => true, share: () => Promise.reject(new DOMException('cancel', 'AbortError')) })
   await saveTitleOnly()
   const button = await shareButton()
+  const list = screen.getByRole('link', { name: '목록으로' })
+  list.focus()
   fireEvent.click(button)
   await waitFor(() => expect(button.disabled).toBe(false))
   expect(screen.queryByText(/이미지를|못했어요/)).toBeNull()
+  expect(document.activeElement).toBe(list) // 다시 그려져도 포커스를 제목으로 빼앗지 않는다
 })
 
 test('카드를 만들지 못하면 [공유하기]는 꺼진 채 이유를 보인다', async () => {
@@ -175,10 +178,8 @@ test('공유 시트를 못 쓰면 PNG를 저장하고 문구를 복사했다고 
   const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
   await saveTitleOnly()
   const button = await shareButton()
-  button.focus()
   fireEvent.click(button)
   expect(await screen.findByText('이미지를 저장하고 문구를 복사했어요')).toBeTruthy()
   expect(download).toHaveBeenCalledTimes(1)
   expect(writeText).toHaveBeenCalledWith('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')
-  expect(document.activeElement).toBe(button) // 안내가 바뀌어도 포커스를 제목으로 빼앗지 않는다
 })

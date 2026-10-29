@@ -11,9 +11,8 @@ export function useFillBlanks(): DraftState<AiDraft> & { request: (input: FillBl
   const request = (input: FillBlanksInput) => {
     // 클라이언트에서 먼저 검증해 서버 검증 오류가 llm_unreachable로 보이지 않게 한다
     // 덜 채운 기간(시작 없음·역순)은 비운 채 보낸다. 그대로면 기간 하나 때문에 요청 전체가 입력 오류가 된다
-    const period = input.item.targetPeriod
-    const item = period && !TargetPeriodSchema.safeParse(period).success ? { ...input.item, targetPeriod: null } : input.item
-    const parsed = FillBlanksInputSchema.safeParse({ ...input, item })
+    const targetPeriod = TargetPeriodSchema.nullable().catch(null).parse(input.item.targetPeriod)
+    const parsed = FillBlanksInputSchema.safeParse({ ...input, item: { ...input.item, targetPeriod } })
     setInvalidInput(!parsed.success)
     if (parsed.success) mutation.mutate(parsed.data)
     else mutation.reset()

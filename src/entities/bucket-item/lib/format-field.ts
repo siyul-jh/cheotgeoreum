@@ -27,7 +27,7 @@ export function formatFieldValue(field: ItemField, values: Partial<ItemValues>):
         case 'end':
           return `${formatPoint(period.at)}까지`
         case 'range':
-          return period.to === null ? `${formatPoint(period.from)}부터` : `${formatPoint(period.from)} ~ ${formatPoint(period.to)}`
+          return `${formatPoint(period.from)}${period.to === null ? '부터' : ` ~ ${formatPoint(period.to)}`}`
       }
     }
     case 'prerequisites':

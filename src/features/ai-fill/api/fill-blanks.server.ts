@@ -57,7 +57,7 @@ function toTargetPeriod(raw: AiRawDraft['targetPeriod'], today: string): TargetP
   }
   const period = parsed.data
   // 기간의 끝은 비어 있을 수 있다(…부터)
-  const points = period.kind === 'range' ? [period.from, ...(period.to === null ? [] : [period.to])] : [period.at]
+  const points = period.kind === 'range' ? [period.from, period.to ?? period.from] : [period.at]
   return points.every(inRange) ? period : null
 }
 
