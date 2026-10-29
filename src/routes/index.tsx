@@ -163,12 +163,12 @@ function ListPage() {
             </section>
           )}
 
-          {/* 상태 칩 한 줄(넘치면 가로 스크롤, py·px 여백은 포커스 링이 잘리지 않게) → 카테고리. md 이상은 칩 왼쪽 · 카테고리 오른쪽 한 줄 */}
+          {/* 상태 칩(넘치면 다음 줄로, 가로 스크롤 없음) → 카테고리. md 이상은 칩 왼쪽 · 카테고리 오른쪽 */}
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
             <div
               role="group"
               aria-label="상태"
-              className="-mx-4 -my-1 flex gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] md:-mx-1 md:min-w-0 md:flex-1 md:px-1"
+              className="flex flex-wrap gap-1.5 md:min-w-0 md:flex-1"
             >
               {CHIPS.map((c) => {
                 const on = status === c.status
