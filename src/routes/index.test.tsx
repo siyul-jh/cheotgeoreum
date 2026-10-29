@@ -97,7 +97,7 @@ test('그런 항목도 없으면 빈 히어로는 새 꿈 링크를, 항목이 0
   expect(screen.getByText(/아직 띄운 꿈이 없어요/)).toBeTruthy()
 })
 
-test('머리줄: 보이는 제목, 이룬 수 요약. 새 꿈 버튼은 오른쪽 아래 플로팅', async () => {
+test('머리줄: 보이는 제목, 이룬 수 요약. 새 꿈 버튼은 footer(휴대폰 고정 · md 이상 플로팅)', async () => {
   const store = useBucketStore.getState()
   store.addItem(base)
   store.addItem({ ...base, status: '완료' })
@@ -110,7 +110,7 @@ test('머리줄: 보이는 제목, 이룬 수 요약. 새 꿈 버튼은 오른�
   expect(within(header).queryByRole('link')).toBeNull()
   const fab = screen.getByRole('link', { name: '+ 새 꿈' })
   expect(fab.getAttribute('href')).toBe('/items/new')
-  expect(fab.className).toMatch(/\bfixed\b/)
+  expect(fab.closest('footer')).not.toBeNull()
   expect(within(screen.getByRole('group', { name: '상태' }).parentElement!).queryByRole('link')).toBeNull()
 
   act(() => useBucketStore.setState({ items: [] }))
