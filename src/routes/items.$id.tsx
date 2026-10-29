@@ -1,5 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useBucketStore } from '@/entities/bucket-item'
+import { useId } from 'react'
+import { type BucketItem, useBucketStore } from '@/entities/bucket-item'
+import { CardPreview, useShareCard } from '@/features/share-card'
 import { XIcon } from '@/shared/ui/x-icon'
 import { ItemEditForm } from './-components/item-edit-form'
 
@@ -35,6 +37,30 @@ function EditItemPage() {
         <h1 className="font-title text-xl font-bold">항목 편집</h1>
       </header>
       <ItemEditForm key={item.id} item={item} onDone={() => void navigate({ to: '/' })} />
+      <ShareSection key={`share-${item.id}`} item={item} />
     </div>
+  )
+}
+
+// 저장된 내용으로 그린 별 카드. 고친 내용은 저장한 뒤에 카드에 반영된다
+function ShareSection({ item }: { item: BucketItem }) {
+  const headingId = useId()
+  const { share, pending, notice, preview } = useShareCard(item)
+  return (
+    <section aria-labelledby={headingId} className="surface flex flex-col items-center gap-4 p-4">
+      <div className="flex w-full flex-col gap-1">
+        <h2 id={headingId} className="text-sm font-bold">
+          별 카드
+        </h2>
+        <p className="text-[13px] text-mute">저장된 내용으로 만들어요.</p>
+      </div>
+      <CardPreview preview={preview} title={item.title} />
+      <button type="button" className="btn btn-primary press w-full md:w-auto md:px-8" disabled={pending} onClick={() => void share()}>
+        공유하기
+      </button>
+      <p role="status" className="min-h-5 text-sm text-mute">
+        {notice}
+      </p>
+    </section>
   )
 }

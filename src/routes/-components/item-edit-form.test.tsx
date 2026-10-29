@@ -7,6 +7,8 @@ import { routeTree } from '@/routeTree.gen'
 
 const fill = vi.hoisted(() => ({ state: { status: 'idle', draft: null, error: null } as DraftState<AiDraft>, request: vi.fn() }))
 vi.mock('@/features/ai-fill', () => ({ useFillBlanks: () => ({ ...fill.state, request: fill.request }) }))
+// jsdom에는 canvas가 없다. 카드 그리기는 draw-card 단위 테스트가 맡는다
+vi.mock('@/features/share-card/lib/draw-card', () => ({ createCardPng: async () => new Blob(['png'], { type: 'image/png' }) }))
 
 const base: BucketItemInput = {
   title: '오로라 보기',
@@ -20,6 +22,8 @@ const base: BucketItemInput = {
 }
 let id = ''
 beforeEach(() => {
+  URL.createObjectURL = vi.fn(() => 'blob:card')
+  URL.revokeObjectURL = vi.fn()
   fill.state = { status: 'idle', draft: null, error: null }
   fill.request.mockClear()
   useBucketStore.setState({ items: [], customCategories: [] })
@@ -177,4 +181,18 @@ test('이때까지를 기간으로 바꾸면 그 시점이 끝이 되고, 시작
   click('저장')
   await waitFor(() => expect(router.state.location.pathname).toBe('/'))
   expect(item().targetPeriod).toEqual({ kind: 'range', from: String(y), to: `${y + 1}-02` })
+})
+
+test('편집 화면에서도 저장된 내용의 별 카드를 미리 보고 공유할 수 있다', async () => {
+  const share = vi.fn(async (data: ShareData) => void data)
+  Object.assign(navigator, { canShare: () => true, share })
+  await open()
+  const section = screen.getByRole('region', { name: '별 카드' })
+  expect((await within(section).findByRole('img', { name: '오로라 보기 별 카드' })).getAttribute('src')).toBe('blob:card')
+  const button = within(section).getByRole('button', { name: '공유하기' }) as HTMLButtonElement
+  await waitFor(() => expect(button.disabled).toBe(false))
+  fireEvent.click(button)
+  await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
+  expect(share.mock.calls[0][0].text).toBe('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')
+  for (const key of ['canShare', 'share']) Reflect.deleteProperty(navigator, key)
 })

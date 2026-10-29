@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { type BucketItemInput, BucketItemInputSchema, selectCategories, useBucketStore } from '@/entities/bucket-item'
 import { useFillBlanks } from '@/features/ai-fill'
 import { IdeaSheet } from '@/features/idea-suggest'
-import { useShareCard } from '@/features/share-card'
+import { CardPreview, useShareCard } from '@/features/share-card'
 import {
   StepForm,
   type StepFormAction,
@@ -89,10 +89,7 @@ function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: ()
       <h1 ref={focusOnMount} tabIndex={-1} className="font-title text-[26px] font-bold outline-none">
         새 별이 떴어요
       </h1>
-      {/* 공유될 카드(9:16) 미리보기. 그리는 동안은 같은 크기의 빈 틀 */}
-      <div className="surface aspect-[9/16] h-[min(56dvh,480px)] overflow-hidden rounded-[20px] p-0">
-        {preview && <img src={preview} alt={`${item.title} 별 카드`} className="rise size-full object-cover" />}
-      </div>
+      <CardPreview preview={preview} title={item.title} />
       {/* 버튼은 화면 폭과 상관없이 한 줄에 하나씩 */}
       <div className="mt-4 flex w-full flex-col gap-2">
         <button type="button" className="btn btn-primary press" disabled={pending} onClick={() => void share()}>
