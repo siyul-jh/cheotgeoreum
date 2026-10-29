@@ -42,6 +42,35 @@ test('AI 없이 7단계를 진행해 저장하고 [목록으로]로 목록에 �
   expect(item).toMatchObject({ title: '오로라 보기', why: '하늘이 보고 싶어서', category: '여행', status: '아이디어' })
 })
 
+// AC-T1·AC-T3: 기간은 시작·끝이 다 차고 순서가 맞아야 다음으로 간다. 저장하면 목록 카드에 같은 표시
+test('목표 시기를 기간으로 정해 저장하면 목록 카드에 기간으로 보인다', async () => {
+  const y = new Date().getFullYear()
+  const router = await open()
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '세계 일주' } })
+  click('다음')
+  click('건너뛰기')
+  click('건너뛰기')
+  expect(screen.getByText('언제쯤 해보고 싶나요?')).toBeTruthy()
+  fireEvent.click(screen.getByRole('radio', { name: '기간' }))
+  fireEvent.change(screen.getByLabelText('시작 연도'), { target: { value: String(y + 1) } })
+  const nextButton = () => screen.getByRole('button', { name: '다음' }) as HTMLButtonElement
+  expect(nextButton().disabled).toBe(true)
+  expect(screen.getByRole('alert').textContent).toBe('시작과 끝을 모두 골라 주세요')
+  fireEvent.change(screen.getByLabelText('끝 연도'), { target: { value: String(y) } })
+  expect(nextButton().disabled).toBe(true)
+  expect(screen.getByRole('alert').textContent).toBe('끝이 시작보다 빨라요')
+  fireEvent.change(screen.getByLabelText('끝 연도'), { target: { value: String(y + 2) } })
+  expect(nextButton().disabled).toBe(false)
+  click('다음')
+  expect(screen.getByRole('button', { name: new RegExp(`목표 시기\\s*${y + 1}년 ~ ${y + 2}년`) })).toBeTruthy()
+  for (let i = 0; i < 3; i++) click('건너뛰기')
+  click('저장')
+  fireEvent.click(await screen.findByRole('link', { name: '목록으로' }))
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+  expect(useBucketStore.getState().items[0].targetPeriod).toEqual({ kind: 'range', from: String(y + 1), to: String(y + 2) })
+  expect(screen.getByRole('link', { name: /세계 일주/ }).textContent).toContain(`${y + 1}년 ~ ${y + 2}년`)
+})
+
 test('공백 제목이면 [다음] 비활성, Enter로도 진행하지 않는다', async () => {
   await open()
   const title = screen.getByLabelText('어떤 일을 해보고 싶나요?')

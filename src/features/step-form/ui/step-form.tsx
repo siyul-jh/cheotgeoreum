@@ -7,6 +7,7 @@ import {
   NextActionInput,
   PrerequisitesInput,
   TargetPeriodInput,
+  TargetPeriodSchema,
   draftToPatch,
   fieldLimits,
   formatFieldValue,
@@ -183,7 +184,10 @@ type StepProps = {
 
 function Step({ field, values, local, edit, draft, dispatch, onOpenIdeas }: StepProps) {
   const legendId = useId()
-  const blocked = field === 'title' && local.title.trim() === ''
+  // 기간이 덜 채워졌거나 역순이면 확정하지 않는다. 이유는 TargetPeriodInput이 그 자리에 보인다
+  const blocked =
+    (field === 'title' && local.title.trim() === '') ||
+    (field === 'targetPeriod' && !TargetPeriodSchema.nullable().safeParse(local.targetPeriod).success)
   const decide = () => {
     if (!blocked) dispatch({ type: 'decide', field, patch: { [field]: local[field] } })
   }
