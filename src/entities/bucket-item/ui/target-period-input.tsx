@@ -13,16 +13,17 @@ export function TargetPeriodInput({ value, onChange }: Props) {
   return (
     <div className="grid grid-cols-2 gap-2">
       {/* 바깥 legend가 그룹 이름. 선택지 문구('연도 미정'/'월 미정')가 보이는 라벨 역할을 한다 */}
-      <select className="field" aria-label="연도" value={year} onChange={(e) => changeYear(e.target.value)}>
+      {/* 선택지 문구는 한 문자열로: 텍스트 노드가 나뉘면 base-select 목록에서 접근성 이름이 '2026 년'처럼 읽힌다 */}
+      <select className="field select" aria-label="연도" value={year} onChange={(e) => changeYear(e.target.value)}>
         <option value="">연도 미정</option>
         {years.map((y) => (
           <option key={y} value={y}>
-            {y}년
+            {`${y}년`}
           </option>
         ))}
       </select>
       <select
-        className="field"
+        className="field select"
         aria-label="월"
         value={month}
         disabled={!year}
@@ -31,7 +32,7 @@ export function TargetPeriodInput({ value, onChange }: Props) {
         <option value="">월 미정</option>
         {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map((m) => (
           <option key={m} value={m}>
-            {Number(m)}월
+            {`${Number(m)}월`}
           </option>
         ))}
       </select>

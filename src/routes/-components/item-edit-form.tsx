@@ -91,7 +91,7 @@ export function ItemEditForm({ item, onDone }: Props) {
           <label className="flex flex-col gap-1.5 text-[13px] text-mute">
             상태
             <select
-              className="field"
+              className="field select"
               value={f.state.value}
               onChange={(e) => {
                 const next = STATUSES.find((s) => s === e.target.value)

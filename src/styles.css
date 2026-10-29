@@ -70,6 +70,61 @@
   .field:disabled {
     color: var(--color-faint);
   }
+  /* 네이티브 select 유지(키보드·모바일 피커·폼 값). 닫힌 상태는 모든 브라우저에서 화살표를 셰브론으로 바꾼다.
+     data URI SVG는 currentColor를 못 받아 --color-mute 값을 직접 넣었다 */
+  .select {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23a9aeb8' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 1rem;
+  }
+  .select:not(:disabled) {
+    cursor: pointer;
+  }
+  /* 펼친 목록: customizable select 지원 브라우저(Chromium)만 다크 패널. 미지원 브라우저는 네이티브 목록(color-scheme: dark)으로 열린다 */
+  @supports (appearance: base-select) {
+    .select,
+    .select::picker(select) {
+      appearance: base-select;
+    }
+    /* base-select의 select는 flex 상자라 글자를 세로 가운데로. 셰브론은 위 배경 그대로 쓰고 기본 아이콘은 숨긴다 */
+    .select {
+      align-items: center;
+    }
+    .select::picker-icon {
+      display: none;
+    }
+    .select::picker(select) {
+      margin-block: 0.25rem;
+      padding: 0.25rem;
+      border: 1px solid var(--color-edge);
+      border-radius: 14px;
+      corner-shape: squircle;
+      background: var(--color-card);
+      color: var(--color-ink);
+      box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
+    }
+    .select option {
+      min-height: 2.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 10px;
+    }
+    .select option:checked {
+      color: var(--color-gold);
+      font-weight: 700;
+    }
+    .select option:focus-visible {
+      outline: none;
+      background: var(--color-ai);
+    }
+    @media (hover: hover) {
+      .select option:hover {
+        background: var(--color-ai);
+      }
+    }
+  }
   :where(a, button, input, select, textarea, summary):focus-visible {
     outline: 2px solid var(--color-gold);
     outline-offset: 2px;

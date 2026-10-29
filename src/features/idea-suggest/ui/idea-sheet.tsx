@@ -55,7 +55,7 @@ export function IdeaSheet({ onPick, onClose }: Props) {
         <label htmlFor={categoryId} className="text-sm text-mute">
           카테고리 (선택)
         </label>
-        <select id={categoryId} className="field" value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select id={categoryId} className="field select" value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">상관없음</option>
           {categories.map((name) => (
             <option key={name} value={name}>

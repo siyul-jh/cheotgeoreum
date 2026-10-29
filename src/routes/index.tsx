@@ -154,7 +154,7 @@ function ListPage() {
               <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute">
                 <span className="shrink-0">카테고리</span>
                 <select
-                  className="field text-sm md:w-36"
+                  className="field select text-sm md:w-36"
                   value={category ?? ''}
                   onChange={(e) => void navigate({ search: (prev) => ({ ...prev, category: e.target.value || undefined }) })}
                 >
@@ -170,7 +170,7 @@ function ListPage() {
               <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute">
                 <span className="shrink-0">상태</span>
                 <select
-                  className="field text-sm md:w-32"
+                  className="field select text-sm md:w-32"
                   value={status ?? ''}
                   onChange={(e) =>
                     void navigate({ search: (prev) => ({ ...prev, status: STATUSES.find((s) => s === e.target.value) }) })
