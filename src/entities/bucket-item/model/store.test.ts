@@ -107,6 +107,14 @@ describe('persist', () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBe(future)
   })
 
+  it('모르는 version 저장본을 읽은 뒤 항목을 추가해도 저장소를 덮어쓰지 않는다', async () => {
+    const future = JSON.stringify({ state: { items: [{ id: 'z' }], customCategories: [] }, version: 3 })
+    localStorage.setItem(STORAGE_KEY, future)
+    await useBucketStore.persist.rehydrate()
+    s().addItem(input({ title: '새 항목' }))
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(future)
+  })
+
   // AC-T2: version 1 저장본을 그대로 넣고 다시 읽는다
   it('version 1 저장본: 항목을 하나도 버리지 않고 문자열 targetPeriod는 start가 된다', async () => {
     const v1 = {
