@@ -87,18 +87,12 @@ function ListPage() {
       </div>
 
       {/* 머리줄 → 히어로 → 필터 → 카드. DOM 순서가 시각·탭 순서와 같다 */}
-      <div className="relative flex flex-col gap-5">
+      <div className="relative flex flex-col gap-5 pb-20">
         <header className="flex min-h-11 items-center gap-3">
           <h1 className="shrink-0 font-title text-2xl font-bold">첫걸음</h1>
           {items.length > 0 && (
             <p className="min-w-0 truncate text-sm text-mute">{`${items.length}개 중 ${doneCount}개 이룸`}</p>
           )}
-          <Link
-            to="/items/new"
-            className="btn btn-primary press ml-auto inline-flex shrink-0 items-center whitespace-nowrap text-sm"
-          >
-            + 새 꿈
-          </Link>
         </header>
 
         <div className="flex flex-col gap-5">
@@ -232,6 +226,14 @@ function ListPage() {
           </ul>
         )}
       </div>
+
+      {/* 오른쪽 아래 떠 있는 새 꿈 버튼. 그림자는 filter라 hover의 box-shadow 규칙과 겹치지 않는다 */}
+      <Link
+        to="/items/new"
+        className="btn btn-primary press fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-10 inline-flex h-14 items-center whitespace-nowrap px-5 drop-shadow-lg md:right-8 md:bottom-8"
+      >
+        + 새 꿈
+      </Link>
     </>
   )
 }
