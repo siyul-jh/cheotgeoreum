@@ -48,13 +48,10 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
     dispatch(action)
   }
 
-  // 아이디어 선택이 초안의 유일한 자동 호출이다
+  // 아이디어는 제목만 정한다. AI 빈칸 채우기는 사용자가 [빈 칸 채우기]를 눌렀을 때만 돈다
   const onPick = (title: string) => {
-    const next = stepFormReducer(state, { type: 'decide', field: 'title', patch: { title } })
-    dispatch({ type: 'decide', field: 'title', patch: { title } })
+    dispatchStep({ type: 'decide', field: 'title', patch: { title } })
     setIdeasOpen(false)
-    const blankFields = undecidedAiFields(next)
-    if (blankFields.length > 0) request({ item: next.values, blankFields, categories })
   }
 
   if (saved) return <Celebration item={saved} onAnother={onAnother} />

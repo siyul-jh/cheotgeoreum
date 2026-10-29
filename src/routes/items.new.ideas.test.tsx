@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore } from '@/entities/bucket-item'
 import { routeTree } from '@/routeTree.gen'
@@ -24,7 +24,7 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
-test('아이디어를 고르면 제목이 정해지고 초안을 자동 요청하며 2단계로 간다', async () => {
+test('아이디어를 고르면 제목만 정해지고 AI 초안은 요청하지 않으며 2단계로 간다', async () => {
   const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/items/new'] }) })
   render(<RouterProvider router={router} />)
   fireEvent.click(await screen.findByRole('button', { name: '뭘 적을지 모르겠어요' }))
@@ -33,11 +33,7 @@ test('아이디어를 고르면 제목이 정해지고 초안을 자동 요청�
   await screen.findByText('왜 하고 싶나요?')
   expect(screen.queryByRole('button', { name: '고르기' })).toBeNull()
   expect(screen.getByText('오로라 보기')).toBeTruthy()
-  await waitFor(() => expect(request).toHaveBeenCalledTimes(1))
-  expect(request.mock.calls[0][0]).toMatchObject({
-    item: { title: '오로라 보기' },
-    blankFields: ['why', 'category', 'targetPeriod', 'prerequisites', 'nextActionText', 'nextActionDueDate'],
-  })
+  expect(request).not.toHaveBeenCalled()
 })
 
 test('결정한 제목이 바뀌면 이전 초안을 버린다', async () => {
