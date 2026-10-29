@@ -42,16 +42,22 @@ function drawSky(ctx: CanvasRenderingContext2D) {
   ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
 
   const rand = seeded(20261029)
+  // 글자가 놓이는 아래쪽 가운데 기둥은 비워 별이 글자에 겹치지 않게 한다
+  const inTextArea = (x: number, y: number) => y > 760 && x > 80 && x < CARD_WIDTH - 80
   for (let i = 0; i < 90; i++) {
-    ctx.globalAlpha = 0.2 + rand() * 0.6
-    ctx.fillStyle = rand() < 0.2 ? GOLD : INK
+    const [x, y, r, alpha, gold] = [rand() * CARD_WIDTH, rand() * CARD_HEIGHT, 1.5 + rand() * 2.5, 0.2 + rand() * 0.6, rand() < 0.2]
+    if (inTextArea(x, y)) continue
+    ctx.globalAlpha = alpha
+    ctx.fillStyle = gold ? GOLD : INK
     ctx.beginPath()
-    ctx.arc(rand() * CARD_WIDTH, rand() * CARD_HEIGHT, 1.5 + rand() * 2.5, 0, Math.PI * 2)
+    ctx.arc(x, y, r, 0, Math.PI * 2)
     ctx.fill()
   }
   for (let i = 0; i < 8; i++) {
-    ctx.globalAlpha = 0.35 + rand() * 0.4
-    drawStar(ctx, rand() * CARD_WIDTH, rand() * CARD_HEIGHT, 24 + rand() * 20, GOLD)
+    const [x, y, size, alpha] = [rand() * CARD_WIDTH, rand() * CARD_HEIGHT, 24 + rand() * 20, 0.35 + rand() * 0.4]
+    if (inTextArea(x, y)) continue
+    ctx.globalAlpha = alpha
+    drawStar(ctx, x, y, size, GOLD)
   }
   ctx.globalAlpha = 1
 }
