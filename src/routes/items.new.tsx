@@ -2,7 +2,15 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useReducer, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { useShallow } from 'zustand/react/shallow'
-import { type BucketItemInput, BucketItemInputSchema, selectCategories, useBucketStore } from '@/entities/bucket-item'
+import {
+  type AiDraft,
+  type BlankField,
+  type BucketItemInput,
+  BucketItemInputSchema,
+  type ItemField,
+  selectCategories,
+  useBucketStore,
+} from '@/entities/bucket-item'
 import { useFillBlanks } from '@/features/ai-fill'
 import { IdeaSheet } from '@/features/idea-suggest'
 import { CardPreview, useShareCard } from '@/features/share-card'
@@ -25,7 +33,10 @@ function NewItemRoute() {
 
 function NewItemPage({ onAnother }: { onAnother: () => void }) {
   const [state, dispatch] = useReducer(stepFormReducer, initialStepFormState)
-  const { request, reset, ...draftState } = useFillBlanks()
+  // AI 빈칸 채우기: 지금 단계 칸(now)을 따로 먼저 요청하고, 나머지 칸(later)은 같이 보내 뒤에서 만든다
+  const now = useFillBlanks()
+  const later = useFillBlanks()
+  const [nowFields, setNowFields] = useState<BlankField[]>([])
   const categories = useBucketStore(useShallow(selectCategories))
   const addItem = useBucketStore((s) => s.addItem)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -44,9 +55,26 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
 
   // 제목이 바뀌면 이전 제목으로 만든 초안은 맞지 않는다. reopen patch로 바뀌는 경로도 포함
   const dispatchStep = (action: StepFormAction) => {
-    if (action.type !== 'skip' && action.patch?.title !== undefined && action.patch.title !== state.values.title) reset()
+    if (action.type !== 'skip' && action.patch?.title !== undefined && action.patch.title !== state.values.title) {
+      now.reset()
+      later.reset()
+    }
     dispatch(action)
   }
+
+  const onFill = () => {
+    const blanks = undecidedAiFields(state)
+    const first = blanks.filter((f) => stepOf(f) === state.current)
+    const rest = blanks.filter((f) => !first.includes(f))
+    setNowFields(first)
+    for (const [hook, blankFields] of [[now, first], [later, rest]] as const) {
+      if (blankFields.length > 0) hook.request({ item: state.values, blankFields, categories })
+      else hook.reset()
+    }
+  }
+  // 지금 단계 칸을 맡은 요청의 상태를 보인다. 다음 단계로 가면 뒤에서 만드는 요청의 상태(만드는 중·오류)가 보인다
+  const shown = state.current !== null && nowFields.some((f) => stepOf(f) === state.current) ? now : later
+  const draftState = { status: shown.status, error: shown.error, draft: mergeDrafts(later.draft, now.draft) }
 
   // 아이디어는 제목을 정하고, 추천받을 때 고른 카테고리는 카테고리 단계에 미리 골라 둔다(아직 정하지 않았을 때만).
   // AI 빈칸 채우기는 사용자가 [빈 칸 채우기]를 눌렀을 때만 돈다
@@ -65,7 +93,7 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
         state={state}
         dispatch={dispatchStep}
         draftState={draftState}
-        onFill={() => request({ item: state.values, blankFields: undecidedAiFields(state), categories })}
+        onFill={onFill}
         onOpenIdeas={() => setIdeasOpen(true)}
         onSave={onSave}
         saveError={saveError}
@@ -75,6 +103,21 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
       </ErrorBoundary>
     </div>
   )
+}
+
+const stepOf = (field: BlankField): ItemField =>
+  field === 'nextActionText' || field === 'nextActionDueDate' ? 'nextAction' : field
+
+// 지금 단계 초안(now)이 있는 칸은 그것을, 나머지는 뒤에서 만든 초안(later)을 쓴다
+function mergeDrafts(later: AiDraft | null, now: AiDraft | null): AiDraft | null {
+  if (!later || !now) return now ?? later
+  return {
+    why: now.why ?? later.why,
+    category: now.category ?? later.category,
+    targetPeriod: now.targetPeriod ?? later.targetPeriod,
+    prerequisites: now.prerequisites ?? later.prerequisites,
+    nextAction: now.nextAction ?? later.nextAction,
+  }
 }
 
 // 컴포넌트 밖에 두어 ref가 바뀌지 않게: 처음 붙을 때만 포커스를 옮긴다(다시 그릴 때마다 포커스를 빼앗지 않게)

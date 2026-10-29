@@ -62,5 +62,5 @@ test('결정한 제목이 바뀌면 이전 초안을 버린다', async () => {
   fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
   fireEvent.change(title(), { target: { value: '하프 마라톤' } })
   fireEvent.click(screen.getByRole('button', { name: '다음' }))
-  expect(reset).toHaveBeenCalledOnce()
+  expect(reset).toHaveBeenCalledTimes(2) // 지금 단계 요청·뒤에서 만드는 요청 둘 다
 })
