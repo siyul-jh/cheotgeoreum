@@ -79,12 +79,11 @@ function ListPage() {
         ))}
       </div>
 
-      {/* lg: 왼쪽 패널 + 오른쪽 카드. DOM 순서(패널 → 카드)가 시각·탭 순서와 같다 */}
-      <div className="relative flex flex-col gap-5 lg:grid lg:grid-cols-[22rem_1fr] lg:items-start lg:gap-8">
+      {/* 모든 폭에서 위쪽 패널 → 아래 카드 grid. DOM 순서가 시각·탭 순서와 같다 */}
+      <div className="relative flex flex-col gap-5">
         <h1 className="sr-only">첫걸음</h1>
 
-        {/* 화면보다 길면 패널 안에서 스크롤. p-1/-m-1은 포커스 링이 overflow에 잘리지 않게(top-5 = main py-6 - 1) */}
-        <div className="flex flex-col gap-5 lg:sticky lg:top-5 lg:-m-1 lg:max-h-[calc(100dvh-2.5rem)] lg:overflow-y-auto lg:p-1">
+        <div className="flex flex-col gap-5">
           {(stepped || today) && (
             <section aria-labelledby={heroId} className="surface flex flex-col gap-2.5 rounded-[20px] p-[18px]">
               <h2 id={heroId} className="text-[13px] text-mute">
@@ -153,7 +152,7 @@ function ListPage() {
 
           <details className="-mt-2 text-sm">
             <summary className="cursor-pointer py-2 text-mute">필터{filterNote && ` · ${filterNote}`}</summary>
-            <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="grid grid-cols-2 gap-2 pt-1 md:max-w-md">
               <label className="flex flex-col gap-1 text-[13px] text-mute">
                 카테고리
                 <select
@@ -196,7 +195,7 @@ function ListPage() {
             {items.length === 0 ? '아직 띄운 꿈이 없어요. "+ 새 꿈"으로 첫 별을 띄워 보세요.' : '조건에 맞는 꿈이 없어요.'}
           </p>
         ) : (
-          <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2 xl:grid-cols-3">
+          <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2 lg:grid-cols-3">
             {visible.map((item, i) => (
               <li key={item.id} className="rise" style={{ animationDelay: `${i * 60}ms` }}>
                 <ItemCard
