@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { BucketItemInput } from '@/entities/bucket-item'
-import { CARD_HEIGHT, CARD_WIDTH, drawCard } from './draw-card'
+import { drawCard } from './draw-card'
 
 // jsdom에는 canvas가 없어 fillText만 기록하는 가짜 컨텍스트로 그린다. 글자 하나 = 40px
 function fakeContext() {
@@ -34,10 +34,6 @@ const base: BucketItemInput = {
 
 beforeEach(() => vi.stubGlobal('Path2D', class {}))
 afterEach(() => vi.unstubAllGlobals())
-
-test('카드는 스토리 비율 1080×1920', () => {
-  expect([CARD_WIDTH, CARD_HEIGHT]).toEqual([1080, 1920])
-})
 
 test('제목만 있으면 제목과 하단 로고만 쓴다', () => {
   const { ctx, texts } = fakeContext()

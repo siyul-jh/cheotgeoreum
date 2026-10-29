@@ -38,7 +38,7 @@ function DueDatePicker({ value, onChange }: { value: string | null; onChange: (v
   const moveFocus = useRef(false)
   const refocus = useRef(false)
   const today = iso(DateTime.now())
-  // 지난 날짜는 고를 수 없다(스키마·AI 초안과 같은 규칙: 오늘 이후)
+  // 지난 날짜는 고를 수 없다(AI 초안 sanitize와 같은 규칙: 오늘 이후. 스키마는 막지 않는다)
   const start = value && value >= today ? value : today
   const [focused, setFocused] = useState(start)
   const [open, setOpen] = useState(false)

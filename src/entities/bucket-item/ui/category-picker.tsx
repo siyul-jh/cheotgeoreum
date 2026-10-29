@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
+import { XIcon } from '@/shared/ui/x-icon'
 import { DEFAULT_CATEGORIES, fieldLimits } from '../model/schema'
 import { selectCategories, useBucketStore } from '../model/store'
 
@@ -59,8 +60,13 @@ export function CategoryPicker({ value, onChange }: Props) {
                   </button>
                 </span>
               ) : (
-                <button type="button" className="btn" aria-label={`${name} 삭제`} onClick={() => setConfirming(name)}>
-                  ×
+                <button
+                  type="button"
+                  className="press flex size-11 items-center justify-center rounded-full text-mute"
+                  aria-label={`${name} 삭제`}
+                  onClick={() => setConfirming(name)}
+                >
+                  <XIcon className="size-3.5" />
                 </button>
               ))}
           </li>

@@ -2,8 +2,8 @@ import { type BucketItemInput, formatFieldValue } from '@/entities/bucket-item'
 import { STAR_PATH } from '@/shared/ui/star-icon'
 import { wrapLines } from './card-text'
 
-export const CARD_WIDTH = 1080
-export const CARD_HEIGHT = 1920
+const CARD_WIDTH = 1080
+const CARD_HEIGHT = 1920
 
 // 밤하늘 토큰(styles.css @theme)과 같은 값
 const NIGHT = '#12151C'
