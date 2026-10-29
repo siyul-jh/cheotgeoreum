@@ -94,7 +94,8 @@ function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: ()
         <p className="font-title text-[26px] font-bold">새 별이 떴어요</p>
         <p className="max-w-full break-words text-[15px] text-mute">{item.title}</p>
       </div>
-      <div className="mt-4 flex w-full flex-col gap-2 md:flex-row md:justify-center">
+      {/* 버튼은 화면 폭과 상관없이 한 줄에 하나씩 */}
+      <div className="mt-4 flex w-full flex-col gap-2">
         <button type="button" className="btn btn-primary" disabled={pending} onClick={() => void share()}>
           공유하기
         </button>
