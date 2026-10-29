@@ -25,9 +25,9 @@ const CHIPS: { label: string; status?: Status }[] = [
   ...STATUSES.map((s) => ({ label: s === '완료' ? '이룬 꿈' : s, status: s })),
 ]
 
-// 히어로 한 줄: 휴대폰은 세로, md 이상은 글 왼쪽 · 버튼 오른쪽(세로 가운데)
-const HERO_ROW = 'flex flex-col gap-2.5 md:flex-row md:items-center md:gap-6'
-const HERO_ACTION = 'shrink-0 self-start md:self-center'
+// 히어로 한 줄: 휴대폰은 세로(버튼은 가로 꽉 차게), md 이상은 글 왼쪽 · 버튼 오른쪽(세로 가운데)
+const HERO_ROW = 'flex flex-col gap-4 md:flex-row md:items-center md:gap-6'
+const HERO_ACTION = 'w-full shrink-0 justify-center md:w-auto md:self-center'
 
 // 배경 별 좌표(%) — 시안 390×844 화면 기준을 비율로 옮김
 const SKY = [
@@ -87,7 +87,7 @@ function ListPage() {
       </div>
 
       {/* 머리줄 → 히어로 → 필터 → 카드. DOM 순서가 시각·탭 순서와 같다 */}
-      <div className="relative flex flex-col gap-5 pb-24 md:pb-20">
+      <div className="relative flex flex-col gap-6 pb-24 md:pb-20">
         <header className="flex min-h-11 items-center gap-3">
           <h1 className="shrink-0 font-title text-2xl font-bold">첫걸음</h1>
           {items.length > 0 && (
@@ -95,10 +95,10 @@ function ListPage() {
           )}
         </header>
 
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
           {/* 항목이 하나라도 있으면 늘 보인다(후보가 없으면 빈 상태). md 이상은 글 왼쪽 · 버튼 오른쪽 */}
           {items.length > 0 && (
-            <section aria-labelledby={heroId} className="surface flex flex-col gap-2.5 rounded-[20px] p-[18px]">
+            <section aria-labelledby={heroId} className="surface flex flex-col gap-3 rounded-[20px] p-5">
               <h2 id={heroId} className="text-[13px] text-mute">
                 오늘의 첫걸음
               </h2>
@@ -164,7 +164,7 @@ function ListPage() {
           )}
 
           {/* 상태 칩 한 줄(넘치면 가로 스크롤, py·px 여백은 포커스 링이 잘리지 않게) → 카테고리. md 이상은 칩 왼쪽 · 카테고리 오른쪽 한 줄 */}
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
             <div
               role="group"
               aria-label="상태"
@@ -210,7 +210,7 @@ function ListPage() {
             {items.length === 0 ? '아직 띄운 꿈이 없어요. "+ 새 꿈"으로 첫 별을 띄워 보세요.' : '조건에 맞는 꿈이 없어요.'}
           </p>
         ) : (
-          <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2 lg:grid-cols-3">
+          <ul className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-3">
             {visible.map((item, i) => (
               <li key={item.id} className="rise" style={{ animationDelay: `${i * 60}ms` }}>
                 <ItemCard
