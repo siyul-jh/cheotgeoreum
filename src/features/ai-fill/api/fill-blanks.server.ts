@@ -22,7 +22,7 @@ const FIELD_GUIDES: Record<BlankField, string> = {
   category: 'category: 카테고리 목록 중 하나를 그대로',
   targetPeriod: [
     'targetPeriod: 목표 시기. kind는 "start"(이때쯤) · "end"(이때까지) · "range"(기간: 시작~끝) 중 하나',
-    'start는 from만, end는 to만, range는 from과 to를 모두 채우고 from이 to보다 늦지 않게. 쓰지 않는 칸은 null',
+    'start는 from만, end는 to만, range는 from을 채우고 끝을 정할 수 있으면 to도 채우되 from이 to보다 늦지 않게(끝을 모르면 to는 null). 쓰지 않는 칸은 null',
     `시점은 "YYYY" 또는 "YYYY-MM", 올해부터 ${TARGET_YEAR_RANGE}년 안`,
   ].join('. '),
   prerequisites: `prerequisites: 먼저 갖추거나 준비할 것. 짧은 문장 ${MAX_PREREQUISITES}개 이하`,
@@ -56,7 +56,9 @@ function toTargetPeriod(raw: AiRawDraft['targetPeriod'], today: string): TargetP
     return point !== null && year >= thisYear && year <= thisYear + TARGET_YEAR_RANGE && (point.length === 4 || point >= today.slice(0, 7))
   }
   const period = parsed.data
-  return (period.kind === 'range' ? [period.from, period.to] : [period.at]).every(inRange) ? period : null
+  // 기간의 끝은 비어 있을 수 있다(…부터)
+  const points = period.kind === 'range' ? [period.from, ...(period.to === null ? [] : [period.to])] : [period.at]
+  return points.every(inRange) ? period : null
 }
 
 export function sanitizeDraft(

@@ -29,10 +29,10 @@ export const TargetPeriodSchema = z
   .discriminatedUnion('kind', [
     z.object({ kind: z.literal('start'), at: PeriodPointSchema }),
     z.object({ kind: z.literal('end'), at: PeriodPointSchema }),
-    // 입력 중 한쪽만 고른 상태를 폼 값으로 담으려고 nullable. 저장·단계 확정은 아래 refine이 막는다
+    // 끝은 비워도 된다(…부터). 시작은 입력 중 빈 상태를 폼 값으로 담으려고 nullable, 저장·단계 확정은 아래 refine이 막는다
     z.object({ kind: z.literal('range'), from: PeriodPointSchema.nullable(), to: PeriodPointSchema.nullable() }),
   ])
-  .refine((p) => p.kind !== 'range' || (p.from !== null && p.to !== null), '시작과 끝을 모두 골라 주세요')
+  .refine((p) => p.kind !== 'range' || p.from !== null, '시작을 골라 주세요')
   .refine(
     (p) => p.kind !== 'range' || p.from === null || p.to === null || isPeriodOrdered(p.from, p.to),
     '끝이 시작보다 빨라요',

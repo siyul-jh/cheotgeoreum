@@ -42,6 +42,7 @@ describe('sanitizeDraft', () => {
     [{ kind: 'start', from: ' 2026-10 ', to: null }, { kind: 'start', at: '2026-10' }], // 이번 달은 유지
     [{ kind: 'end', from: null, to: '2056-12' }, { kind: 'end', at: '2056-12' }],
     [{ kind: 'range', from: '2027-03', to: '2027' }, { kind: 'range', from: '2027-03', to: '2027' }],
+    [{ kind: 'range', from: '2027', to: null }, { kind: 'range', from: '2027', to: null }], // 끝 미정
   ])('targetPeriod %o는 %o', (targetPeriod, expected) => {
     expect(sanitize({ targetPeriod }).targetPeriod).toEqual(expected)
   })
@@ -56,7 +57,7 @@ describe('sanitizeDraft', () => {
     ['30년 넘음', { kind: 'start', from: '2099', to: null }],
     ['지난 해', { kind: 'end', from: null, to: '2025' }],
     ['올해 지난 달', { kind: 'start', from: '2026-09', to: null }],
-    ['기간 끝 없음', { kind: 'range', from: '2027', to: null }],
+    ['기간 시작 없음', { kind: 'range', from: null, to: '2027' }],
     ['기간 역순', { kind: 'range', from: '2028', to: '2027-05' }],
     ['기간 시작이 지난 달', { kind: 'range', from: '2026-09', to: '2027' }],
     ['기간 끝이 30년 넘음', { kind: 'range', from: '2027', to: '2099' }],

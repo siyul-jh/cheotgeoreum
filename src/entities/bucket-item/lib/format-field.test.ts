@@ -9,6 +9,7 @@ describe('formatFieldValue', () => {
     [{ kind: 'end', at: '2027' }, '2027년까지'],
     [{ kind: 'range', from: '2027-02', to: '2027-08' }, '2027년 2월 ~ 2027년 8월'],
     [{ kind: 'range', from: '2027', to: '2028' }, '2027년 ~ 2028년'],
+    [{ kind: 'range', from: '2028-03', to: null }, '2028년 3월부터'],
   ] as const)('targetPeriod %o → %s', (targetPeriod, text) => {
     expect(formatFieldValue('targetPeriod', { targetPeriod })).toBe(text)
   })

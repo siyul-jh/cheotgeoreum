@@ -34,9 +34,11 @@ describe('schema', () => {
   ])('targetPeriod %s 실패', (_label, v) => {
     expect(TargetPeriodSchema.safeParse(v).success).toBe(false)
   })
+  it('끝을 정하지 않은 기간은 통과', () => {
+    expect(TargetPeriodSchema.safeParse({ kind: 'range', from: '2027', to: null }).success).toBe(true)
+  })
   it.each([
-    ['끝 없음', { kind: 'range', from: '2027', to: null }, '시작과 끝을 모두 골라 주세요'],
-    ['시작 없음', { kind: 'range', from: null, to: '2027' }, '시작과 끝을 모두 골라 주세요'],
+    ['시작 없음', { kind: 'range', from: null, to: '2027' }, '시작을 골라 주세요'],
     ['역순', { kind: 'range', from: '2028', to: '2027-05' }, '끝이 시작보다 빨라요'],
     ['같은 해 역순 월', { kind: 'range', from: '2027-08', to: '2027-02' }, '끝이 시작보다 빨라요'],
   ])('range %s는 이유와 함께 실패', (_label, v, message) => {

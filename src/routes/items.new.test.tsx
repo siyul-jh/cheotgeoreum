@@ -42,7 +42,7 @@ test('AI 없이 7단계를 진행해 저장하고 [목록으로]로 목록에 �
   expect(item).toMatchObject({ title: '오로라 보기', why: '하늘이 보고 싶어서', category: '여행', status: '아이디어' })
 })
 
-// AC-T1·AC-T3: 기간은 시작·끝이 다 차고 순서가 맞아야 다음으로 간다. 저장하면 목록 카드에 같은 표시
+// AC-T1·AC-T3: 기간은 시작이 있고 순서가 맞아야 다음으로 간다(끝은 비워도 된다). 저장하면 목록 카드에 같은 표시
 test('목표 시기를 기간으로 정해 저장하면 목록 카드에 기간으로 보인다', async () => {
   const y = new Date().getFullYear()
   const router = await open()
@@ -54,8 +54,9 @@ test('목표 시기를 기간으로 정해 저장하면 목록 카드에 기간�
   fireEvent.click(screen.getByRole('radio', { name: '기간' }))
   fireEvent.change(screen.getByLabelText('시작 연도'), { target: { value: String(y + 1) } })
   const nextButton = () => screen.getByRole('button', { name: '다음' }) as HTMLButtonElement
-  expect(nextButton().disabled).toBe(true)
-  expect(screen.getByRole('alert').textContent).toBe('시작과 끝을 모두 골라 주세요')
+  // 끝은 비워도 된다(…부터)
+  expect(nextButton().disabled).toBe(false)
+  expect(screen.queryByRole('alert')).toBeNull()
   fireEvent.change(screen.getByLabelText('끝 연도'), { target: { value: String(y) } })
   expect(nextButton().disabled).toBe(true)
   expect(screen.getByRole('alert').textContent).toBe('끝이 시작보다 빨라요')

@@ -75,11 +75,16 @@ test('기간에서 시작·끝을 모두 비우면 null', () => {
 })
 
 test.each([
-  [{ kind: 'range', from: String(y), to: null }, '시작과 끝을 모두 골라 주세요'],
+  [{ kind: 'range', from: null, to: String(y) }, '시작을 골라 주세요'],
   [{ kind: 'range', from: String(y + 1), to: `${y}-05` }, '끝이 시작보다 빨라요'],
 ] as const)('기간이 덜 채워졌거나 역순이면 이유를 보인다 %o', (value, message) => {
   render(<TargetPeriodInput value={value} onChange={vi.fn()} />)
   expect(screen.getByRole('alert').textContent).toBe(message)
+})
+
+test('끝을 정하지 않은 기간은 오류가 없다', () => {
+  render(<TargetPeriodInput value={{ kind: 'range', from: String(y), to: null }} onChange={vi.fn()} />)
+  expect(screen.queryByRole('alert')).toBeNull()
 })
 
 test('완성된 기간은 오류가 없다', () => {

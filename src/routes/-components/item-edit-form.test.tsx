@@ -161,16 +161,17 @@ test('상태 선택지 앞에 상태 아이콘이 붙고 이름은 글자 그대
   expect(options.map((o) => o.text)).toEqual(options.map((o) => o.value))
 })
 
-// AC-T1·AC-T3: 편집 화면은 저장된 종류를 보이고, 덜 채운 기간은 저장하지 않는다
-test('목표 시기 종류를 바꿔 저장한다. 덜 채운 기간은 이유를 보이고 저장하지 않는다', async () => {
+// AC-T1·AC-T3: 편집 화면은 저장된 종류를 보이고, 역순 기간은 저장하지 않는다
+test('목표 시기 종류를 바꿔 저장한다. 역순 기간은 이유를 보이고 저장하지 않는다', async () => {
   const y = new Date().getFullYear()
   useBucketStore.getState().updateItem(id, { ...base, targetPeriod: { kind: 'end', at: `${y + 1}-02` } })
   const router = await open()
   expect((screen.getByRole('radio', { name: '이때까지' }) as HTMLInputElement).checked).toBe(true)
   fireEvent.click(screen.getByRole('radio', { name: '기간' }))
   expect((screen.getByLabelText('시작 연도') as HTMLSelectElement).value).toBe(String(y + 1))
+  fireEvent.change(screen.getByLabelText('끝 연도'), { target: { value: String(y) } })
   click('저장')
-  await waitFor(() => expect(screen.getAllByRole('alert').map((a) => a.textContent)).toContain('시작과 끝을 모두 골라 주세요'))
+  await waitFor(() => expect(screen.getAllByRole('alert').map((a) => a.textContent)).toContain('끝이 시작보다 빨라요'))
   expect(item().targetPeriod).toEqual({ kind: 'end', at: `${y + 1}-02` })
 
   fireEvent.change(screen.getByLabelText('끝 연도'), { target: { value: String(y + 2) } })
