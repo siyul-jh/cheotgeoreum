@@ -33,7 +33,8 @@ function RootLayout() {
   const [queryClient] = useState(() => new QueryClient())
   return (
     <QueryClientProvider client={queryClient}>
-      <main className="mx-auto min-h-dvh w-full max-w-md px-4 py-6">
+      {/* 768px 미만은 한 기둥(max-w-md). 넓은 화면 폭은 목록·편집이 쓰고, 작성 화면은 스스로 좁힌다 */}
+      <main className="mx-auto min-h-dvh w-full max-w-md px-4 py-6 md:max-w-6xl">
         <Outlet />
       </main>
     </QueryClientProvider>

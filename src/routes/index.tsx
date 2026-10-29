@@ -79,120 +79,124 @@ function ListPage() {
         ))}
       </div>
 
-      <div className="relative flex flex-col gap-5">
+      {/* lg: 왼쪽 패널 + 오른쪽 카드. DOM 순서(패널 → 카드)가 시각·탭 순서와 같다 */}
+      <div className="relative flex flex-col gap-5 lg:grid lg:grid-cols-[22rem_1fr] lg:items-start lg:gap-8">
         <h1 className="sr-only">첫걸음</h1>
 
-        {(stepped || today) && (
-          <section aria-labelledby={heroId} className="surface flex flex-col gap-2.5 rounded-[20px] p-[18px]">
-            <h2 id={heroId} className="text-[13px] text-mute">
-              오늘의 첫걸음
-            </h2>
-            {stepped ? (
-              <div key="stepped" role="status" className="rise relative flex flex-col gap-2.5">
-                <StarBurst count={8} dx={70} dy={50} className="left-10 top-5" />
-                <p className="font-title text-2xl font-bold leading-snug">한 걸음 나아갔어요</p>
-                <p className="break-words text-sm text-mute">
-                  {stepped.title}에 별 하나가 더 켜졌어요. 다음 첫걸음을 정해 볼까요?
-                </p>
-                <Link
-                  to="/items/$id"
-                  params={{ id: stepped.id }}
-                  className="btn press inline-flex items-center self-start border-gold bg-transparent font-bold text-gold"
-                >
-                  다음 행동 정하기
-                </Link>
-              </div>
-            ) : (
-              today && (
-                <div key={today.id} className="rise flex flex-col gap-2.5">
-                  <p className="break-words font-title text-2xl font-bold leading-snug">{today.nextAction.text}</p>
-                  <p className="break-words text-sm text-gold">
-                    {today.title}
-                    {today.nextAction.dueDate && ` · ${formatDate(today.nextAction.dueDate)}까지`}
+        {/* 화면보다 길면 패널 안에서 스크롤. p-1/-m-1은 포커스 링이 overflow에 잘리지 않게(top-5 = main py-6 - 1) */}
+        <div className="flex flex-col gap-5 lg:sticky lg:top-5 lg:-m-1 lg:max-h-[calc(100dvh-2.5rem)] lg:overflow-y-auto lg:p-1">
+          {(stepped || today) && (
+            <section aria-labelledby={heroId} className="surface flex flex-col gap-2.5 rounded-[20px] p-[18px]">
+              <h2 id={heroId} className="text-[13px] text-mute">
+                오늘의 첫걸음
+              </h2>
+              {stepped ? (
+                <div key="stepped" role="status" className="rise relative flex flex-col gap-2.5">
+                  <StarBurst count={8} dx={70} dy={50} className="left-10 top-5" />
+                  <p className="font-title text-2xl font-bold leading-snug">한 걸음 나아갔어요</p>
+                  <p className="break-words text-sm text-mute">
+                    {stepped.title}에 별 하나가 더 켜졌어요. 다음 첫걸음을 정해 볼까요?
                   </p>
-                  <button
-                    type="button"
-                    className="btn btn-primary press self-start"
-                    onClick={() => {
-                      save(today, { nextAction: { text: '', dueDate: null } })
-                      setStepped(today)
-                    }}
+                  <Link
+                    to="/items/$id"
+                    params={{ id: stepped.id }}
+                    className="btn press inline-flex items-center self-start border-gold bg-transparent font-bold text-gold"
                   >
-                    했어요
-                  </button>
+                    다음 행동 정하기
+                  </Link>
                 </div>
-              )
-            )}
-          </section>
-        )}
+              ) : (
+                today && (
+                  <div key={today.id} className="rise flex flex-col gap-2.5">
+                    <p className="break-words font-title text-2xl font-bold leading-snug">{today.nextAction.text}</p>
+                    <p className="break-words text-sm text-gold">
+                      {today.title}
+                      {today.nextAction.dueDate && ` · ${formatDate(today.nextAction.dueDate)}까지`}
+                    </p>
+                    <button
+                      type="button"
+                      className="btn btn-primary press self-start"
+                      onClick={() => {
+                        save(today, { nextAction: { text: '', dueDate: null } })
+                        setStepped(today)
+                      }}
+                    >
+                      했어요
+                    </button>
+                  </div>
+                )
+              )}
+            </section>
+          )}
 
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex gap-1.5">
-            {TABS.map((t) => {
-              const on = status === t.status
-              return (
-                <button
-                  key={t.label}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => void navigate({ search: (prev) => ({ ...prev, status: t.status }) })}
-                  className={`press h-9 whitespace-nowrap rounded-full px-3 text-sm ${on ? 'bg-ink font-bold text-night' : 'border border-edge'}`}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex gap-1.5">
+              {TABS.map((t) => {
+                const on = status === t.status
+                return (
+                  <button
+                    key={t.label}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => void navigate({ search: (prev) => ({ ...prev, status: t.status }) })}
+                    className={`press h-9 whitespace-nowrap rounded-full px-3 text-sm ${on ? 'bg-ink font-bold text-night' : 'border border-edge'}`}
+                  >
+                    {t.label}
+                  </button>
+                )
+              })}
+            </div>
+            <Link to="/items/new" className="btn btn-primary press inline-flex shrink-0 items-center whitespace-nowrap text-sm">
+              + 새 꿈
+            </Link>
+          </div>
+
+          <details className="-mt-2 text-sm">
+            <summary className="cursor-pointer py-2 text-mute">필터{filterNote && ` · ${filterNote}`}</summary>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <label className="flex flex-col gap-1 text-[13px] text-mute">
+                카테고리
+                <select
+                  className="field text-sm"
+                  value={category ?? ''}
+                  onChange={(e) => void navigate({ search: (prev) => ({ ...prev, category: e.target.value || undefined }) })}
                 >
-                  {t.label}
-                </button>
-              )
-            })}
-          </div>
-          <Link to="/items/new" className="btn btn-primary press inline-flex shrink-0 items-center whitespace-nowrap text-sm">
-            + 새 꿈
-          </Link>
+                  <option value="">전체</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                  <option value={UNCATEGORIZED_FILTER}>{UNCATEGORIZED_LABEL}</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-[13px] text-mute">
+                상태
+                <select
+                  className="field text-sm"
+                  value={status ?? ''}
+                  onChange={(e) =>
+                    void navigate({ search: (prev) => ({ ...prev, status: STATUSES.find((s) => s === e.target.value) }) })
+                  }
+                >
+                  <option value="">전체</option>
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </details>
         </div>
-
-        <details className="-mt-2 text-sm">
-          <summary className="cursor-pointer py-2 text-mute">필터{filterNote && ` · ${filterNote}`}</summary>
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <label className="flex flex-col gap-1 text-[13px] text-mute">
-              카테고리
-              <select
-                className="field text-sm"
-                value={category ?? ''}
-                onChange={(e) => void navigate({ search: (prev) => ({ ...prev, category: e.target.value || undefined }) })}
-              >
-                <option value="">전체</option>
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-                <option value={UNCATEGORIZED_FILTER}>{UNCATEGORIZED_LABEL}</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-1 text-[13px] text-mute">
-              상태
-              <select
-                className="field text-sm"
-                value={status ?? ''}
-                onChange={(e) =>
-                  void navigate({ search: (prev) => ({ ...prev, status: STATUSES.find((s) => s === e.target.value) }) })
-                }
-              >
-                <option value="">전체</option>
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </details>
 
         {visible.length === 0 ? (
           <p className="surface p-6 text-center text-sm text-mute">
             {items.length === 0 ? '아직 띄운 꿈이 없어요. "+ 새 꿈"으로 첫 별을 띄워 보세요.' : '조건에 맞는 꿈이 없어요.'}
           </p>
         ) : (
-          <ul className="flex flex-col gap-2.5">
+          <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2 xl:grid-cols-3">
             {visible.map((item, i) => (
               <li key={item.id} className="rise" style={{ animationDelay: `${i * 60}ms` }}>
                 <ItemCard

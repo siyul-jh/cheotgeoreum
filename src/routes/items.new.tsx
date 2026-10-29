@@ -60,7 +60,7 @@ function NewItemPage() {
 
   if (savedTitle !== null) {
     return (
-      <div role="status" className="rise flex min-h-[70dvh] flex-col items-center justify-center gap-[18px] text-center">
+      <div role="status" className="rise mx-auto flex min-h-[70dvh] max-w-md flex-col items-center justify-center gap-[18px] text-center">
         <div className="relative flex size-20 items-center justify-center">
           <StarBurst count={10} dx={90} dy={90} delay={0.3} className="left-[34px] top-[34px]" />
           <StarIcon fill="currentColor" className="ascend size-14 text-gold" />
@@ -71,8 +71,9 @@ function NewItemPage() {
     )
   }
 
+  // 한 질문에 집중하는 흐름이라 넓은 화면에서도 좁은 기둥을 유지한다
   return (
-    <>
+    <div className="mx-auto max-w-md">
       <StepForm
         state={state}
         dispatch={dispatchStep}
@@ -87,6 +88,6 @@ function NewItemPage() {
           <IdeaSheet onPick={onPick} onClose={() => setIdeasOpen(false)} />
         </ErrorBoundary>
       )}
-    </>
+    </div>
   )
 }

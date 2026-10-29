@@ -27,7 +27,7 @@ export function IdeaSheet({ onPick, onClose }: Props) {
       ref={ref}
       aria-label="아이디어 추천"
       onClose={onClose}
-      className="m-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-[20px] border-t border-line bg-card p-4 text-ink backdrop:bg-black/60"
+      className="m-0 mt-auto max-h-[85dvh] w-full max-w-none md:mx-auto md:max-w-md rounded-t-[20px] border-t border-line bg-card p-4 text-ink backdrop:bg-black/60"
     >
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">

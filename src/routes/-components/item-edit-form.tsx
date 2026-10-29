@@ -63,9 +63,11 @@ export function ItemEditForm({ item, onDone }: Props) {
     if (p.nextAction !== undefined) form.setFieldValue('nextAction', p.nextAction)
   }
 
+  // md: 2열. 짧은 칸(상태·목표 시기, 다음 행동·함께할 사람)을 dense로 짝지어 빈 칸을 없앤다.
+  // reading-flow: grid-rows는 탭 순서를 시각 순서에 맞추는 향상용. 미지원 브라우저는 DOM(휴대폰 화면) 순서로 이동한다
   return (
     <form
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-4 md:grid md:grid-flow-row-dense md:grid-cols-2 md:gap-x-6 md:[reading-flow:grid-rows]"
       onSubmit={(e) => {
         e.preventDefault()
         void form.handleSubmit()
@@ -73,7 +75,7 @@ export function ItemEditForm({ item, onDone }: Props) {
     >
       <form.Field name="title">
         {(f) => (
-          <label className="flex flex-col gap-1.5 text-[13px] text-mute">
+          <label className="flex flex-col gap-1.5 text-[13px] text-mute md:col-span-2">
             항목
             <input
               className="field"
@@ -107,7 +109,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Field>
       <form.Field name="why">
         {(f) => (
-          <label className="flex flex-col gap-1.5 text-[13px] text-mute">
+          <label className="flex flex-col gap-1.5 text-[13px] text-mute md:col-span-2">
             왜
             <textarea
               className="field"
@@ -121,7 +123,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Field>
       <form.Field name="category">
         {(f) => (
-          <fieldset className="flex flex-col gap-1.5 text-sm">
+          <fieldset className="flex flex-col gap-1.5 text-sm md:col-span-2">
             <legend className="mb-1.5 text-[13px] text-mute">카테고리</legend>
             <CategoryPicker value={f.state.value} onChange={f.handleChange} />
           </fieldset>
@@ -137,7 +139,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Field>
       <form.Field name="prerequisites">
         {(f) => (
-          <fieldset className="flex flex-col gap-1.5 text-sm">
+          <fieldset className="flex flex-col gap-1.5 text-sm md:col-span-2">
             <legend className="mb-1.5 text-[13px] text-mute">선행 과제</legend>
             <PrerequisitesInput value={f.state.value} onChange={f.handleChange} />
           </fieldset>
@@ -168,7 +170,7 @@ export function ItemEditForm({ item, onDone }: Props) {
           )
           const { draft } = draftState
           return (
-            <section className="flex flex-col gap-2">
+            <section className="flex flex-col gap-2 md:col-span-2">
               {draftState.error && (
                 <p role="alert" className="surface border-danger/50 p-3 text-sm">
                   {LLM_ERROR_MESSAGES[draftState.error]}
@@ -201,7 +203,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Subscribe>
 
       {/* 긴 폼 맨 아래까지 내리지 않아도 저장·삭제할 수 있게 하단에 붙인다 */}
-      <div className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t border-line bg-night/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t border-line bg-night/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:col-span-2 md:mx-0 md:px-0">
         <form.Subscribe selector={(s) => s.errorMap.onSubmit}>
           {(err) =>
             err && (

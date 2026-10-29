@@ -22,7 +22,7 @@ export function ItemCard({ item, onToggleDone }: Props) {
   const star = { stroke: 'currentColor', strokeWidth: 1.5, strokeLinejoin: 'round' } as const
 
   return (
-    <article className={`surface flex items-start gap-3 p-4 ${done ? 'border-gold-edge' : ''}`}>
+    <article className={`surface flex h-full items-start gap-3 p-4 ${done ? 'border-gold-edge' : ''}`}>
       <button
         type="button"
         aria-label={`${item.title} 이룬 꿈`}
