@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { DateTime } from 'luxon'
+import { useState } from 'react'
 import { afterEach, expect, test, vi } from 'vitest'
+import type { TargetPeriod } from '../model/schema'
 import { TargetPeriodInput } from './target-period-input'
 
 afterEach(cleanup)
@@ -90,4 +92,15 @@ test('끝을 정하지 않은 기간은 오류가 없다', () => {
 test('완성된 기간은 오류가 없다', () => {
   render(<TargetPeriodInput value={{ kind: 'range', from: `${y}-03`, to: String(y) }} onChange={vi.fn()} />)
   expect(screen.queryByRole('alert')).toBeNull()
+})
+
+// 값을 비워도 고른 종류는 그대로다(다시 고르면 같은 종류로 저장)
+test('이때까지 값의 연도를 미정으로 바꿔도 종류는 이때까지로 남는다', () => {
+  function Controlled() {
+    const [value, setValue] = useState<TargetPeriod | null>({ kind: 'end', at: String(y + 1) })
+    return <TargetPeriodInput value={value} onChange={setValue} />
+  }
+  render(<Controlled />)
+  fireEvent.change(select('연도'), { target: { value: '' } })
+  expect(radio('이때까지').checked).toBe(true)
 })

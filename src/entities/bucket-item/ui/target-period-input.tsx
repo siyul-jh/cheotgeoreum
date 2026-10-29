@@ -13,7 +13,7 @@ const KINDS: { kind: PeriodKind; label: string }[] = [
 export function TargetPeriodInput({ value, onChange }: Props) {
   const name = useId()
   // 값이 비어 있어도 고른 종류를 기억한다. 값이 있으면 값의 종류가 우선
-  const [emptyKind, setEmptyKind] = useState<PeriodKind>('start')
+  const [emptyKind, setEmptyKind] = useState<PeriodKind>(value?.kind ?? 'start')
   const kind = value?.kind ?? emptyKind
   // start/end의 시점 ↔ range의 시작
   const first = value === null ? null : value.kind === 'range' ? value.from : value.at
@@ -21,6 +21,7 @@ export function TargetPeriodInput({ value, onChange }: Props) {
   const error = value?.kind === 'range' ? TargetPeriodSchema.safeParse(value).error?.issues[0]?.message : null
 
   const emit = (k: PeriodKind, from: string | null, end: string | null) => {
+    setEmptyKind(k) // 값을 비워도 종류는 그대로
     if (k !== 'range') onChange(from ? { kind: k, at: from } : null)
     else onChange(from || end ? { kind: 'range', from, to: end } : null)
   }
