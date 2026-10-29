@@ -35,16 +35,37 @@ const base: BucketItemInput = {
 beforeEach(() => vi.stubGlobal('Path2D', class {}))
 afterEach(() => vi.unstubAllGlobals())
 
-test('제목만 있으면 제목과 하단 로고만 쓴다', () => {
+test('제목만 있으면 제목·상태와 하단 로고만 쓴다', () => {
   const { ctx, texts } = fakeContext()
   drawCard(ctx, base)
-  expect(texts).toEqual(['오로라 보기', '첫걸음'])
+  expect(texts).toEqual(['오로라 보기', '아이디어', '첫걸음'])
 })
 
-test('목표 시기·왜·카테고리는 있을 때 쓴다', () => {
+test('모든 항목이 있으면 모두 쓴다', () => {
   const { ctx, texts } = fakeContext()
-  drawCard(ctx, { ...base, targetPeriod: { kind: 'end', at: '2027-03' }, why: '하늘이 보고 싶어서', category: '여행' })
-  expect(texts).toEqual(['오로라 보기', '2027년 3월까지', '하늘이 보고 싶어서', '여행', '첫걸음'])
+  drawCard(ctx, {
+    ...base,
+    targetPeriod: { kind: 'end', at: '2027-03' },
+    why: '하늘이 보고 싶어서',
+    category: '여행',
+    prerequisites: [{ text: '여권', done: false }, { text: '적금', done: true }],
+    nextAction: { text: '항공권 검색', dueDate: '2026-11-03' },
+    companions: ['민지'],
+  })
+  expect(texts).toEqual([
+    '오로라 보기',
+    '2027년 3월까지',
+    '여행',
+    '아이디어',
+    '하늘이 보고 싶어서',
+    '선행 과제',
+    '여권, 적금',
+    '다음 행동',
+    '항공권 검색 · 11월 3일 (화)',
+    '함께할 사람',
+    '민지',
+    '첫걸음',
+  ])
 })
 
 test.each([
@@ -53,7 +74,7 @@ test.each([
 ] as const)('목표 시기는 종류대로 쓴다(까지를 덧붙이지 않는다) %o', (targetPeriod, text) => {
   const { ctx, texts } = fakeContext()
   drawCard(ctx, { ...base, targetPeriod })
-  expect(texts).toEqual(['오로라 보기', text, '첫걸음'])
+  expect(texts).toEqual(['오로라 보기', text, '아이디어', '첫걸음'])
 })
 
 test('긴 제목과 왜는 3줄에서 말줄임한다', () => {
