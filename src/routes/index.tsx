@@ -6,6 +6,7 @@ import {
   STATUSES,
   UNCATEGORIZED_FILTER,
   UNCATEGORIZED_LABEL,
+  StatusIcon,
   pickTodayStep,
   selectCategories,
   useBucketStore,
@@ -140,8 +141,9 @@ function ListPage() {
                     type="button"
                     aria-pressed={on}
                     onClick={() => void navigate({ search: (prev) => ({ ...prev, status: c.status }) })}
-                    className={`press h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-sm ${on ? 'bg-ink font-bold text-night' : 'border border-edge'}`}
+                    className={`press inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-sm ${on ? 'bg-ink font-bold text-night' : 'border border-edge'}`}
                   >
+                    {c.status && <StatusIcon status={c.status} className="size-4 shrink-0" />}
                     {c.label}
                   </button>
                 )

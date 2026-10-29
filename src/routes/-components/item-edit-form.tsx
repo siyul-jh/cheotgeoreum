@@ -9,6 +9,7 @@ import {
   NextActionInput,
   PrerequisitesInput,
   STATUSES,
+  StatusIcon,
   TargetPeriodInput,
   draftToPatch,
   fieldLimits,
@@ -124,6 +125,8 @@ export function ItemEditForm({ item, onDone }: Props) {
               >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
+                    {/* 아이콘은 base-select 목록에서만 보인다. 미지원 브라우저의 네이티브 목록은 글자만 */}
+                    <StatusIcon status={s} className="size-4 shrink-0" />
                     {s}
                   </option>
                 ))}

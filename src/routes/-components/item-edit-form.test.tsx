@@ -152,3 +152,10 @@ test('편집 폼은 한 열에서 구역 카드로 묶는다', async () => {
   expect(people).not.toBeNull()
   expect(people).not.toBe(prep)
 })
+
+test('상태 선택지 앞에 상태 아이콘이 붙고 이름은 글자 그대로다', async () => {
+  await open()
+  const options = Array.from((screen.getByLabelText('상태') as HTMLSelectElement).options)
+  expect(options.map((o) => o.querySelector('svg')?.dataset.status)).toEqual(options.map((o) => o.value))
+  expect(options.map((o) => o.text)).toEqual(options.map((o) => o.value))
+})

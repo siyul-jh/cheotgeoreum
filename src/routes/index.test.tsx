@@ -48,12 +48,16 @@ test('별 버튼은 완료와 진행 중을 오간다', async () => {
   const id = useBucketStore.getState().addItem(base)
   await open()
   const star = screen.getByRole('button', { name: '오로라 보기 이룬 꿈' })
+  const icon = () => star.querySelector('svg')!.dataset.status
   expect(star.getAttribute('aria-pressed')).toBe('false')
+  expect(icon()).toBe('아이디어')
   fireEvent.click(star)
   expect(useBucketStore.getState().items[0]).toMatchObject({ id, status: '완료', title: '오로라 보기' })
   expect(star.getAttribute('aria-pressed')).toBe('true')
+  expect(icon()).toBe('완료')
   fireEvent.click(star)
   expect(useBucketStore.getState().items[0]!.status).toBe('진행 중')
+  expect(icon()).toBe('진행 중')
 })
 
 test('오늘의 첫걸음: 기한 빠른 항목을 보이고 [했어요]면 다음 행동을 비우고 축하한다', async () => {
@@ -83,6 +87,8 @@ test('상태 칩은 모든 상태를 한 줄로 고르고, 카테고리 select�
   const chips = screen.getByRole('group', { name: '상태' })
   const names = Array.from(chips.querySelectorAll('button'), (b) => b.textContent)
   expect(names).toEqual(['전체', '아이디어', '계획', '진행 중', '이룬 꿈', '보류', '포기'])
+  const icons = Array.from(chips.querySelectorAll('button'), (b) => b.querySelector('svg')?.dataset.status)
+  expect(icons).toEqual([undefined, '아이디어', '계획', '진행 중', '완료', '보류', '포기'])
   expect(screen.queryByRole('combobox', { name: /상태/ })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '보류' }))
   expect(router.state.location.search).toEqual({ category: '__none__', status: '보류' })

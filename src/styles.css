@@ -107,6 +107,9 @@
       box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
     }
     .select option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       min-height: 2.75rem;
       padding: 0.5rem 0.75rem;
       border-radius: 10px;
