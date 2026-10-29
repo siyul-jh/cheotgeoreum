@@ -48,9 +48,11 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
     dispatch(action)
   }
 
-  // 아이디어는 제목만 정한다. AI 빈칸 채우기는 사용자가 [빈 칸 채우기]를 눌렀을 때만 돈다
-  const onPick = (title: string) => {
-    dispatchStep({ type: 'decide', field: 'title', patch: { title } })
+  // 아이디어는 제목을 정하고, 추천받을 때 고른 카테고리는 카테고리 단계에 미리 골라 둔다(아직 정하지 않았을 때만).
+  // AI 빈칸 채우기는 사용자가 [빈 칸 채우기]를 눌렀을 때만 돈다
+  const onPick = (title: string, category: string | null) => {
+    const prefill = category !== null && !state.decided.includes('category') ? { category } : {}
+    dispatchStep({ type: 'decide', field: 'title', patch: { title, ...prefill } })
     setIdeasOpen(false)
   }
 
@@ -68,11 +70,9 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
         onSave={onSave}
         saveError={saveError}
       />
-      {ideasOpen && (
-        <ErrorBoundary fallback={<p role="alert">아이디어 추천을 불러오지 못했어요. 직접 입력해 주세요.</p>}>
-          <IdeaSheet onPick={onPick} onClose={() => setIdeasOpen(false)} />
-        </ErrorBoundary>
-      )}
+      <ErrorBoundary fallback={<p role="alert">아이디어 추천을 불러오지 못했어요. 직접 입력해 주세요.</p>}>
+        <IdeaSheet open={ideasOpen} onOpenChange={setIdeasOpen} onPick={onPick} />
+      </ErrorBoundary>
     </div>
   )
 }

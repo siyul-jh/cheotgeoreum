@@ -10,11 +10,12 @@ vi.mock('@/features/ai-fill', () => ({
   useFillBlanks: () => ({ status: 'idle', draft: null, error: null, request, reset }),
 }))
 vi.mock('@/features/idea-suggest', () => ({
-  IdeaSheet: ({ onPick }: { onPick: (t: string) => void }) => (
-    <button type="button" onClick={() => onPick('오로라 보기')}>
-      고르기
-    </button>
-  ),
+  IdeaSheet: ({ open, onPick }: { open: boolean; onPick: (t: string, c: string | null) => void }) =>
+    open && (
+      <button type="button" onClick={() => onPick('오로라 보기', '여행')}>
+        고르기
+      </button>
+    ),
 }))
 
 beforeEach(() => {
@@ -34,6 +35,16 @@ test('아이디어를 고르면 제목만 정해지고 AI 초안은 요청하지
   expect(screen.queryByRole('button', { name: '고르기' })).toBeNull()
   expect(screen.getByText('오로라 보기')).toBeTruthy()
   expect(request).not.toHaveBeenCalled()
+})
+
+test('추천받을 때 고른 카테고리는 카테고리 단계에 미리 골라져 있다', async () => {
+  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/items/new'] }) })
+  render(<RouterProvider router={router} />)
+  fireEvent.click(await screen.findByRole('button', { name: '뭘 적을지 모르겠어요' }))
+  fireEvent.click(screen.getByRole('button', { name: '고르기' }))
+  await screen.findByText('왜 하고 싶나요?')
+  fireEvent.click(screen.getByRole('button', { name: '건너뛰기' }))
+  expect(screen.getByRole('button', { name: '여행' }).getAttribute('aria-pressed')).toBe('true')
 })
 
 test('결정한 제목이 바뀌면 이전 초안을 버린다', async () => {
