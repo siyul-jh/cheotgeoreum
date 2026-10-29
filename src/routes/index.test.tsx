@@ -77,3 +77,13 @@ test('다음 행동이 있는 항목이 없으면 오늘의 첫걸음을 숨긴�
   await open()
   expect(screen.queryByRole('region', { name: '오늘의 첫걸음' })).toBeNull()
 })
+
+test('카테고리·상태 필터는 접지 않고 항상 보인다', async () => {
+  const router = await open()
+  const category = screen.getByRole('combobox', { name: /카테고리/ })
+  const status = screen.getByRole('combobox', { name: /상태/ })
+  expect(category.closest('details')).toBeNull()
+  expect(status.closest('details')).toBeNull()
+  fireEvent.change(status, { target: { value: '완료' } })
+  expect(router.state.location.search).toEqual({ status: '완료' })
+})

@@ -63,9 +63,6 @@ function ListPage() {
       (category === undefined || (category === UNCATEGORIZED_FILTER ? i.category === null : i.category === category)) &&
       (status === undefined || i.status === status),
   )
-  const filterNote = [category === UNCATEGORIZED_FILTER ? UNCATEGORIZED_LABEL : category, status]
-    .filter(Boolean)
-    .join(' · ')
 
   return (
     <>
@@ -128,8 +125,10 @@ function ListPage() {
             </section>
           )}
 
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex gap-1.5">
+          {/* 휴대폰: 1줄 탭·새 꿈, 2줄 필터 두 칸. md 이상: 탭 · 필터 · 새 꿈 한 줄. DOM 순서는 휴대폰 화면 순서.
+              reading-flow는 md에서 탭 순서를 시각 순서에 맞추는 향상용(미지원이면 DOM 순서로 이동) */}
+          <div className="grid grid-cols-[1fr_auto] items-center gap-2 [grid-template-areas:'tabs_new'_'filters_filters'] md:grid-cols-[auto_1fr_auto] md:gap-3 md:[grid-template-areas:'tabs_filters_new'] md:[reading-flow:grid-rows]">
+            <div className="flex gap-1.5 [grid-area:tabs]">
               {TABS.map((t) => {
                 const on = status === t.status
                 return (
@@ -145,18 +144,17 @@ function ListPage() {
                 )
               })}
             </div>
-            <Link to="/items/new" className="btn btn-primary press inline-flex shrink-0 items-center whitespace-nowrap text-sm">
+            <Link
+              to="/items/new"
+              className="btn btn-primary press inline-flex shrink-0 items-center whitespace-nowrap text-sm [grid-area:new]"
+            >
               + 새 꿈
             </Link>
-          </div>
-
-          <details className="-mt-2 text-sm">
-            <summary className="cursor-pointer py-2 text-mute">필터{filterNote && ` · ${filterNote}`}</summary>
-            <div className="grid grid-cols-2 gap-2 pt-1 md:max-w-md">
-              <label className="flex flex-col gap-1 text-[13px] text-mute">
-                카테고리
+            <div className="grid grid-cols-2 gap-2 [grid-area:filters] md:flex md:justify-end">
+              <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute">
+                <span className="shrink-0">카테고리</span>
                 <select
-                  className="field text-sm"
+                  className="field text-sm md:w-36"
                   value={category ?? ''}
                   onChange={(e) => void navigate({ search: (prev) => ({ ...prev, category: e.target.value || undefined }) })}
                 >
@@ -169,10 +167,10 @@ function ListPage() {
                   <option value={UNCATEGORIZED_FILTER}>{UNCATEGORIZED_LABEL}</option>
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-[13px] text-mute">
-                상태
+              <label className="flex min-w-0 items-center gap-2 text-[13px] text-mute">
+                <span className="shrink-0">상태</span>
                 <select
-                  className="field text-sm"
+                  className="field text-sm md:w-32"
                   value={status ?? ''}
                   onChange={(e) =>
                     void navigate({ search: (prev) => ({ ...prev, status: STATUSES.find((s) => s === e.target.value) }) })
@@ -187,7 +185,7 @@ function ListPage() {
                 </select>
               </label>
             </div>
-          </details>
+          </div>
         </div>
 
         {visible.length === 0 ? (
