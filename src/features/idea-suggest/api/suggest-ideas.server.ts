@@ -39,8 +39,11 @@ export async function runSuggestIdeas(input: SuggestIdeasInput, model: LanguageM
 
   const result = await generateStructured({ model, schema: IdeasOutputSchema, system: SYSTEM, prompt, temperature: 0.9 })
   if (!result.ok) return result
+  // 빠른 모델이 붙이는 앞 번호("1.")는 떼고, 한자(중국어)가 섞인 것은 버린다(8개 요청해 5개면 충분)
   const ideas = dedupeIdeas(
-    result.data.ideas.map((idea) => idea.trim().slice(0, fieldLimits.title)),
+    result.data.ideas
+      .map((idea) => idea.trim().replace(/^\d+[.)]\s*/, '').slice(0, fieldLimits.title))
+      .filter((idea) => !/\p{Script=Han}/u.test(idea)),
     existingTitles,
   )
   return ideas.length >= RESULT_COUNT ? { ok: true, data: ideas.slice(0, RESULT_COUNT) } : { ok: false, code: 'invalid_response' }

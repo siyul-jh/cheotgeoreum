@@ -40,6 +40,11 @@ describe('runSuggestIdeas', () => {
     const result = await runSuggestIdeas({ existingTitles: ['a', 'b', 'c'] }, modelReturning(eight))
     expect(result).toEqual({ ok: true, data: ['d', 'e', 'f', 'g', 'h'] })
   })
+  it('앞 번호는 떼고 한자가 섞인 것은 버린다', async () => {
+    const ideas = ['1. 오로라 보기', '2) 제주 걷기', '열차 여행感受하기', 'd', 'e', 'f', 'g', 'h']
+    const result = await runSuggestIdeas({ existingTitles: [] }, modelReturning(ideas))
+    expect(result).toEqual({ ok: true, data: ['오로라 보기', '제주 걷기', 'd', 'e', 'f'] })
+  })
   it('남은 것이 4개면 invalid_response', async () => {
     const result = await runSuggestIdeas({ existingTitles: ['a', 'b', 'c', 'd'] }, modelReturning(eight))
     expect(result).toEqual({ ok: false, code: 'invalid_response' })
