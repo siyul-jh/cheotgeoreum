@@ -109,7 +109,7 @@ test('머리줄: 보이는 제목, 이룬 수 요약. 새 꿈 버튼은 footer(�
   expect(title.className).not.toMatch(/sr-only/)
   const header = title.closest('header')!
   expect(header.textContent).toContain('3개 중 1개 이룸')
-  expect(within(header).queryByRole('link')).toBeNull()
+  expect(within(header).getAllByRole('link').map((l) => l.getAttribute('href'))).toEqual(['/settings'])
   const fab = screen.getByRole('link', { name: '+ 새 꿈' })
   expect(fab.getAttribute('href')).toBe('/items/new')
   expect(fab.closest('footer')).not.toBeNull()

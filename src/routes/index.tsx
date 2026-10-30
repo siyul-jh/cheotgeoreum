@@ -14,7 +14,6 @@ import {
   type BucketItemInput,
   type Status,
 } from '@/entities/bucket-item'
-import { BackupActions } from '@/features/backup'
 import { formatDate } from '@/shared/lib/date'
 import { StarBurst } from '@/shared/ui/star-icon'
 
@@ -94,6 +93,17 @@ function ListPage() {
           {items.length > 0 && (
             <p className="min-w-0 truncate text-sm text-mute">{`${items.length}개 중 ${doneCount}개 이룸`}</p>
           )}
+          <Link
+            to="/settings"
+            aria-label="설정"
+            className="press -mr-2.5 ml-auto flex size-11 shrink-0 items-center justify-center rounded-full text-mute"
+          >
+            {/* 톱니바퀴 */}
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="size-[22px]">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+            </svg>
+          </Link>
         </header>
 
         <div className="flex flex-col gap-6">
@@ -229,9 +239,6 @@ function ListPage() {
             ))}
           </ul>
         )}
-
-        {/* pb-24 안쪽 마지막: 휴대폰 고정 footer에 가리지 않는다 */}
-        <BackupActions />
       </div>
 
       {/* 새 꿈 버튼: 휴대폰은 아래 고정 footer의 넓은 버튼, md 이상은 footer 상자를 없애고(contents) 오른쪽 아래 플로팅.

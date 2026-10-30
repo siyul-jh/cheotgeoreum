@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SRouteImport } from './routes/s'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as ItemsNewRouteImport } from './routes/items.new'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const SRoute = SRouteImport.update({
   id: '/s',
   path: '/s',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItemsIdRoute = ItemsIdRouteImport.update({
@@ -38,12 +44,14 @@ const ItemsNewRoute = ItemsNewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/s': typeof SRoute
+  '/settings': typeof SettingsRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/s': typeof SRoute
+  '/settings': typeof SettingsRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/s': typeof SRoute
+  '/settings': typeof SettingsRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/s' | '/items/$id' | '/items/new'
+  fullPaths: '/' | '/s' | '/settings' | '/items/$id' | '/items/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/s' | '/items/$id' | '/items/new'
-  id: '__root__' | '/' | '/s' | '/items/$id' | '/items/new'
+  to: '/' | '/s' | '/settings' | '/items/$id' | '/items/new'
+  id: '__root__' | '/' | '/s' | '/settings' | '/items/$id' | '/items/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SRoute: typeof SRoute
+  SettingsRoute: typeof SettingsRoute
   ItemsIdRoute: typeof ItemsIdRoute
   ItemsNewRoute: typeof ItemsNewRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/s'
       fullPath: '/s'
       preLoaderRoute: typeof SRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/items/$id': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SRoute: SRoute,
+  SettingsRoute: SettingsRoute,
   ItemsIdRoute: ItemsIdRoute,
   ItemsNewRoute: ItemsNewRoute,
 }
