@@ -121,8 +121,8 @@ test('빈 칸 채우기는 비어 있는 칸에만 제안을 보이고 사용하
 test('pending이면 버튼이 비활성화된다', async () => {
   fill.state = { status: 'pending', draft: null, error: null }
   await open()
-  expect(screen.getByText('AI가 빈 칸을 채우고 있어요. 잠시만 기다려 주세요.').closest('[role="status"]')).not.toBeNull()
-  expect(screen.queryByRole('button', { name: '빈 칸 채우기 (AI)' })).toBeNull()
+  expect(screen.getByText('AI가 빈 칸을 채우고 있어요…').closest('[role="status"]')).not.toBeNull()
+  expect((screen.getByRole('button', { name: '빈 칸 채우기 (AI)' }) as HTMLButtonElement).disabled).toBe(true)
 })
 
 test('그룹마다 라벨은 하나, 추가 입력칸에는 예시가 있고 저장 바는 하단에 고정된다', async () => {

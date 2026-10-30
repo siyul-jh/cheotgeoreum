@@ -23,7 +23,7 @@ import {
 } from '@/entities/bucket-item'
 import { useFillBlanks } from '@/features/ai-fill'
 import { LLM_ERROR_MESSAGES } from '@/shared/lib/llm-result'
-import { AiPendingRow, AiSuggestionRow } from '@/shared/ui/ai-suggestion-row'
+import { AiPendingStatus, AiSuggestionRow } from '@/shared/ui/ai-suggestion-row'
 
 type Props = { item: BucketItem; onDone: () => void }
 
@@ -185,19 +185,18 @@ export function ItemEditForm({ item, onDone }: Props) {
                   {LLM_ERROR_MESSAGES[draftState.error]}
                 </p>
               )}
-              {draftState.status === 'pending' ? (
-                <AiPendingRow />
-              ) : (
-                blanks.length > 0 && (
-                  <button
-                    type="button"
-                    className="btn press"
-                    onClick={() => request({ item: values, blankFields: blanks, categories })}
-                  >
-                    빈 칸 채우기 (AI)
-                  </button>
-                )
+              {blanks.length > 0 && (
+                <button
+                  type="button"
+                  className="btn press"
+                  disabled={draftState.status === 'pending'}
+                  onClick={() => request({ item: values, blankFields: blanks, categories })}
+                >
+                  빈 칸 채우기 (AI)
+                </button>
               )}
+              {/* 아래 고정 저장 바 위에 띄운다 */}
+              <AiPendingStatus pending={draftState.status === 'pending'} className="bottom-28" />
               {draft &&
                 aiFields.map((field) => {
                   const patch = draftToPatch(field, draft, values)

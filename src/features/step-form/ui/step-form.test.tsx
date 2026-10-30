@@ -97,8 +97,8 @@ test("'빈 칸 채우기'는 제목 결정 후 보이고 pending 중에는 비�
   expect(onFill).toHaveBeenCalledOnce()
 
   rerender({ status: 'pending', draft: null, error: null })
-  expect(screen.getByRole('status').textContent).toContain('AI가 빈 칸을 채우고 있어요')
-  expect(screen.queryByRole('button', { name: '빈 칸 채우기 (AI)' })).toBeNull()
+  expect(screen.getByText('AI가 빈 칸을 채우고 있어요…').closest('[role="status"]')).not.toBeNull()
+  expect((screen.getByRole('button', { name: '빈 칸 채우기 (AI)' }) as HTMLButtonElement).disabled).toBe(true)
   expect((screen.getByLabelText('왜 하고 싶나요?') as HTMLTextAreaElement).disabled).toBe(false)
 })
 

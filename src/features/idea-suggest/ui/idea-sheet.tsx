@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { fieldLimits, selectCategories, useBucketStore } from '@/entities/bucket-item'
 import { LLM_ERROR_MESSAGES } from '@/shared/lib/llm-result'
+import { FloatingStatus, Spinner } from '@/shared/ui/floating-status'
 import { XIcon } from '@/shared/ui/x-icon'
 import { useSuggestIdeas } from '../model/use-suggest-ideas'
 
@@ -113,36 +114,21 @@ export function IdeaSheet({ open, onOpenChange, onPick }: Props) {
         )}
       </div>
     </dialog>
-    {/* live region은 늘 두고 내용만 바꾼다(새로 생긴 region은 읽지 않는 스크린 리더가 있다) */}
-    <div role="status" className="pointer-events-none fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-md justify-center">
-      {!open && showStatus && (
-        <div className="surface pointer-events-auto flex min-h-12 items-center gap-3 rounded-full py-1.5 pl-4 pr-1.5 text-sm shadow-lg">
-          {status === 'pending' ? (
-            <>
-              <Spinner />
-              <span className="pr-3">아이디어를 찾고 있어요…</span>
-            </>
-          ) : (
-            <>
-              <span>{status === 'ready' ? '아이디어가 준비됐어요' : '아이디어를 가져오지 못했어요'}</span>
-              <button type="button" className="btn btn-primary press h-9 px-4 text-sm" onClick={() => onOpenChange(true)}>
-                보기
-              </button>
-            </>
-          )}
-        </div>
+    <FloatingStatus show={!open && showStatus}>
+      {status === 'pending' ? (
+        <>
+          <Spinner />
+          <span className="pr-3">아이디어를 찾고 있어요…</span>
+        </>
+      ) : (
+        <>
+          <span>{status === 'ready' ? '아이디어가 준비됐어요' : '아이디어를 가져오지 못했어요'}</span>
+          <button type="button" className="btn btn-primary press h-9 px-4 text-sm" onClick={() => onOpenChange(true)}>
+            보기
+          </button>
+        </>
       )}
-    </div>
+    </FloatingStatus>
     </>
-  )
-}
-
-// 모션 축소면 돌지 않는다(글자로 상태를 알린다)
-function Spinner() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0 text-gold motion-safe:animate-spin" fill="none">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
-      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    </svg>
   )
 }

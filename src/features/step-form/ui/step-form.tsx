@@ -17,7 +17,7 @@ import {
   type ItemValues,
 } from '@/entities/bucket-item'
 import { LLM_ERROR_MESSAGES, type DraftState } from '@/shared/lib/llm-result'
-import { AiPendingRow, AiSuggestionRow } from '@/shared/ui/ai-suggestion-row'
+import { AiPendingStatus, AiSuggestionRow } from '@/shared/ui/ai-suggestion-row'
 import { CloudIcon, StarIcon, SunIcon } from '@/shared/ui/star-icon'
 import { XIcon } from '@/shared/ui/x-icon'
 import { STEP_ORDER, undecidedAiFields, type StepFormAction, type StepFormState } from '../model/step-form-reducer'
@@ -146,15 +146,12 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
         )}
       </div>
 
-      {pending ? (
-        <AiPendingRow />
-      ) : (
-        canFill && (
-          <button type="button" className="btn press" onClick={onFill}>
-            빈 칸 채우기 (AI)
-          </button>
-        )
+      {canFill && (
+        <button type="button" className="btn press" disabled={pending} onClick={onFill}>
+          빈 칸 채우기 (AI)
+        </button>
       )}
+      <AiPendingStatus pending={pending} />
 
       {decided.length > 0 && (
         <section className="flex flex-col gap-2">
