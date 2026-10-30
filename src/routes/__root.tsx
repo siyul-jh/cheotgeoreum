@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import stylesUrl from '@/styles.css?url'
 
 declare const __OG_IMAGE__: string
@@ -16,11 +16,16 @@ export const Route = createRootRoute({
       { property: 'og:image', content: __OG_IMAGE__ },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'theme-color', content: '#12151c' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-title', content: '첫걸음' },
     ],
     links: [
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
       { rel: 'stylesheet', href: stylesUrl },
+      { rel: 'manifest', href: '/manifest.webmanifest' },
+      { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
     ],
   }),
   shellComponent: RootDocument,
@@ -38,6 +43,10 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   const [queryClient] = useState(() => new QueryClient())
+  useEffect(() => {
+    // 등록 실패는 오프라인 열기만 못 할 뿐이라 조용히 넘긴다
+    if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }, [])
   return (
     <QueryClientProvider client={queryClient}>
       {/* 768px 미만은 한 기둥(max-w-md). 넓은 화면 폭은 목록·편집이 쓰고, 작성 화면은 스스로 좁힌다 */}

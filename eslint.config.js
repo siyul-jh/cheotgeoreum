@@ -15,4 +15,5 @@ export default defineConfig(
       '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }], // 구조 분해로 키 제거
     },
   },
+  { files: ['sw.template.js'], languageOptions: { globals: globals.serviceworker } },
 )
