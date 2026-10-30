@@ -41,11 +41,11 @@ export function BackupActions() {
   return (
     <div className="flex flex-col items-center gap-1 text-[13px] text-mute">
       <p className="flex items-center gap-2">
-        <button type="button" className="press underline-offset-4 hover:underline" onClick={exportBackup}>
+        <button type="button" className="press min-h-11 px-2 underline-offset-4 hover:underline" onClick={exportBackup}>
           데이터 내보내기
         </button>
         <span aria-hidden="true">·</span>
-        <button type="button" className="press underline-offset-4 hover:underline" onClick={() => fileRef.current?.click()}>
+        <button type="button" className="press min-h-11 px-2 underline-offset-4 hover:underline" onClick={() => fileRef.current?.click()}>
           가져오기
         </button>
       </p>
