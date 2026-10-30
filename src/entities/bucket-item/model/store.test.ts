@@ -22,6 +22,19 @@ beforeEach(() => {
 })
 
 describe('items', () => {
+  it('randomUUID가 없는 http 접속(보안 컨텍스트 아님)에서도 고유 id로 추가된다', () => {
+    const original = crypto.randomUUID
+    Object.defineProperty(crypto, 'randomUUID', { value: undefined, configurable: true })
+    try {
+      const a = s().addItem(input())
+      const b = s().addItem(input())
+      expect(a).toMatch(/^[0-9a-f]{32}$/)
+      expect(a).not.toBe(b)
+    } finally {
+      Object.defineProperty(crypto, 'randomUUID', { value: original, configurable: true })
+    }
+  })
+
   it('추가, 수정, 삭제', () => {
     const id = s().addItem(input())
     expect(s().items).toHaveLength(1)

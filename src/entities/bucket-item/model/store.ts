@@ -75,7 +75,9 @@ export const useBucketStore = create<BucketStore>()(
       items: [],
       customCategories: [],
       addItem: (input) => {
-        const id = crypto.randomUUID()
+        // randomUUID는 보안 컨텍스트(https·localhost)에만 있다. 같은 Wi-Fi의 http 주소로 열어도 저장되게 getRandomValues로 대신한다
+        const id =
+          crypto.randomUUID?.() ?? Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('')
         set((s) => ({ items: [...s.items, { ...input, id, createdAt: new Date().toISOString() }] }))
         requestPersistOnce()
         return id
