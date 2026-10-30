@@ -33,16 +33,16 @@ const METEORS = [
 const reveal = (i: number) => ({ animationDelay: `${0.7 + i * 0.12}s` })
 
 // 공유 이미지(Canvas)와 칸·순서·문구가 같은 9:16 카드. 모션 축소면 별은 원위치에 정지(styles.css)
-export function StarCard({ card }: { card: CardModel }) {
+export function StarCard({ card, fill = false }: { card: CardModel; fill?: boolean }) {
   const meta = [card.period, card.category].filter(Boolean).join(' · ')
-  // 폭은 감싼 쪽을 꽉 채운다(결과 화면은 버튼 폭과 같게).
-  // 카드 내용은 말줄임하지 않는다: 9:16은 최소 높이로만 두고 길면 늘어난다.
-  // 최소 높이는 감싼 요소 폭(cqw) 기준. 컨테이너 쿼리 단위가 없는 브라우저는 내용 높이만큼만 보인다
+  // 폭은 감싼 쪽을 꽉 채운다(결과 화면은 버튼 폭과 같게). 카드 내용은 말줄임하지 않고 길면 늘어난다.
+  // fill: 세로로 남은 공간을 채운다(한 화면에 버튼까지 들어오게). 아니면 9:16을 최소 높이로 둔다.
+  // 9:16 최소 높이는 감싼 요소 폭(cqw) 기준. 컨테이너 쿼리 단위가 없는 브라우저는 내용 높이만큼만 보인다
   return (
-    <div className="@container w-full">
+    <div className={`@container flex w-full flex-col ${fill ? 'flex-1' : ''}`}>
       <figure
         aria-label={`${card.title} 별 카드`}
-        className="rise relative flex min-h-[calc(100cqw*16/9)] w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left"
+        className={`rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left`}
       >
         <div aria-hidden="true">
           {DOTS.map(([left, top, delay]) => (

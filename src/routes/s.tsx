@@ -27,8 +27,9 @@ function SharedCard({ hash }: { hash: string }) {
     }
   }, [hash])
 
+  // 결과 화면처럼 카드가 남은 높이를 채워 한 화면에 버튼까지 들어오게
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center gap-[18px] text-center">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-md flex-col items-center gap-[18px] text-center">
       <h1 className="sr-only">받은 별 카드</h1>
       {decoded.status === 'ok' ? (
         <ReceivedCard values={decoded.values} />
@@ -36,7 +37,7 @@ function SharedCard({ hash }: { hash: string }) {
         <>
           {decoded.status === 'error' && <p role="alert">카드를 열 수 없어요</p>}
           {/* 해독 중에는 카드와 같은 크기의 빈 틀로 화면이 흔들리지 않게 한다 */}
-          {decoded.status === 'loading' && <div aria-hidden="true" className="aspect-[9/16] w-full" />}
+          {decoded.status === 'loading' && <div aria-hidden="true" className="w-full flex-1" />}
           <WriteMine />
         </>
       )}
@@ -49,7 +50,7 @@ function ReceivedCard({ values }: { values: ItemValues }) {
   const { card, png, save, notice } = useStarCard(values)
   return (
     <>
-      <StarCard card={card} />
+      <StarCard card={card} fill />
       <div className="flex w-full flex-col gap-2">
         <WriteMine />
         <button type="button" className="btn press" disabled={png === null} onClick={save}>
