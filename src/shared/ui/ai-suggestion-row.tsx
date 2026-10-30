@@ -21,9 +21,9 @@ export function AiSuggestionRow({ text, onUse }: { text: string; onUse: () => vo
 }
 
 // AI 빈 칸 채우기가 도는 동안 화면 아래에 뜬다(아이디어 추천과 같은 모양)
-export function AiPendingStatus({ pending, className }: { pending: boolean; className?: string }) {
+export function AiPendingStatus({ pending }: { pending: boolean }) {
   return (
-    <FloatingStatus show={pending} className={className}>
+    <FloatingStatus show={pending}>
       <Spinner />
       <span className="pr-3">AI가 빈 칸을 채우고 있어요…</span>
     </FloatingStatus>

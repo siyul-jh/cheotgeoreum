@@ -195,8 +195,7 @@ export function ItemEditForm({ item, onDone }: Props) {
                   빈 칸 채우기 (AI)
                 </button>
               )}
-              {/* 아래 고정 저장 바 위에 띄운다 */}
-              <AiPendingStatus pending={draftState.status === 'pending'} className="bottom-28" />
+              <AiPendingStatus pending={draftState.status === 'pending'} />
               {draft &&
                 aiFields.map((field) => {
                   const patch = draftToPatch(field, draft, values)
@@ -214,7 +213,7 @@ export function ItemEditForm({ item, onDone }: Props) {
       </form.Subscribe>
 
       {/* 긴 폼 맨 아래까지 내리지 않아도 저장·삭제할 수 있게 하단에 붙인다 */}
-      <div className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t border-line bg-night/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:mx-0 md:px-0">
+      <div data-save-bar className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t border-line bg-night/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:mx-0 md:px-0">
         <form.Subscribe selector={(s) => s.errorMap.onSubmit}>
           {(err) =>
             err && (

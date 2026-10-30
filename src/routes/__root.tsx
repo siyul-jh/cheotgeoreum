@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { applyTheme, THEME_BOOT_SCRIPT } from '@/shared/lib/theme'
+import { FLOATING_STACK_ID } from '@/shared/ui/floating-status'
 import stylesUrl from '@/styles.css?url'
 
 declare const __OG_IMAGE__: string
@@ -70,6 +71,10 @@ function RootLayout() {
       <main className="mx-auto min-h-dvh w-full max-w-md px-4 py-6 md:max-w-6xl">
         <Outlet />
       </main>
+      <div
+        id={FLOATING_STACK_ID}
+        className="pointer-events-none fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-md flex-col gap-2 [body:has([data-save-bar])_&]:bottom-28"
+      />
     </QueryClientProvider>
   )
 }
