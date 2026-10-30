@@ -219,6 +219,22 @@
   }
 }
 
+/* 한 바퀴의 앞부분에만 퍼지고 나머지는 쉰다: 반복해도 계속 깜빡이지 않게 */
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3);
+  }
+  10% {
+    opacity: 1;
+  }
+  45%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1);
+  }
+}
+
 @keyframes glow {
   0%,
   100% {
@@ -235,7 +251,8 @@
 }
 
 /* 흩어지는 별은 움직일 때만 보인다 */
-.burst {
+.burst,
+.sparkle {
   opacity: 0;
 }
 
@@ -255,6 +272,9 @@
   }
   .burst {
     animation: burst 0.9s ease-out both;
+  }
+  .sparkle {
+    animation: sparkle 2.4s ease-out infinite;
   }
   .glow {
     animation: glow 1.6s ease-in-out infinite;

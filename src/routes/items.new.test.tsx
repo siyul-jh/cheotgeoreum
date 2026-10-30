@@ -158,6 +158,7 @@ test('축하 화면은 제목에 포커스를 두고 별 카드를 이미지가 
   }
   expect(card.querySelector('.ascend')).not.toBeNull()
   expect(card.querySelector('.burst')).not.toBeNull()
+  expect(card.querySelector('.ascend .sparkle')).not.toBeNull()
   const dot = card.querySelector('.twinkle')
   expect(dot?.closest('[aria-hidden="true"]')).not.toBeNull()
 })

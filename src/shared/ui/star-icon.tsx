@@ -11,10 +11,10 @@ export function StarIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-type BurstProps = { count: number; dx: number; dy: number; delay?: number; className: string }
+type BurstProps = { count: number; dx: number; dy: number; delay?: number; loop?: boolean; className: string }
 
-// 한 점에서 사방으로 흩어지는 작은 별들. 위치는 className(absolute 기준점)으로 정한다
-export function StarBurst({ count, dx, dy, delay = 0, className }: BurstProps) {
+// 한 점에서 사방으로 흩어지는 작은 별들. 위치는 className(absolute 기준점)으로 정한다. loop면 쉬었다가 계속 반짝인다
+export function StarBurst({ count, dx, dy, delay = 0, loop = false, className }: BurstProps) {
   return Array.from({ length: count }, (_, i) => {
     const a = (i / count) * Math.PI * 2
     const style = {
@@ -23,7 +23,7 @@ export function StarBurst({ count, dx, dy, delay = 0, className }: BurstProps) {
       animationDelay: `${delay + i * 0.03}s`,
     } as CSSProperties
     return (
-      <StarIcon key={i} fill="currentColor" className={`burst absolute size-3 text-gold ${className}`} style={style} />
+      <StarIcon key={i} fill="currentColor" className={`${loop ? 'sparkle' : 'burst'} absolute size-3 text-gold ${className}`} style={style} />
     )
   })
 }

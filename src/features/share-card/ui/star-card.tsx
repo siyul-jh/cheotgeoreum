@@ -38,7 +38,11 @@ export function StarCard({ card }: { card: CardModel }) {
       <div className="relative flex shrink-0 justify-center pt-14 pb-4">
         <div className="relative flex size-14 items-center justify-center">
           <StarBurst count={10} dx={90} dy={90} delay={0.3} className="left-[22px] top-[22px]" />
-          <StarIcon fill="currentColor" className="ascend size-14 text-gold" />
+          {/* 떠오른 별을 따라가도록 반복 반짝임을 별과 함께 띄운다. 첫 퍼짐(1.2s)이 끝난 뒤 시작 */}
+          <div className="ascend relative size-14">
+            <StarBurst count={8} dx={34} dy={34} delay={1.4} loop className="left-[22px] top-[22px]" />
+            <StarIcon fill="currentColor" className="size-14 text-gold" />
+          </div>
         </div>
       </div>
       <figcaption className="relative flex min-h-0 flex-col gap-2 *:shrink-0">
