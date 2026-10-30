@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { buildCardModel, decodeCard, StarCard } from '@/features/share-card'
+import { decodeCard, StarCard, useStarCard } from '@/features/share-card'
 import type { ItemValues } from '@/entities/bucket-item'
 
 export const Route = createFileRoute('/s')({ component: SharedCardRoute })
@@ -30,13 +30,41 @@ function SharedCard({ hash }: { hash: string }) {
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-[18px] text-center">
       <h1 className="sr-only">받은 별 카드</h1>
-      {decoded.status === 'ok' && <StarCard card={buildCardModel(decoded.values)} />}
-      {decoded.status === 'error' && <p role="alert">카드를 열 수 없어요</p>}
-      {/* 해독 중에는 카드와 같은 크기의 빈 틀로 화면이 흔들리지 않게 한다 */}
-      {decoded.status === 'loading' && <div aria-hidden="true" className="aspect-[9/16] w-full max-w-[20rem]" />}
-      <Link to="/items/new" className="btn btn-primary press flex w-full items-center justify-center">
-        나도 적어보기
-      </Link>
+      {decoded.status === 'ok' ? (
+        <ReceivedCard values={decoded.values} />
+      ) : (
+        <>
+          {decoded.status === 'error' && <p role="alert">카드를 열 수 없어요</p>}
+          {/* 해독 중에는 카드와 같은 크기의 빈 틀로 화면이 흔들리지 않게 한다 */}
+          {decoded.status === 'loading' && <div aria-hidden="true" className="aspect-[9/16] w-full max-w-[20rem]" />}
+          <WriteMine />
+        </>
+      )}
     </div>
   )
 }
+
+// 받은 사람도 카드를 이미지로 간직할 수 있다
+function ReceivedCard({ values }: { values: ItemValues }) {
+  const { card, png, save, notice } = useStarCard(values)
+  return (
+    <>
+      <StarCard card={card} />
+      <div className="flex w-full flex-col gap-2">
+        <WriteMine />
+        <button type="button" className="btn press" disabled={png === null} onClick={save}>
+          이미지로 저장
+        </button>
+      </div>
+      <p role="status" className="min-h-5 text-sm text-mute">
+        {notice}
+      </p>
+    </>
+  )
+}
+
+const WriteMine = () => (
+  <Link to="/items/new" className="btn btn-primary press flex w-full items-center justify-center">
+    나도 적어보기
+  </Link>
+)
