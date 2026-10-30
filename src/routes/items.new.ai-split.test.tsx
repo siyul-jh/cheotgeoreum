@@ -42,7 +42,8 @@ test('지금 단계 칸을 먼저 따로 요청하고, 나머지 칸은 뒤에�
 
   // 다음 단계: 뒤의 요청이 아직이면 만드는 중으로 보인다
   fireEvent.click(screen.getByRole('button', { name: '건너뛰기' }))
-  expect((screen.getByRole('button', { name: 'AI 초안 만드는 중…' }) as HTMLButtonElement).disabled).toBe(true)
+  expect(screen.getByText('AI가 빈 칸을 채우고 있어요. 잠시만 기다려 주세요.').closest('[role="status"]')).not.toBeNull()
+  expect(screen.queryByRole('button', { name: '빈 칸 채우기 (AI)' })).toBeNull()
   await act(async () => pending[1].resolve({ ok: true, data: { ...nul, category: '여행' } }))
   expect((await screen.findByRole('button', { name: '사용' })).parentElement?.textContent).toContain('AI 제안: 여행')
 })

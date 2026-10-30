@@ -18,3 +18,14 @@ export function AiSuggestionRow({ text, onUse }: { text: string; onUse: () => vo
     </div>
   )
 }
+
+// AI 요청이 도는 동안 버튼 자리에 보인다. role=status라 화면 읽기 프로그램도 알린다.
+// 회전은 모션 축소면 멈추고(motion-safe) 문구만 남는다
+export function AiPendingRow() {
+  return (
+    <p role="status" className="drop flex min-h-11 items-center gap-3 rounded-[14px] bg-ai px-3.5 py-3 text-[15px]">
+      <span aria-hidden="true" className="size-[18px] shrink-0 rounded-full border-2 border-gold border-t-transparent motion-safe:animate-spin" />
+      <span className="min-w-0 flex-1">AI가 빈 칸을 채우고 있어요. 잠시만 기다려 주세요.</span>
+    </p>
+  )
+}
