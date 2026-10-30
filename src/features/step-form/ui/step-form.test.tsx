@@ -126,3 +126,33 @@ test('정한 칸은 다시 열어 고쳐도 단계 순서(최근 단계가 위)�
   next()
   expect(order()).toEqual(['왜하늘이 보고 싶어서', '항목오로라 꼭 보기'])
 })
+
+test('선행 과제 단계에서 항목을 다시 고치고 [다음]을 누르면 선행 과제 단계로 돌아온다', async () => {
+  await renderForm(idle)
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 보기' } })
+  next()
+  for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole('button', { name: '건너뛰기' }))
+  expect(screen.getByText('먼저 준비할 게 있나요?')).toBeTruthy()
+
+  fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 꼭 보기' } })
+  next()
+  expect(screen.getByText('먼저 준비할 게 있나요?')).toBeTruthy()
+})
+
+test('다시 연 칸에서 [다음] 없이 다른 카드로 옮겨도, 먼저 연 칸은 정한 채로 남는다', async () => {
+  await renderForm(idle)
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 보기' } })
+  next()
+  fireEvent.change(screen.getByLabelText('왜 하고 싶나요?'), { target: { value: '하늘이 보고 싶어서' } })
+  next()
+  for (let i = 0; i < 2; i++) fireEvent.click(screen.getByRole('button', { name: '건너뛰기' }))
+  expect(screen.getByText('먼저 준비할 게 있나요?')).toBeTruthy()
+
+  fireEvent.click(screen.getByRole('button', { name: /^왜/ }))
+  fireEvent.click(screen.getByRole('button', { name: /항목\s*오로라 보기/ }))
+  fireEvent.change(screen.getByLabelText('어떤 일을 해보고 싶나요?'), { target: { value: '오로라 꼭 보기' } })
+  next()
+  expect(screen.getByText('먼저 준비할 게 있나요?')).toBeTruthy()
+  expect(screen.getByRole('button', { name: /왜\s*하늘이 보고 싶어서/ })).toBeTruthy()
+})
