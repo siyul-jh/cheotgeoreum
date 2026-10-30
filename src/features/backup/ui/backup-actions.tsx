@@ -56,7 +56,10 @@ export function BackupActions() {
         hidden
         onChange={(e) => void importFile(e)}
       />
-      {message && <p role="status">{message}</p>}
+      {/* 목록 화면에 다른 status가 있어 role 대신 aria-live. 비어 있어도 두어야 문구가 읽힌다 */}
+      <p aria-live="polite" data-testid="backup-message">
+        {message}
+      </p>
     </div>
   )
 }

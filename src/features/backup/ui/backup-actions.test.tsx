@@ -39,7 +39,7 @@ const backup = serializeBackup({ items: [item('가져옴')], customCategories: [
 test('잘못된 파일이면 오류 문구가 뜨고 스토어는 그대로다', async () => {
   const confirm = vi.spyOn(window, 'confirm')
   pick('{"state":')
-  await waitFor(() => expect(screen.getByRole('status').textContent).toBe('가져올 수 없는 파일이에요'))
+  await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toBe('가져올 수 없는 파일이에요'))
   expect(confirm).not.toHaveBeenCalled()
   expect(titles()).toEqual(['지금'])
 })
@@ -49,13 +49,13 @@ test('confirm에서 취소하면 그대로, 문구도 없다', async () => {
   pick(backup)
   await waitFor(() => expect(confirm).toHaveBeenCalledWith('지금 데이터를 가져온 파일로 바꿀까요?'))
   expect(titles()).toEqual(['지금'])
-  expect(screen.queryByRole('status')).toBeNull()
+  expect(screen.getByTestId('backup-message').textContent).toBe('')
 })
 
 test('confirm에서 확인하면 대체되고 localStorage도 바뀐다', async () => {
   vi.spyOn(window, 'confirm').mockReturnValue(true)
   pick(backup)
-  await waitFor(() => expect(screen.getByRole('status').textContent).toBe('가져왔어요'))
+  await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toBe('가져왔어요'))
   expect(titles()).toEqual(['가져옴'])
   expect(useBucketStore.getState().customCategories).toEqual(['덕질'])
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: BucketItem[] } }
@@ -66,7 +66,7 @@ test('저장값 version이 더 새면 confirm 없이 거부한다', async () => 
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 }))
   const confirm = vi.spyOn(window, 'confirm')
   pick(backup)
-  await waitFor(() => expect(screen.getByRole('status').textContent).toBe('더 새 버전 앱의 데이터라 가져올 수 없어요'))
+  await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toBe('더 새 버전 앱의 데이터라 가져올 수 없어요'))
   expect(confirm).not.toHaveBeenCalled()
   expect(titles()).toEqual(['지금'])
 })
