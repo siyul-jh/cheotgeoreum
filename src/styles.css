@@ -24,6 +24,14 @@
   color-scheme: dark;
 }
 
+/* 한글은 어절 단위로 줄을 바꾼다("보여/요." 방지). 화면보다 긴 한 덩어리만 글자 중간에서 끊는다.
+   text-wrap: pretty는 향상용(마지막 줄 한 단어 남김 완화). 미지원 브라우저는 무시한다 */
+body {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
 @layer components {
   /* corner-shape: squircle은 향상용. 미지원 브라우저는 border-radius 값만 적용된다. */
   .surface {
