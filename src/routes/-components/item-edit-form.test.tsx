@@ -183,16 +183,19 @@ test('이때까지를 기간으로 바꾸면 그 시점이 끝이 되고, 시작
   expect(item().targetPeriod).toEqual({ kind: 'range', from: String(y), to: `${y + 1}-02` })
 })
 
-test('편집 화면에서도 저장된 내용의 별 카드를 미리 보고 공유할 수 있다', async () => {
+test('편집 화면에서도 저장된 내용의 별 카드를 보고 링크로 공유·이미지로 저장할 수 있다', async () => {
   const share = vi.fn(async (data: ShareData) => void data)
-  Object.assign(navigator, { canShare: () => true, share })
+  Object.assign(navigator, { share })
   await open()
   const section = screen.getByRole('region', { name: '별 카드' })
-  expect((await within(section).findByRole('img', { name: '오로라 보기 별 카드' })).getAttribute('src')).toBe('blob:card')
+  expect(within(section).getByRole('figure', { name: '오로라 보기 별 카드' }).textContent).toContain('여권')
+  const save = within(section).getByRole('button', { name: '이미지로 저장' }) as HTMLButtonElement
+  await waitFor(() => expect(save.disabled).toBe(false))
   const button = within(section).getByRole('button', { name: '공유하기' }) as HTMLButtonElement
   await waitFor(() => expect(button.disabled).toBe(false))
   fireEvent.click(button)
   await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
+  expect(share.mock.calls[0][0].url).toMatch(/\/s#1\./)
   expect(share.mock.calls[0][0].text).toBe('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')
-  for (const key of ['canShare', 'share']) Reflect.deleteProperty(navigator, key)
+  Reflect.deleteProperty(navigator, 'share')
 })
