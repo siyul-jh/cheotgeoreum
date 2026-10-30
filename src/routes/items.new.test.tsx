@@ -104,7 +104,8 @@ async function saveTitleOnly(title = '오로라 보기') {
 }
 
 test('저장하면 "새 별이 떴어요"에 머물고 스스로 목록으로 가지 않는다', async () => {
-  vi.stubGlobal('matchMedia', (q: string) => ({ matches: q === '(prefers-reduced-motion: no-preference)' }))
+  const real = window.matchMedia
+  vi.stubGlobal('matchMedia', (q: string) => ({ ...real(q), matches: q === '(prefers-reduced-motion: no-preference)' }))
   const router = await saveTitleOnly()
   expect(screen.getByText('새 별이 떴어요')).toBeTruthy()
   expect(useBucketStore.getState().items).toHaveLength(1)
@@ -116,7 +117,8 @@ test('저장하면 "새 별이 떴어요"에 머물고 스스로 목록으로 �
 })
 
 test('모션 축소 환경에서도 축하 화면과 버튼이 보인다', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: false }))
+  const real = window.matchMedia
+  vi.stubGlobal('matchMedia', (q: string) => ({ ...real(q), matches: false }))
   const router = await saveTitleOnly()
   expect(screen.getByText('새 별이 떴어요')).toBeTruthy()
   expect(screen.getByRole('button', { name: '공유하기' })).toBeTruthy()

@@ -29,6 +29,13 @@ const METEORS = [
   [54, 28, 6.7, 9, 32, 'from-gold-hi'],
 ] as const
 
+// 태양 햇살 8줄: 중심(28,28)에서 반지름 19~(긴 줄 27, 짧은 줄 24)
+const SUN_RAYS = Array.from({ length: 8 }, (_, i) => {
+  const a = (i / 8) * Math.PI * 2
+  const r2 = i % 2 ? 24 : 27
+  return [28 + Math.cos(a) * 19, 28 + Math.sin(a) * 19, 28 + Math.cos(a) * r2, 28 + Math.sin(a) * r2].map((n) => Math.round(n))
+})
+
 // 별이 떠오르는 동안 글자가 위에서부터 차례로 올라온다
 const reveal = (i: number) => ({ animationDelay: `${0.7 + i * 0.12}s` })
 
@@ -56,7 +63,7 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
           {METEORS.map(([left, top, delay, duration, width, color]) => (
             <span
               key={`${left}-${top}`}
-              className={`meteor absolute h-px bg-linear-to-l to-transparent ${color}`}
+              className={`meteor absolute h-px bg-linear-to-l to-transparent light:hidden ${color}`}
               style={{ left: `${left}%`, top: `${top}%`, width, animationDelay: `${delay}s`, animationDuration: `${duration}s` }}
             />
           ))}
@@ -64,9 +71,17 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
         {/* ascend 끝(위로 40px, 1.4배)에서도 잘리지 않게 위 여백 pt-14, 정지 상태(원위치)는 제목 위에 있다 */}
         <div className="relative flex shrink-0 justify-center pt-14 pb-4">
           <div className="ascend relative size-14">
-            {/* 은은한 빛무리(모션 축소면 고정) */}
-            <span className="glow absolute -inset-5 rounded-full bg-gold/15 blur-xl" />
-            <StarIcon fill="currentColor" className="relative size-14 text-gold" />
+            {/* 은은한 빛무리. 다크는 별, 라이트는 햇살이 도는 태양 */}
+            <span className="glow absolute -inset-5 rounded-full bg-gold/15 blur-xl light:bg-sun/35" />
+            <StarIcon fill="currentColor" className="relative size-14 text-gold light:hidden" />
+            <svg aria-hidden="true" viewBox="0 0 56 56" className="relative hidden size-14 text-sun light:block">
+              <g className="spin origin-center [transform-box:fill-box]" stroke="currentColor" strokeWidth={3} strokeLinecap="round">
+                {SUN_RAYS.map(([x1, y1, x2, y2]) => (
+                  <line key={`${x1}-${y1}`} x1={x1} y1={y1} x2={x2} y2={y2} />
+                ))}
+              </g>
+              <circle cx={28} cy={28} r={13} fill="currentColor" />
+            </svg>
           </div>
         </div>
         <figcaption className="relative flex min-h-0 flex-col gap-2 *:shrink-0">

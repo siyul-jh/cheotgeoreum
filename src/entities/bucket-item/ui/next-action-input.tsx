@@ -171,7 +171,7 @@ function DueDatePicker({ value, onChange }: { value: string | null; onChange: (v
                         past
                           ? 'cursor-not-allowed text-dim'
                           : selected
-                            ? 'press bg-gold font-bold text-night'
+                            ? 'press bg-gold font-bold text-on-gold'
                             : `press ${d === today ? 'font-bold text-gold' : ''}`
                       }`}
                     >

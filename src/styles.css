@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* light: 라이트(태양) 모드에서만. html[data-theme]은 shared/lib/theme.ts가 단다 */
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
+
 /* 밤하늘(C) 토큰. 제목 서체 교체는 --font-title 한 줄 */
 @theme {
   --color-night: #12151c;
@@ -16,12 +19,40 @@
   --color-gold-hi: #f7d47f;
   --color-gold-edge: #3a3424;
   --color-danger: #f4a09a;
+  --color-on-gold: #12151c; /* 금색 바탕 위 글자 */
+  --color-sun: #e8552a; /* 라이트 모드 태양(주홍) */
   --font-sans: 'Noto Sans KR', sans-serif;
   --font-title: 'Gowun Dodum', sans-serif;
 }
 
 :root {
   color-scheme: dark;
+}
+
+/* 라이트(태양): 일월오봉도의 해. 맑은 낮하늘 파랑 바탕, 남색 먹 글자, 주홍 해.
+   강조색(--color-gold 자리)은 글자로도 쓰여 카드·바탕 모두 대비 4.5:1 이상인 짙은 주홍 */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-night: #dfe9f1;
+  --color-card: #f8fbfd;
+  --color-line: #cfdbe5;
+  --color-edge: #b7c8d6;
+  --color-edge-hi: #9cb2c4;
+  --color-ai: #eaf1f6;
+  --color-ink: #16283a;
+  --color-mute: #4a5d70;
+  --color-faint: #526476;
+  --color-dim: #8a9aa8;
+  --color-gold: #b83a12;
+  --color-gold-hi: #9a2f0c;
+  --color-gold-edge: #f0c9b8;
+  --color-danger: #a11d48;
+  --color-on-gold: #ffffff;
+}
+
+/* 배경 별은 낮에는 흰 빛 알갱이로 */
+[data-theme='light'] .twinkle {
+  background-color: #ffffff;
 }
 
 /* 한글은 어절 단위로 줄을 바꾼다("보여/요." 방지). 화면보다 긴 한 덩어리만 글자 중간에서 끊는다.
@@ -51,7 +82,7 @@ body {
   }
   .btn-primary {
     background: var(--color-gold);
-    color: var(--color-night);
+    color: var(--color-on-gold);
     border-color: var(--color-gold);
     font-weight: 700;
   }
@@ -252,6 +283,12 @@ body {
   }
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes ascend {
   to {
     transform: translateY(-40px) scale(1.4);
@@ -308,6 +345,10 @@ body {
 }
 .star-card .meteor {
   animation: meteor 6s ease-in infinite;
+}
+/* 태양 햇살이 천천히 돈다 */
+.star-card .spin {
+  animation: spin 24s linear infinite;
 }
 
 /* 상태 전환·눌림은 모션 축소 설정이면 끈다(색은 즉시 바뀐다).

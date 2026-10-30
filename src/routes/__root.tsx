@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { applyTheme, THEME_BOOT_SCRIPT } from '@/shared/lib/theme'
 import stylesUrl from '@/styles.css?url'
 
 declare const __OG_IMAGE__: string
@@ -48,6 +49,14 @@ function RootLayout() {
     // 등록 실패는 오프라인 열기만 못 할 뿐이라 조용히 넘긴다
     if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
   }, [])
+  useEffect(() => {
+    // '시스템 설정 따름'이면 폰 모드가 바뀔 때 바로 따라간다(직접 고른 모드면 applyTheme이 그대로 둔다)
+    applyTheme()
+    const media = matchMedia('(prefers-color-scheme: light)')
+    const onChange = () => applyTheme()
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [])
   return (
     <QueryClientProvider client={queryClient}>
       {/* 768px 미만은 한 기둥(max-w-md). 넓은 화면 폭은 목록·편집이 쓰고, 작성 화면은 스스로 좁힌다 */}
@@ -60,8 +69,10 @@ function RootLayout() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    // 첫 그리기 전 스크립트가 data-theme을 단다: React가 다른 값이라 경고하지 않게
+    <html lang="ko" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
         {/* head links로 넣으면 TanStack이 precedence를 붙여 React가 로드까지 렌더를 멈춘다(jsdom 테스트에선 영영). 일반 link로 둔다 */}
         <link
