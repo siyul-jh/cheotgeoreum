@@ -9,7 +9,6 @@ type Props = { item: BucketItem; onToggleDone: () => void }
 export function ItemCard({ item, onToggleDone }: Props) {
   const done = item.status === '완료'
   const { text, dueDate } = item.nextAction
-  const nextAction = [text, dueDate && formatDate(dueDate)].filter(Boolean).join(' · ')
   const prereqDone = item.prerequisites.filter((p) => p.done).length
   const meta = [
     item.category ?? UNCATEGORIZED_LABEL,
@@ -37,7 +36,13 @@ export function ItemCard({ item, onToggleDone }: Props) {
       <Link to="/items/$id" params={{ id: item.id }} className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className="break-words font-title text-[17px] font-bold">{item.title}</span>
         <span className="text-[13px] text-mute">{meta}</span>
-        {nextAction && !done && <span className="break-words text-sm">다음 · {nextAction}</span>}
+        {(text || dueDate) && !done && (
+          <span className="break-words text-sm">
+            다음 · {text}
+            {text && dueDate && ' · '}
+            {dueDate && <time dateTime={dueDate}>{formatDate(dueDate)}</time>}
+          </span>
+        )}
       </Link>
     </article>
   )

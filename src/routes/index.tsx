@@ -125,7 +125,12 @@ function ListPage() {
                   <p className="break-words font-title text-2xl font-bold leading-snug">{today.nextAction.text}</p>
                   <p className="break-words text-sm text-gold">
                     {today.title}
-                    {today.nextAction.dueDate && ` · ${formatDate(today.nextAction.dueDate)}까지`}
+                    {today.nextAction.dueDate && (
+                      <>
+                        {' · '}
+                        <time dateTime={today.nextAction.dueDate}>{formatDate(today.nextAction.dueDate)}</time>까지
+                      </>
+                    )}
                   </p>
                 </div>
                 <button
