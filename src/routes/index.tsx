@@ -14,6 +14,7 @@ import {
   type BucketItemInput,
   type Status,
 } from '@/entities/bucket-item'
+import { BackupActions } from '@/features/backup'
 import { formatDate } from '@/shared/lib/date'
 import { StarBurst } from '@/shared/ui/star-icon'
 
@@ -221,6 +222,9 @@ function ListPage() {
             ))}
           </ul>
         )}
+
+        {/* pb-24 안쪽 마지막: 휴대폰 고정 footer에 가리지 않는다 */}
+        <BackupActions />
       </div>
 
       {/* 새 꿈 버튼: 휴대폰은 아래 고정 footer의 넓은 버튼, md 이상은 footer 상자를 없애고(contents) 오른쪽 아래 플로팅.

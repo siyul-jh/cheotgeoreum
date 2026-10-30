@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_CATEGORIES, UNCATEGORIZED_FILTER, type BucketItemInput } from './schema'
-import { STORAGE_KEY, selectCategories, selectCompanionNames, useBucketStore } from './store'
+import { STORAGE_KEY, canImport, parseBackup, selectCategories, selectCompanionNames, serializeBackup, useBucketStore } from './store'
 
 const input = (over: Partial<BucketItemInput> = {}): BucketItemInput => ({
   title: '오로라 보기',
@@ -144,5 +144,41 @@ describe('persist', () => {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: unknown[] }; version: number }
     expect(saved.version).toBe(2)
     expect(saved.state.items).toHaveLength(5)
+  })
+})
+
+describe('backup', () => {
+  it('serializeBackup → parseBackup 왕복이 items·customCategories를 보존한다', () => {
+    s().addCategory('덕질')
+    s().addItem(input({ title: '왕복', category: '덕질', targetPeriod: { kind: 'start', at: '2027-03' } }))
+    const { items, customCategories } = s()
+    expect(parseBackup(serializeBackup({ items, customCategories }))).toEqual({ items, customCategories })
+  })
+
+  it('version 1 백업은 문자열 targetPeriod를 start로 옮긴다', () => {
+    const v1 = {
+      state: { items: [{ ...input(), targetPeriod: '2027-03', id: 'a', createdAt: '2026-10-01T00:00:00.000Z' }], customCategories: [] },
+      version: 1,
+    }
+    expect(parseBackup(JSON.stringify(v1)).items[0]?.targetPeriod).toEqual({ kind: 'start', at: '2027-03' })
+  })
+
+  it('customCategories가 없으면 []', () => {
+    const text = JSON.stringify({ state: { items: [] }, version: 2 })
+    expect(parseBackup(text)).toEqual({ items: [], customCategories: [] })
+  })
+
+  it.each([
+    ['version 3', JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 })],
+    ['깨진 JSON', '{"state":'],
+    ['항목 스키마 위반', JSON.stringify({ state: { items: [{ id: 'x' }], customCategories: [] }, version: 2 })],
+  ])('parseBackup 거부: %s', (_label, text) => {
+    expect(() => parseBackup(text)).toThrow()
+  })
+
+  it('저장값 version이 3이면 canImport는 false', () => {
+    expect(canImport()).toBe(true)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 }))
+    expect(canImport()).toBe(false)
   })
 })

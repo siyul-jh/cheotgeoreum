@@ -1,10 +1,12 @@
 import { create } from 'zustand'
+import { z } from 'zod'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import {
   DEFAULT_CATEGORIES,
   UNCATEGORIZED_FILTER,
   UNCATEGORIZED_LABEL,
   fieldLimits,
+  BucketItemSchema,
   PeriodPointSchema,
   type BucketItem,
   type BucketItemInput,
@@ -34,15 +36,16 @@ function requestPersistOnce() {
 // 더 새 앱이 저장한 데이터(version > STORE_VERSION)에는 쓰지 않는다.
 // migrate가 throw하면 메모리가 빈 채로 남는데, 이 가드가 없으면 다음 set이 그 빈 상태로 저장소를 덮어쓴다
 // ponytail: 막힌 쓰기는 알리지 않는다(새로고침하면 사라짐). 이전 빌드로 되돌릴 일이 생기면 읽기 전용 안내를 추가
-function guardNewer(storage: Storage): StateStorage {
-  const isNewer = (raw: string | null) => {
-    try {
-      const version: unknown = raw === null ? null : (JSON.parse(raw) as { version?: unknown }).version
-      return typeof version === 'number' && version > STORE_VERSION
-    } catch {
-      return false
-    }
+const isNewer = (raw: string | null) => {
+  try {
+    const version: unknown = raw === null ? null : (JSON.parse(raw) as { version?: unknown }).version
+    return typeof version === 'number' && version > STORE_VERSION
+  } catch {
+    return false
   }
+}
+
+function guardNewer(storage: Storage): StateStorage {
   return {
     getItem: (name) => storage.getItem(name),
     setItem: (name, value) => {
@@ -128,3 +131,25 @@ export const selectCategories = (s: BucketStore): string[] => [...DEFAULT_CATEGO
 
 export const selectCompanionNames = (s: BucketStore): string[] =>
   [...new Set(s.items.flatMap((i) => i.companions))].sort()
+
+export type BackupData = Pick<BucketStore, 'items' | 'customCategories'>
+
+const BackupSchema = z.object({
+  items: z.array(BucketItemSchema),
+  customCategories: z.array(z.string().trim().min(1).max(fieldLimits.category)).default([]),
+})
+
+// 백업 파일은 persist 저장값과 같은 모양
+export const serializeBackup = ({ items, customCategories }: BackupData): string =>
+  JSON.stringify({ state: { items, customCategories }, version: STORE_VERSION })
+
+// 외부 입력: 형식이 어긋나면 throw. version 1은 migrate를 거쳐 v2로 본다
+export function parseBackup(text: string): BackupData {
+  const raw: unknown = JSON.parse(text)
+  const { state, version } = z.object({ state: z.object({}).loose(), version: z.number() }).parse(raw)
+  if (version !== 1 && version !== STORE_VERSION) throw new Error(`알 수 없는 백업 version ${version}`)
+  return BackupSchema.parse(version === 1 ? migrate(state, 1) : state)
+}
+
+// 더 새 앱의 저장값이면 guardNewer가 쓰기를 버리므로 가져오기를 막는다
+export const canImport = (): boolean => !isNewer(window.localStorage.getItem(STORAGE_KEY))
