@@ -36,7 +36,7 @@ function SharedCard({ hash }: { hash: string }) {
         <>
           {decoded.status === 'error' && <p role="alert">카드를 열 수 없어요</p>}
           {/* 해독 중에는 카드와 같은 크기의 빈 틀로 화면이 흔들리지 않게 한다 */}
-          {decoded.status === 'loading' && <div aria-hidden="true" className="aspect-[9/16] w-full max-w-[20rem]" />}
+          {decoded.status === 'loading' && <div aria-hidden="true" className="aspect-[9/16] w-full" />}
           <WriteMine />
         </>
       )}

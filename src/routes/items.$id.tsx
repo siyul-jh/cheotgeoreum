@@ -54,7 +54,10 @@ function ShareSection({ item }: { item: BucketItem }) {
         </h2>
         <p className="text-[13px] text-mute">저장된 내용으로 만들어요.</p>
       </div>
-      <StarCard card={card} />
+      {/* 넓은 화면에서 카드가 너무 커지지 않게 폭 상한 */}
+      <div className="w-full max-w-[20rem]">
+        <StarCard card={card} />
+      </div>
       <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
         <button type="button" className="btn btn-primary press md:px-8" disabled={url === null} onClick={() => void share()}>
           공유하기

@@ -1,4 +1,4 @@
-import { StarBurst, StarIcon } from '@/shared/ui/star-icon'
+import { StarIcon } from '@/shared/ui/star-icon'
 import type { CardModel } from '../lib/card-model'
 
 // ponytail: 배경 별은 고정 좌표 [left%, top%, 지연s]. 매번 같은 하늘이면 충분하다
@@ -17,13 +17,29 @@ const DOTS = [
   [48, 96, 1.3],
 ] as const
 
+// ponytail: 유성도 고정 [left%, top%, 지연s, 주기s, 길이px, 색]. 오른쪽 위에서 왼쪽 아래로
+const METEORS = [
+  [80, 4, 1.2, 5, 64, 'from-ink'],
+  [96, 14, 1.9, 6.5, 44, 'from-gold-hi'],
+  [62, 2, 2.6, 7, 52, 'from-ink'],
+  [100, 34, 3.4, 5.5, 36, 'from-gold-hi'],
+  [72, 22, 4.3, 8, 72, 'from-ink'],
+  [44, 6, 5.1, 6, 40, 'from-gold-hi'],
+  [90, 50, 5.8, 7.5, 56, 'from-ink'],
+  [54, 28, 6.7, 9, 32, 'from-gold-hi'],
+] as const
+
+// 별이 떠오르는 동안 글자가 위에서부터 차례로 올라온다(모션 축소면 바로 보인다)
+const reveal = (i: number) => ({ animationDelay: `${0.7 + i * 0.12}s` })
+
 // 공유 이미지(Canvas)와 칸·순서·문구가 같은 9:16 카드. 모션 축소면 별은 원위치에 정지(styles.css)
 export function StarCard({ card }: { card: CardModel }) {
   const meta = [card.period, card.category].filter(Boolean).join(' · ')
+  // 폭은 감싼 쪽을 꽉 채운다(결과 화면은 버튼 폭과 같게).
   // 카드 내용은 말줄임하지 않는다: 9:16은 최소 높이로만 두고 길면 늘어난다.
   // 최소 높이는 감싼 요소 폭(cqw) 기준. 컨테이너 쿼리 단위가 없는 브라우저는 내용 높이만큼만 보인다
   return (
-    <div className="@container w-full max-w-[20rem]">
+    <div className="@container w-full">
       <figure
         aria-label={`${card.title} 별 카드`}
         className="rise relative flex min-h-[calc(100cqw*16/9)] w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left"
@@ -36,25 +52,41 @@ export function StarCard({ card }: { card: CardModel }) {
               style={{ left: `${left}%`, top: `${top}%`, animationDelay: `${delay}s` }}
             />
           ))}
+          {/* 유성우: 같은 방향으로 시차를 두고 떨어진다. 움직일 때만 보인다 */}
+          {METEORS.map(([left, top, delay, duration, width, color]) => (
+            <span
+              key={`${left}-${top}`}
+              className={`meteor absolute h-px bg-linear-to-l to-transparent ${color}`}
+              style={{ left: `${left}%`, top: `${top}%`, width, animationDelay: `${delay}s`, animationDuration: `${duration}s` }}
+            />
+          ))}
         </div>
         {/* ascend 끝(위로 40px, 1.4배)에서도 잘리지 않게 위 여백 pt-14, 정지 상태(원위치)는 제목 위에 있다 */}
         <div className="relative flex shrink-0 justify-center pt-14 pb-4">
-          {/* 반짝임이 떠오르는 별 중심에서 퍼지도록 별과 함께 띄운다(묶음이 1.4배로 커지니 거리는 그만큼 줄인다).
-              반복 반짝임은 첫 퍼짐·떠오름(1.2s)이 끝난 뒤 시작 */}
           <div className="ascend relative size-14">
-            <StarBurst count={10} dx={64} dy={64} delay={0.3} className="left-[22px] top-[22px]" />
-            <StarBurst count={8} dx={34} dy={34} delay={1.4} loop className="left-[22px] top-[22px]" />
-            <StarIcon fill="currentColor" className="size-14 text-gold" />
+            {/* 은은한 빛무리(모션 축소면 고정) */}
+            <span className="glow absolute -inset-5 rounded-full bg-gold/15 blur-xl" />
+            <StarIcon fill="currentColor" className="relative size-14 text-gold" />
           </div>
         </div>
         <figcaption className="relative flex min-h-0 flex-col gap-2 *:shrink-0">
-          {meta && <p className="break-words text-xs text-gold">{meta}</p>}
-          <p className="break-words font-title text-xl font-bold text-ink">{card.title}</p>
-          {card.why && <p className="break-words text-[13px] text-mute">{card.why}</p>}
+          {meta && (
+            <p className="rise break-words text-xs text-gold" style={reveal(0)}>
+              {meta}
+            </p>
+          )}
+          <p className="rise break-words font-title text-xl font-bold text-ink" style={reveal(1)}>
+            {card.title}
+          </p>
+          {card.why && (
+            <p className="rise break-words text-[13px] text-mute" style={reveal(2)}>
+              {card.why}
+            </p>
+          )}
           {card.details.length > 0 && (
             <dl className="mt-1 flex flex-col gap-1.5 text-xs">
-              {card.details.map((d) => (
-                <div key={d.label} className="min-w-0">
+              {card.details.map((d, i) => (
+                <div key={d.label} className="rise min-w-0" style={reveal(3 + i)}>
                   <dt className="text-faint">{d.label}</dt>
                   <dd className="break-words text-ink">{d.value}</dd>
                 </div>
