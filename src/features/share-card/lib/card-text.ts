@@ -12,8 +12,8 @@ export function cardFileName(title: string): string {
   return `첫걸음-${Array.from(title.replace(/[\\/:*?"<>|\p{Cc}]/gu, '')).slice(0, 20).join('')}.png`
 }
 
-// 띄어쓰기에서 줄을 바꾸고, 한 줄보다 긴 단어는 글자 단위로 자른다. maxLines를 넘으면 마지막 줄 끝을 …로
-export function wrapLines(text: string, maxWidth: number, maxLines: number, measure: (s: string) => number): string[] {
+// 띄어쓰기에서 줄을 바꾸고, 한 줄보다 긴 단어는 글자 단위로 자른다. 카드 내용은 말줄임하지 않는다
+export function wrapLines(text: string, maxWidth: number, measure: (s: string) => number): string[] {
   const lines: string[] = []
   let line = ''
   for (const word of text.trim().split(/\s+/)) {
@@ -32,11 +32,5 @@ export function wrapLines(text: string, maxWidth: number, maxLines: number, meas
     }
   }
   if (line) lines.push(line)
-  if (lines.length <= maxLines) return lines
-
-  const kept = lines.slice(0, maxLines)
-  let last = Array.from(kept[maxLines - 1])
-  while (last.length > 0 && measure(`${last.join('').trimEnd()}…`) > maxWidth) last = last.slice(0, -1)
-  kept[maxLines - 1] = `${last.join('').trimEnd()}…`
-  return kept
+  return lines
 }

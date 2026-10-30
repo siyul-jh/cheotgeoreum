@@ -34,20 +34,19 @@ describe('cardFileName', () => {
 
 describe('wrapLines', () => {
   it('짧으면 한 줄', () => {
-    expect(wrapLines('오로라 보기', 10, 3, measure)).toEqual(['오로라 보기'])
+    expect(wrapLines('오로라 보기', 10, measure)).toEqual(['오로라 보기'])
   })
   it('띄어쓰기에서 줄을 바꾼다', () => {
-    expect(wrapLines('제주도 한 달 살기', 6, 3, measure)).toEqual(['제주도 한', '달 살기'])
+    expect(wrapLines('제주도 한 달 살기', 6, measure)).toEqual(['제주도 한', '달 살기'])
   })
   it('한 줄보다 긴 단어는 글자 단위로 자른다', () => {
-    expect(wrapLines('가나다라마바사', 3, 3, measure)).toEqual(['가나다', '라마바', '사'])
+    expect(wrapLines('가나다라마바사', 3, measure)).toEqual(['가나다', '라마바', '사'])
   })
-  it('줄 수를 넘으면 마지막 줄을 말줄임한다', () => {
-    const lines = wrapLines('가'.repeat(20), 5, 3, measure)
-    expect(lines).toEqual(['가가가가가', '가가가가가', '가가가가…'])
-    expect(lines.every((l) => measure(l) <= 5)).toBe(true)
+  it('줄이 많아도 말줄임하지 않고 모두 남긴다', () => {
+    const lines = wrapLines('가'.repeat(20), 5, measure)
+    expect(lines).toEqual(['가가가가가', '가가가가가', '가가가가가', '가가가가가'])
   })
   it('줄바꿈·연속 공백은 한 칸으로 본다', () => {
-    expect(wrapLines('하늘이\n\n보고  싶어서', 20, 3, measure)).toEqual(['하늘이 보고 싶어서'])
+    expect(wrapLines('하늘이\n\n보고  싶어서', 20, measure)).toEqual(['하늘이 보고 싶어서'])
   })
 })

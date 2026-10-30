@@ -6,7 +6,8 @@ import { drawCard } from './draw-card'
 // jsdom에는 canvas가 없어 fillText만 기록하는 가짜 컨텍스트로 그린다. 글자 하나 = 40px
 function fakeContext() {
   const texts: string[] = []
-  const state: Record<string | symbol, unknown> = {}
+  const canvas = { width: 1080, height: 1920 }
+  const state: Record<string | symbol, unknown> = { canvas }
   const ctx: object = new Proxy(state, {
     get: (target, key) => {
       if (key === 'fillText') return (s: string) => texts.push(s)
@@ -19,7 +20,7 @@ function fakeContext() {
       return true
     },
   })
-  return { ctx: ctx as CanvasRenderingContext2D, texts }
+  return { ctx: ctx as CanvasRenderingContext2D, texts, canvas }
 }
 
 const base: BucketItemInput = {
@@ -77,13 +78,18 @@ test.each([
   expect(texts).toEqual(['오로라 보기', text, '첫걸음'])
 })
 
-test('긴 제목과 왜는 3줄에서 말줄임한다', () => {
+test('긴 내용도 말줄임하지 않고 모두 쓴다', () => {
   const { ctx, texts } = fakeContext()
-  drawCard(ctx, buildCardModel({ ...base, title: '가'.repeat(100), why: '나'.repeat(200) }))
-  const titleLines = texts.filter((t) => t.startsWith('가'))
-  const whyLines = texts.filter((t) => t.startsWith('나'))
-  expect(titleLines).toHaveLength(3)
-  expect(whyLines).toHaveLength(3)
-  expect(titleLines[2].endsWith('…')).toBe(true)
-  expect(whyLines[2].endsWith('…')).toBe(true)
+  const companions = Array.from({ length: 30 }, (_, i) => `친구${i}`)
+  drawCard(ctx, buildCardModel({ ...base, title: '가'.repeat(100), why: '나'.repeat(200), companions }))
+  expect(texts.some((t) => t.includes('…'))).toBe(false)
+  expect(texts.filter((t) => t.startsWith('가')).join('')).toBe('가'.repeat(100))
+  expect(texts.filter((t) => t.startsWith('나')).join('')).toBe('나'.repeat(200))
+  expect(texts.join(' ')).toContain('친구29')
+})
+
+test('내용이 1920px을 넘으면 이미지가 아래로 늘어난다', () => {
+  const { ctx, canvas } = fakeContext()
+  drawCard(ctx, buildCardModel({ ...base, why: '나'.repeat(1000) }))
+  expect(canvas.height).toBeGreaterThan(1920)
 })

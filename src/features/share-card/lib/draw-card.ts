@@ -3,7 +3,7 @@ import type { CardModel } from './card-model'
 import { wrapLines } from './card-text'
 
 const CARD_WIDTH = 1080
-const CARD_HEIGHT = 1920
+const CARD_HEIGHT = 1920 // 최소 높이. 내용이 길면 이미지가 아래로 늘어난다
 
 // 밤하늘 토큰(styles.css @theme)과 같은 값
 const NIGHT = '#12151C'
@@ -33,19 +33,19 @@ function seeded(seed: number) {
 }
 
 // textTop 아래 가운데 기둥은 글자 자리라 별을 뿌리지 않는다
-function drawSky(ctx: CanvasRenderingContext2D, glowY: number, textTop: number) {
+function drawSky(ctx: CanvasRenderingContext2D, height: number, glowY: number, textTop: number) {
   ctx.fillStyle = NIGHT
-  ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
+  ctx.fillRect(0, 0, CARD_WIDTH, height)
   const glow = ctx.createRadialGradient(CX, glowY, 0, CX, glowY, 560)
   glow.addColorStop(0, 'rgb(242 193 78 / 0.18)')
   glow.addColorStop(1, 'rgb(242 193 78 / 0)')
   ctx.fillStyle = glow
-  ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
+  ctx.fillRect(0, 0, CARD_WIDTH, height)
 
   const rand = seeded(20261029)
   const inTextArea = (x: number, y: number) => y > textTop && x > 80 && x < CARD_WIDTH - 80
   for (let i = 0; i < 90; i++) {
-    const [x, y, r, alpha, gold] = [rand() * CARD_WIDTH, rand() * CARD_HEIGHT, 1.5 + rand() * 2.5, 0.2 + rand() * 0.6, rand() < 0.2]
+    const [x, y, r, alpha, gold] = [rand() * CARD_WIDTH, rand() * height, 1.5 + rand() * 2.5, 0.2 + rand() * 0.6, rand() < 0.2]
     if (inTextArea(x, y)) continue
     ctx.globalAlpha = alpha
     ctx.fillStyle = gold ? GOLD : INK
@@ -54,7 +54,7 @@ function drawSky(ctx: CanvasRenderingContext2D, glowY: number, textTop: number) 
     ctx.fill()
   }
   for (let i = 0; i < 8; i++) {
-    const [x, y, size, alpha] = [rand() * CARD_WIDTH, rand() * CARD_HEIGHT, 24 + rand() * 20, 0.35 + rand() * 0.4]
+    const [x, y, size, alpha] = [rand() * CARD_WIDTH, rand() * height, 24 + rand() * 20, 0.35 + rand() * 0.4]
     if (inTextArea(x, y)) continue
     ctx.globalAlpha = alpha
     drawStar(ctx, x, y, size, GOLD)
@@ -66,8 +66,9 @@ function drawSky(ctx: CanvasRenderingContext2D, glowY: number, textTop: number) 
 type Block = { gap: number; height: number; draw: (top: number) => void }
 
 const STAR_SIZE = 200
-const LOGO_TOP = 1736
-const CONTENT_BOTTOM = 1640 // 로고 위 여백
+const TOP_MARGIN = 120
+const LOGO_FROM_BOTTOM = 184
+const CONTENT_FROM_BOTTOM = 280 // 로고 위 여백
 
 export function drawCard(ctx: CanvasRenderingContext2D, card: CardModel) {
   const measure = (s: string) => ctx.measureText(s).width
@@ -79,7 +80,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, card: CardModel) {
   const blocks: Block[] = []
 
   ctx.font = `84px ${TITLE_FONT}`
-  const titleLines = wrapLines(card.title, 880, 3, measure)
+  const titleLines = wrapLines(card.title, 880, measure)
   blocks.push({
     gap: 60,
     height: titleLines.length * 118,
@@ -111,8 +112,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, card: CardModel) {
 
   if (card.why) {
     ctx.font = `40px ${BODY_FONT}`
-    // 아래 칸이 있으면 2줄로 줄여 한 화면에 담는다
-    const whyLines = wrapLines(card.why, 840, card.details.length > 0 ? 2 : 3, measure)
+    const whyLines = wrapLines(card.why, 840, measure)
     blocks.push({
       gap: 40,
       height: whyLines.length * 64,
@@ -120,25 +120,27 @@ export function drawCard(ctx: CanvasRenderingContext2D, card: CardModel) {
     })
   }
 
-  // 선행 과제·다음 행동·함께할 사람: 이름 + 값 한 줄(넘치면 …)
+  // 선행 과제·다음 행동·함께할 사람: 이름 + 값(여러 줄)
   ctx.font = `38px ${BODY_FONT}`
   card.details.forEach((detail, i) => {
-    const [value] = wrapLines(detail.value, 840, 1, measure)
+    const valueLines = wrapLines(detail.value, 840, measure)
     blocks.push({
       gap: i === 0 ? 64 : 32,
-      height: 100,
+      height: 44 + valueLines.length * 56,
       draw: (top) => {
         text(detail.label, CX, top, `30px ${BODY_FONT}`, MUTE)
-        text(value, CX, top + 44, `38px ${BODY_FONT}`, INK)
+        valueLines.forEach((line, j) => text(line, CX, top + 44 + j * 56, `38px ${BODY_FONT}`, INK))
       },
     })
   })
 
-  // 별 + 내용 전체를 로고 위 공간의 세로 가운데에 둔다
+  // 별 + 내용 전체를 로고 위 공간의 세로 가운데에 둔다. 넘치면 캔버스를 늘린다(늘리면 컨텍스트 상태가 초기화되니 그리기 전에)
   const contentHeight = STAR_SIZE + blocks.reduce((sum, b) => sum + b.gap + b.height, 0)
-  const top = Math.max(120, (CONTENT_BOTTOM - contentHeight) / 2)
+  const height = Math.max(CARD_HEIGHT, TOP_MARGIN + contentHeight + CONTENT_FROM_BOTTOM)
+  if (ctx.canvas.height < height) ctx.canvas.height = height
+  const top = Math.max(TOP_MARGIN, (height - CONTENT_FROM_BOTTOM - contentHeight) / 2)
   const starY = top + STAR_SIZE / 2
-  drawSky(ctx, starY, top + STAR_SIZE + 20)
+  drawSky(ctx, height, starY, top + STAR_SIZE + 20)
   drawStar(ctx, CX, starY, STAR_SIZE, GOLD)
 
   ctx.textAlign = 'center'
@@ -154,10 +156,11 @@ export function drawCard(ctx: CanvasRenderingContext2D, card: CardModel) {
   ctx.font = `52px ${TITLE_FONT}`
   const logoWidth = measure('첫걸음')
   const left = CX - (logoWidth + 56) / 2
-  drawStar(ctx, left + 20, LOGO_TOP + 30, 40, GOLD)
+  const logoTop = height - LOGO_FROM_BOTTOM
+  drawStar(ctx, left + 20, logoTop + 30, 40, GOLD)
   ctx.textAlign = 'left'
   ctx.fillStyle = INK
-  ctx.fillText('첫걸음', left + 56, LOGO_TOP)
+  ctx.fillText('첫걸음', left + 56, logoTop)
 }
 
 // 구글 폰트는 쓰기 전엔 안 받아지고, 한글은 글자 범위별로 나뉘어 있어 카드에 쓸 글자로 명시 로드한다.
