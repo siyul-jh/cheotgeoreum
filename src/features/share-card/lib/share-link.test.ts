@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { BucketItemInputSchema, type ItemValues } from '@/entities/bucket-item'
 import { clipForCard, decodeCard, encodeCard, shareUrl } from './share-link'
 
@@ -61,7 +61,9 @@ test('보통 항목 payload는 1.로 시작하고 1,000자 미만이다', async 
 })
 
 test('공유 URL은 /s# 뒤에 payload를 붙인다', () => {
-  expect(shareUrl('1.abc', 'https://example.app')).toBe('https://example.app/s#1.abc')
+  vi.stubGlobal('location', { origin: 'https://example.app' })
+  expect(shareUrl('1.abc')).toBe('https://example.app/s#1.abc')
+  vi.unstubAllGlobals()
 })
 
 async function deflateBase64url(text: string) {

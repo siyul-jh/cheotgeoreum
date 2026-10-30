@@ -58,6 +58,6 @@ export async function decodeCard(payload: string): Promise<ItemValues> {
   return ItemValuesSchema.parse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(json)))
 }
 
-export function shareUrl(payload: string, origin?: string): string {
-  return `${origin ?? location.origin}/s#${payload}`
+export function shareUrl(payload: string): string {
+  return `${location.origin}/s#${payload}`
 }
