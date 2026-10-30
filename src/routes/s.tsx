@@ -29,6 +29,7 @@ function SharedCard({ hash }: { hash: string }) {
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-[18px] text-center">
+      <h1 className="sr-only">받은 별 카드</h1>
       {decoded.status === 'ok' && <StarCard card={buildCardModel(decoded.values)} />}
       {decoded.status === 'error' && <p role="alert">카드를 열 수 없어요</p>}
       {/* 해독 중에는 카드와 같은 크기의 빈 틀로 화면이 흔들리지 않게 한다 */}

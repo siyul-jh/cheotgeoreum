@@ -74,9 +74,34 @@ test.each([
   ['빈 문자열', ''],
   ['접두사만', '1.'],
   ['모르는 버전', '2.abc'],
-  ['8,001자 입력', `1.${'A'.repeat(7999)}`],
 ])('%s는 거부한다', async (_, payload) => {
   await expect(decodeCard(payload)).rejects.toThrow()
+})
+
+test('8,001자 입력은 해독 전에 길이로 거부한다', async () => {
+  await expect(decodeCard(`1.${'A'.repeat(7999)}`)).rejects.toThrow('알 수 없는 공유 링크')
+})
+
+// 압축이 거의 안 되는 4바이트 문자로 카드 표시 한도를 모두 채워도 앱이 만든 링크는 받는 쪽 상한 안에 든다
+test('최악의 항목도 링크가 8,000자를 넘지 않고 그대로 열린다', async () => {
+  let seed = 7
+  const rand = (n: number) =>
+    Array.from({ length: n }, () => {
+      seed = (seed * 16807) % 2147483647
+      return String.fromCodePoint(0x20000 + (seed % 0x5000))
+    }).join('')
+  const worst: ItemValues = {
+    title: rand(100),
+    why: rand(1000),
+    category: rand(30),
+    targetPeriod: { kind: 'range', from: '2027-01', to: '2028-12' },
+    prerequisites: Array.from({ length: 30 }, () => ({ text: rand(200), done: false })),
+    nextAction: { text: rand(200), dueDate: '2027-01-01' },
+    companions: Array.from({ length: 30 }, () => rand(30)),
+  }
+  const payload = await encodeCard(worst)
+  expect(payload.length).toBeLessThanOrEqual(8000)
+  await expect(decodeCard(payload)).resolves.toEqual(ItemValuesSchema.parse(clipForCard(worst)))
 })
 
 test('base64 한 글자 변조는 거부한다', async () => {
