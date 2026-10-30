@@ -18,7 +18,7 @@ import {
 } from '@/entities/bucket-item'
 import { LLM_ERROR_MESSAGES, type DraftState } from '@/shared/lib/llm-result'
 import { AiSuggestionRow } from '@/shared/ui/ai-suggestion-row'
-import { StarIcon } from '@/shared/ui/star-icon'
+import { CloudIcon, StarIcon, SunIcon } from '@/shared/ui/star-icon'
 import { XIcon } from '@/shared/ui/x-icon'
 import { STEP_ORDER, undecidedAiFields, type StepFormAction, type StepFormState } from '../model/step-form-reducer'
 
@@ -84,19 +84,24 @@ export function StepForm({ state, dispatch, draftState, onFill, onOpenIdeas, onS
           aria-label={`${STEP_ORDER.length}단계 중 ${decided.length}단계 완료`}
           className="flex flex-1 items-center justify-between"
         >
+          {/* 다크는 별이 하나씩 켜지고, 라이트는 구름이 걷히며 해가 뜬다(정한 칸 해, 지금 칸 빛나는 해, 남은 칸 구름) */}
           {STEP_ORDER.map((f) =>
             // key: 채워질 때 새로 마운트돼야 pop이 돈다
             decided.includes(f) ? (
-              <StarIcon key={`${f}-on`} fill="currentColor" className="pop size-4 text-gold" />
+              <span key={`${f}-on`} className="pop">
+                <StarIcon fill="currentColor" className="size-4 text-gold light:hidden" />
+                <SunIcon filled className="hidden size-[18px] text-sun light:block" />
+              </span>
+            ) : f === current ? (
+              <span key={`${f}-now`} className="glow">
+                <StarIcon fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinejoin="round" className="size-4 text-gold light:hidden" />
+                <SunIcon className="hidden size-[18px] text-sun light:block" />
+              </span>
             ) : (
-              <StarIcon
-                key={`${f}-off`}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                strokeLinejoin="round"
-                className={`size-4 ${f === current ? 'glow text-gold' : 'text-dim'}`}
-              />
+              <span key={`${f}-off`}>
+                <StarIcon fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinejoin="round" className="size-4 text-dim light:hidden" />
+                <CloudIcon className="hidden size-[18px] text-dim light:block" />
+              </span>
             ),
           )}
         </div>

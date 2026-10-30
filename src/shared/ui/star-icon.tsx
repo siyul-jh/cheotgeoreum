@@ -11,6 +11,24 @@ export function StarIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+// 라이트(태양) 모드 짝: 18×18 해와 구름. filled면 해 원을 채운다(햇살은 늘 선)
+export function SunIcon({ filled = false, ...props }: SVGProps<SVGSVGElement> & { filled?: boolean }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" {...props}>
+      <circle cx={9} cy={9} r={3.4} fill={filled ? 'currentColor' : 'none'} />
+      <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4" />
+    </svg>
+  )
+}
+
+export function CloudIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinejoin="round" {...props}>
+      <path d="M5 14h8.5a3 3 0 0 0 .3-6 4.5 4.5 0 0 0-8.6-1A3.5 3.5 0 0 0 5 14z" />
+    </svg>
+  )
+}
+
 type BurstProps = { count: number; dx: number; dy: number; delay?: number; className: string }
 
 // 한 점에서 사방으로 흩어지는 작은 별들. 위치는 className(absolute 기준점)으로 정한다
