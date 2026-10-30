@@ -1,6 +1,6 @@
 import { act, cleanup, render, screen } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
-import { InstallGuide } from './install-guide'
+import { InstallGuide, isStandalone } from './install-guide'
 
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
 
@@ -29,4 +29,15 @@ test('설치 가능 이벤트가 오면 [앱 설치]가 설치 창을 연다', (
   })
   act(() => screen.getByRole('button', { name: '앱 설치' }).click())
   expect(prompt).toHaveBeenCalled()
+})
+
+test('브라우저 탭만 설치 안 한 것으로 보고, 다른 앱 창 방식(minimal-ui 등)은 설치한 앱으로 본다', () => {
+  const mode = (current: string) =>
+    vi.spyOn(window, 'matchMedia').mockImplementation((q) => ({ matches: q === `(display-mode: ${current})` }) as MediaQueryList)
+  mode('browser')
+  expect(isStandalone()).toBe(false)
+  mode('minimal-ui')
+  expect(isStandalone()).toBe(true)
+  mode('standalone')
+  expect(isStandalone()).toBe(true)
 })

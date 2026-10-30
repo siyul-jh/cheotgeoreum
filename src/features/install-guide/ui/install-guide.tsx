@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { StarIcon } from '@/shared/ui/star-icon'
 
-// 홈 화면에 설치해 연 앱인가(iOS Safari는 navigator.standalone, 나머지는 display-mode)
+// 설치해 연 앱인가. 브라우저 탭(display-mode: browser)만 아니면 앱 창으로 본다(standalone 말고 minimal-ui·
+// window-controls-overlay 등으로 여는 브라우저가 있다, 예: Whale 앱). iOS Safari 홈 화면 앱은 navigator.standalone
 export const isStandalone = () =>
-  matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && navigator.standalone === true)
+  !matchMedia('(display-mode: browser)').matches || ('standalone' in navigator && navigator.standalone === true)
 
 // 크롬 계열이 설치 가능할 때 주는 이벤트(표준 타입에 없다)
 type InstallPromptEvent = Event & { prompt: () => Promise<void> }
