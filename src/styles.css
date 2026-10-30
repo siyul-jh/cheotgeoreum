@@ -63,6 +63,11 @@
     0 4px 14px rgb(18 21 28 / 0.06);
 }
 
+/* 입력값(ink)과 구분되게 placeholder는 연하게(흰 바탕 대비 4.5:1 유지) */
+[data-theme='light'] .field::placeholder {
+  color: #6d7482;
+}
+
 /* 배경 별은 낮에는 금빛 알갱이로 */
 [data-theme='light'] .twinkle {
   background-color: var(--color-sun);

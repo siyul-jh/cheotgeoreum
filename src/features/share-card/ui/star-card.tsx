@@ -49,13 +49,13 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
     <div className={`@container flex w-full flex-col ${fill ? 'flex-1' : ''}`}>
       <figure
         aria-label={`${card.title} 별 카드`}
-        className={`star-card rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 light:bg-card pb-5 text-left`}
+        className={`star-card rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-4 text-left light:bg-linear-to-b light:from-[#fff3d1] light:via-card light:via-60% light:to-card`}
       >
         <div aria-hidden="true">
           {DOTS.map(([left, top, delay]) => (
             <span
               key={`${left}-${top}`}
-              className="twinkle absolute size-0.5 rounded-full bg-ink opacity-50"
+              className="twinkle absolute size-0.5 rounded-full bg-ink opacity-50 light:hidden"
               style={{ left: `${left}%`, top: `${top}%`, animationDelay: `${delay}s` }}
             />
           ))}
@@ -69,7 +69,7 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
           ))}
         </div>
         {/* ascend 끝(위로 40px, 1.4배)에서도 잘리지 않게 위 여백 pt-14, 정지 상태(원위치)는 제목 위에 있다 */}
-        <div className="relative flex shrink-0 justify-center pt-14 pb-4">
+        <div className="relative flex shrink-0 justify-center pt-14 pb-2">
           <div className="ascend relative size-14">
             {/* 은은한 빛무리. 다크는 별, 라이트는 햇살이 도는 태양 */}
             <span className="glow absolute -inset-5 rounded-full bg-gold/15 blur-xl light:bg-sun/30" />
@@ -86,24 +86,24 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
         </div>
         <figcaption className="relative flex min-h-0 flex-col gap-2 *:shrink-0">
           {meta && (
-            <p className="rise break-words text-xs text-gold" style={reveal(0)}>
+            <p className="rise break-words text-sm font-medium text-gold" style={reveal(0)}>
               {meta}
             </p>
           )}
-          <p className="rise break-words font-title text-xl font-bold text-ink" style={reveal(1)}>
+          <p className="rise break-words font-title text-2xl font-bold leading-snug text-ink" style={reveal(1)}>
             {card.title}
           </p>
           {card.why && (
-            <p className="rise break-words text-[13px] text-mute" style={reveal(2)}>
+            <p className="rise break-words text-[15px] text-mute" style={reveal(2)}>
               {card.why}
             </p>
           )}
           {card.details.length > 0 && (
-            <dl className="mt-1 flex flex-col gap-1.5 text-xs">
+            <dl className="mt-1 flex flex-col gap-2">
               {card.details.map((d, i) => (
                 <div key={d.label} className="rise min-w-0" style={reveal(3 + i)}>
-                  <dt className="text-faint">{d.label}</dt>
-                  <dd className="break-words text-ink">{d.value}</dd>
+                  <dt className="text-[13px] text-faint">{d.label}</dt>
+                  <dd className="break-words text-[15px] text-ink">{d.value}</dd>
                 </div>
               ))}
             </dl>

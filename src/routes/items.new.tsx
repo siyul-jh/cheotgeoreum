@@ -128,14 +128,14 @@ function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: ()
   const { card, url, png, share, save, notice } = useStarCard(item)
   // 한 화면(main py-6 제외)에 카드와 버튼이 다 들어오게: 카드가 남은 높이를 채운다
   return (
-    <div className="rise mx-auto flex min-h-[calc(100dvh-3rem)] max-w-md flex-col items-center gap-[18px] text-center">
+    <div className="rise mx-auto flex min-h-[calc(100dvh-3rem)] max-w-md flex-col items-center gap-2.5 text-center">
       {/* 저장 버튼이 사라지며 포커스가 body로 떨어지지 않게 제목으로 옮긴다(스크린 리더가 읽는다) */}
-      <h1 ref={focusOnMount} tabIndex={-1} className="font-title text-[26px] font-bold outline-none">
+      <h1 ref={focusOnMount} tabIndex={-1} className="font-title text-[26px] font-bold leading-tight outline-none">
         새 별이 떴어요
       </h1>
       <StarCard card={card} fill />
       {/* 버튼은 화면 폭과 상관없이 한 줄에 하나씩 */}
-      <div className="mt-4 flex w-full flex-col gap-2">
+      <div className="flex w-full flex-col gap-2">
         <button type="button" className="btn btn-primary press" disabled={url === null} onClick={() => void share()}>
           공유하기
         </button>

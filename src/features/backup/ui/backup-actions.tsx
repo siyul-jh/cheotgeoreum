@@ -39,7 +39,7 @@ export function BackupActions() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-1 text-[13px] text-mute">
+    <div className="flex flex-col items-center gap-1 text-sm text-mute">
       <p className="flex items-center gap-2">
         <button type="button" className="press min-h-11 px-2 underline-offset-4 hover:underline" onClick={exportBackup}>
           데이터 내보내기
