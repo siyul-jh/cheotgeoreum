@@ -38,8 +38,10 @@ export async function encodeCard(item: ItemValues): Promise<string> {
 
 // 실패(접두사·base64·압축 해제·크기·JSON·스키마)는 모두 throw
 export async function decodeCard(payload: string): Promise<ItemValues> {
-  if (payload.length > MAX_PAYLOAD || !payload.startsWith(PREFIX)) throw new Error('알 수 없는 공유 링크')
-  const base64 = payload.slice(PREFIX.length).replaceAll('-', '+').replaceAll('_', '/')
+  // 메신저·공유 시트가 URL 뒤에 공유 문구를 이어 붙이기도 해서(%20…) base64url 글자까지만 읽는다
+  const body = payload.startsWith(PREFIX) ? /^[A-Za-z0-9_-]*/.exec(payload.slice(PREFIX.length))![0] : ''
+  if (body.length === 0 || body.length > MAX_PAYLOAD) throw new Error('알 수 없는 공유 링크')
+  const base64 = body.replaceAll('-', '+').replaceAll('_', '/')
   const bytes = Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')), (c) => c.charCodeAt(0))
 
   const reader = new Response(bytes).body!.pipeThrough(new DecompressionStream('deflate-raw')).getReader()

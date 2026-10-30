@@ -80,8 +80,8 @@ test.each([
   await expect(decodeCard(payload)).rejects.toThrow()
 })
 
-test('8,001자 입력은 해독 전에 길이로 거부한다', async () => {
-  await expect(decodeCard(`1.${'A'.repeat(7999)}`)).rejects.toThrow('알 수 없는 공유 링크')
+test('본문 8,001자는 해독 전에 길이로 거부한다', async () => {
+  await expect(decodeCard(`1.${'A'.repeat(8001)}`)).rejects.toThrow('알 수 없는 공유 링크')
 })
 
 // 압축이 거의 안 되는 4바이트 문자로 카드 표시 한도를 모두 채워도 앱이 만든 링크는 받는 쪽 상한 안에 든다
@@ -126,4 +126,10 @@ test('압축 폭탄(작은 payload, 큰 출력)은 거부한다', async () => {
   const payload = `1.${await deflateBase64url('a'.repeat(100_000))}`
   expect(payload.length).toBeLessThan(8000)
   await expect(decodeCard(payload)).rejects.toThrow('너무 커요')
+})
+
+test('공유 문구가 URL 뒤에 붙어 와도(%20…) 카드를 연다', async () => {
+  const payload = await encodeCard(item)
+  await expect(decodeCard(`${payload}%20내%20버킷리스트에%20새%20별이%20떴어요`)).resolves.toEqual(ItemValuesSchema.parse(clipForCard(item)))
+  await expect(decodeCard(`${payload} 내 버킷리스트에 새 별이 떴어요`)).resolves.toMatchObject({ title: item.title })
 })
