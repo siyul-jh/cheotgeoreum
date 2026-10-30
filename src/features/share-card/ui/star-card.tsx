@@ -23,7 +23,7 @@ export function StarCard({ card }: { card: CardModel }) {
   return (
     <figure
       aria-label={`${card.title} 별 카드`}
-      className="rise relative flex aspect-[9/16] h-[min(56dvh,480px)] flex-col overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left"
+      className="rise relative flex aspect-[9/16] w-full max-w-[20rem] flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left"
     >
       <div aria-hidden="true">
         {DOTS.map(([left, top, delay]) => (
@@ -41,7 +41,7 @@ export function StarCard({ card }: { card: CardModel }) {
           <StarIcon fill="currentColor" className="ascend size-14 text-gold" />
         </div>
       </div>
-      <figcaption className="relative flex min-h-0 flex-col gap-2">
+      <figcaption className="relative flex min-h-0 flex-col gap-2 *:shrink-0">
         {meta && <p className="truncate text-xs text-gold">{meta}</p>}
         <p className="line-clamp-3 break-words font-title text-xl font-bold text-ink">{card.title}</p>
         {card.why && (
