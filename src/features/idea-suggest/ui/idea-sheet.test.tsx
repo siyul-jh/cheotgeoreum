@@ -67,3 +67,15 @@ test('아이디어를 고르면 추천받을 때 고른 카테고리를 함께 �
   fireEvent.click(screen.getByRole('button', { name: '오로라 보기' }))
   expect(onPick).toHaveBeenCalledWith('오로라 보기', '여행')
 })
+
+test('[추천받기]를 누르면 요청하고 모달을 닫은 뒤 아래에 진행 상태를 띄운다', () => {
+  const request = vi.fn()
+  hook.request = request
+  render(<Page />)
+  fireEvent.click(screen.getByRole('button', { name: '추천받기' }))
+  expect(request).toHaveBeenCalledOnce()
+  expect(screen.getByRole('dialog', { hidden: true }).hasAttribute('open')).toBe(false)
+  // 닫힘 직후 status가 아직 idle이어도(요청 직후) 아래 상태 알약은 뜬다
+  expect(screen.getByText('아이디어를 찾고 있어요…').closest('[role="status"]')).not.toBeNull()
+  hook.request = () => {}
+})

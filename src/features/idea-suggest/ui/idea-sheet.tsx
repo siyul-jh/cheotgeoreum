@@ -25,6 +25,8 @@ export function IdeaSheet({ open, onOpenChange, onPick }: Props) {
   const { request, status, ideas, error } = useSuggestIdeas()
   // 찾는 중에 닫았으면 아래쪽에 진행 상태를 띄운다. 결과를 본 뒤 닫으면 띄우지 않는다
   const [showStatus, setShowStatus] = useState(false)
+  // [추천받기]는 요청하고 바로 닫는다. 닫힘 시점엔 status가 아직 pending으로 안 바뀌었을 수 있어 따로 표시한다
+  const closingForRequest = useRef(false)
 
   useEffect(() => {
     const dialog = ref.current
@@ -39,7 +41,8 @@ export function IdeaSheet({ open, onOpenChange, onPick }: Props) {
       ref={ref}
       aria-label="아이디어 추천"
       onClose={() => {
-        setShowStatus(status === 'pending')
+        setShowStatus(closingForRequest.current || status === 'pending')
+        closingForRequest.current = false
         onOpenChange(false)
       }}
       className="m-0 mt-auto max-h-[85dvh] w-full max-w-none md:mx-auto md:max-w-md rounded-t-[20px] border-t border-line bg-card p-4 text-ink backdrop:bg-black/60"
@@ -82,13 +85,15 @@ export function IdeaSheet({ open, onOpenChange, onPick }: Props) {
           type="button"
           className="btn btn-primary press"
           disabled={status === 'pending'}
-          onClick={() =>
+          onClick={() => {
             request({
               keyword: keyword.trim() || undefined,
               category: category || undefined,
               existingTitles: titles.slice(-500),
             })
-          }
+            closingForRequest.current = true
+            ref.current?.close()
+          }}
         >
           {status === 'pending' ? '아이디어 찾는 중…' : status === 'ready' ? '다시 추천받기' : '추천받기'}
         </button>
@@ -115,7 +120,8 @@ export function IdeaSheet({ open, onOpenChange, onPick }: Props) {
       </div>
     </dialog>
     <FloatingStatus show={!open && showStatus}>
-      {status === 'pending' ? (
+      {/* idle: [추천받기] 직후 아직 pending으로 바뀌기 전 */}
+      {status === 'pending' || status === 'idle' ? (
         <>
           <Spinner />
           <span className="pr-3">아이디어를 찾고 있어요…</span>
