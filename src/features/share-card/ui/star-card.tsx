@@ -29,10 +29,10 @@ const METEORS = [
   [54, 28, 6.7, 9, 32, 'from-gold-hi'],
 ] as const
 
-// 별이 떠오르는 동안 글자가 위에서부터 차례로 올라온다(모션 축소면 바로 보인다)
+// 별이 떠오르는 동안 글자가 위에서부터 차례로 올라온다
 const reveal = (i: number) => ({ animationDelay: `${0.7 + i * 0.12}s` })
 
-// 공유 이미지(Canvas)와 칸·순서·문구가 같은 9:16 카드. 모션 축소면 별은 원위치에 정지(styles.css)
+// 공유 이미지(Canvas)와 칸·순서·문구가 같은 카드. 연출은 모션 축소 설정이어도 보인다(styles.css .star-card)
 export function StarCard({ card, fill = false }: { card: CardModel; fill?: boolean }) {
   const meta = [card.period, card.category].filter(Boolean).join(' · ')
   // 폭은 감싼 쪽을 꽉 채운다(결과 화면은 버튼 폭과 같게). 카드 내용은 말줄임하지 않고 길면 늘어난다.
@@ -42,7 +42,7 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
     <div className={`@container flex w-full flex-col ${fill ? 'flex-1' : ''}`}>
       <figure
         aria-label={`${card.title} 별 카드`}
-        className={`rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left`}
+        className={`star-card rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left`}
       >
         <div aria-hidden="true">
           {DOTS.map(([left, top, delay]) => (

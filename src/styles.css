@@ -284,6 +284,24 @@
   }
 }
 
+/* 별 카드 연출은 모션 축소 설정이어도 보인다(사용자 결정: 카드의 핵심 경험). 위 규칙과 같은 값 */
+.star-card.rise,
+.star-card .rise {
+  animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.star-card .twinkle {
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+.star-card .glow {
+  animation: glow 1.6s ease-in-out infinite;
+}
+.star-card .ascend {
+  animation: ascend 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.star-card .meteor {
+  animation: meteor 6s ease-in infinite;
+}
+
 /* 상태 전환·눌림은 모션 축소 설정이면 끈다(색은 즉시 바뀐다).
    눌림은 transform 대신 scale 속성: drop/rise 애니메이션의 fill(transform)에 덮이지 않는다 */
 @media (prefers-reduced-motion: no-preference) {
