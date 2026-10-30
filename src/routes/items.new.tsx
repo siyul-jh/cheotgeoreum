@@ -13,7 +13,7 @@ import {
 } from '@/entities/bucket-item'
 import { useFillBlanks } from '@/features/ai-fill'
 import { IdeaSheet } from '@/features/idea-suggest'
-import { ShareSheet, StarCard, useStarCard } from '@/features/share-card'
+import { StarCard, useStarCard } from '@/features/share-card'
 import {
   StepForm,
   type StepFormAction,
@@ -128,7 +128,7 @@ const focusOnMount = (el: HTMLElement | null) => el?.focus()
 
 // 사용자가 고를 때까지 머문다. 모션 축소면 애니메이션 클래스만 꺼지고(styles.css) 화면·버튼은 같다
 function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: () => void }) {
-  const { card, url, png, share, save, sheet, notice } = useStarCard(item)
+  const { card, url, png, share, save, notice } = useStarCard(item)
   // 한 화면(main py-6 제외)에 카드와 버튼이 다 들어오게: 카드가 남은 높이를 채운다
   return (
     <div className="rise mx-auto flex min-h-[calc(100dvh-3rem)] max-w-md flex-col items-center gap-2.5 text-center">
@@ -152,7 +152,6 @@ function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: ()
           목록으로
         </Link>
       </div>
-      {sheet && <ShareSheet {...sheet} />}
       <p role="status" className="min-h-5 text-sm text-mute">
         {notice}
       </p>

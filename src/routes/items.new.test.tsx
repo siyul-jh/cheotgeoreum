@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore } from '@/entities/bucket-item'
 import { decodeCard } from '@/features/share-card'
@@ -191,22 +191,16 @@ test('공유 시트를 닫으면 오류 문구가 없고 포커스를 빼앗지 
   list.focus()
   fireEvent.click(button)
   await new Promise((r) => setTimeout(r, 0))
-  expect(screen.queryByText(/복사했어요|못했어요/)).toBeNull()
-  expect(document.querySelector('dialog[aria-label="공유하기"]')?.hasAttribute('open')).toBe(false)
+  expect(screen.queryByText(/복사|못했어요/)).toBeNull()
   expect(document.activeElement).toBe(list) // 다시 그려져도 포커스를 제목으로 빼앗지 않는다
 })
 
-test('기기 공유 창이 없으면 앱 공유 시트를 열고, 메시지·이메일·X로 보내거나 링크를 복사한다', async () => {
+test('공유 시트를 못 쓰면 링크를 복사했다고 알린다', async () => {
   const writeText = vi.fn(async (text: string) => void text)
   Object.assign(navigator, { clipboard: { writeText } })
   await saveTitleOnly()
   fireEvent.click(await enabled('공유하기'))
-  const sheet = await screen.findByRole('dialog', { name: '공유하기' })
-  expect(within(sheet).getByRole('link', { name: '메시지' }).getAttribute('href')).toMatch(/^sms:\?&body=.*%2Fs%231\./)
-  expect(within(sheet).getByRole('link', { name: '이메일' }).getAttribute('href')).toMatch(/^mailto:/)
-  expect(within(sheet).getByRole('link', { name: 'X' }).getAttribute('href')).toMatch(/^https:\/\/twitter\.com\/intent\/tweet\?/)
-  fireEvent.click(within(sheet).getByRole('button', { name: '링크 복사' }))
-  expect(await within(sheet).findByText('링크를 복사했어요')).toBeTruthy()
+  expect(await screen.findByText('링크를 복사했어요')).toBeTruthy()
   expect(writeText.mock.calls[0][0]).toMatch(/^http:\/\/localhost(:\d+)?\/s#1\./)
 })
 

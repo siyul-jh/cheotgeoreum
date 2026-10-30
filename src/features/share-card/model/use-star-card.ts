@@ -3,8 +3,7 @@ import type { ItemValues } from '@/entities/bucket-item'
 import { buildCardModel } from '../lib/card-model'
 import { createCardPng } from '../lib/draw-card'
 import { encodeCard, shareUrl } from '../lib/share-link'
-import { buildShareText } from '../lib/card-text'
-import { downloadPng, openNativeShare } from './share-card'
+import { downloadPng, shareLink } from './share-card'
 
 export function useStarCard(item: ItemValues) {
   const card = useMemo(() => buildCardModel(item), [item])
@@ -36,16 +35,14 @@ export function useStarCard(item: ItemValues) {
     }
   }, [item, card])
 
-  // 기기 공유 창이 없거나 막히면 앱 공유 시트(메시지·이메일·X·링크 복사)를 연다
-  const [sheetOpen, setSheetOpen] = useState(false)
   const share = async () => {
-    if (url && !(await openNativeShare(url, item))) setSheetOpen(true)
+    if (!url) return
+    setShareNotice('')
+    setShareNotice((await shareLink(url, item)) ?? '')
   }
   const save = () => {
     if (png) downloadPng(png, item.title)
   }
 
-  // sheet: <ShareSheet {...sheet} />로 그린다(url이 생기기 전엔 null)
-  const sheet = url && { open: sheetOpen, onClose: () => setSheetOpen(false), url, text: buildShareText(item) }
-  return { card, url, png, share, save, sheet, notice: [shareNotice, saveNotice].filter(Boolean).join(' · ') }
+  return { card, url, png, share, save, notice: [shareNotice, saveNotice].filter(Boolean).join(' · ') }
 }
