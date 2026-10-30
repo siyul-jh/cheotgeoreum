@@ -1,4 +1,5 @@
 export { buildCardModel } from './lib/card-model'
 export { decodeCard } from './lib/share-link'
 export { useStarCard } from './model/use-star-card'
+export { ShareSheet } from './ui/share-sheet'
 export { StarCard } from './ui/star-card'

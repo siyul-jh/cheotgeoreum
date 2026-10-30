@@ -1,15 +1,9 @@
 import { afterEach, expect, test, vi } from 'vitest'
-import { downloadPng, shareLink } from './share-card'
+import { copyText, downloadPng, openNativeShare, shareTargets } from './share-card'
 
 const item = { title: '오로라 보기', targetPeriod: { kind: 'start', at: '2027-03' } as const }
 const TEXT = '내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기 (2027년 3월쯤)'
 const LINK = 'http://localhost:3000/s#1.abc'
-
-function stubNavigator(nav: { share?: (d: ShareData) => Promise<void> }) {
-  const writeText = vi.fn(async (text: string) => void text)
-  vi.stubGlobal('navigator', { ...nav, clipboard: { writeText } })
-  return writeText
-}
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -17,55 +11,57 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-test('공유 시트를 링크·문구로 열고, 성공하면 문구가 없다', async () => {
+test('기기 공유 창을 링크·문구로 열고 true', async () => {
   const share = vi.fn(async (data: ShareData) => void data)
-  const writeText = stubNavigator({ share })
-  expect(await shareLink(LINK, item)).toBeNull()
+  vi.stubGlobal('navigator', { share })
+  expect(await openNativeShare(LINK, item)).toBe(true)
   expect(share).toHaveBeenCalledWith({ title: '첫걸음', text: TEXT, url: LINK })
-  expect(writeText).not.toHaveBeenCalled()
 })
 
-test('공유 시트는 첫 동기 구간에서 열린다(사용자 활성화 유지)', () => {
+test('공유 창은 첫 동기 구간에서 열린다(사용자 활성화 유지)', () => {
   const share = vi.fn(async () => {})
-  stubNavigator({ share })
-  void shareLink(LINK, item)
+  vi.stubGlobal('navigator', { share })
+  void openNativeShare(LINK, item)
   expect(share).toHaveBeenCalledTimes(1)
 })
 
-test('공유 시트를 닫으면(AbortError) 조용하고 복사하지 않는다', async () => {
-  const writeText = stubNavigator({ share: () => Promise.reject(new DOMException('cancel', 'AbortError')) })
-  expect(await shareLink(LINK, item)).toBeNull()
-  expect(writeText).not.toHaveBeenCalled()
+test('사용자가 공유 창을 닫으면(AbortError) true: 앱 시트를 또 열지 않는다', async () => {
+  vi.stubGlobal('navigator', { share: () => Promise.reject(new DOMException('cancel', 'AbortError')) })
+  expect(await openNativeShare(LINK, item)).toBe(true)
 })
 
-test('Web Share가 없으면 링크를 복사한다', async () => {
-  const writeText = stubNavigator({})
-  expect(await shareLink(LINK, item)).toBe('링크를 복사했어요')
+test('공유 창이 없거나(https 아님) 막히면 false: 앱 공유 시트로 간다', async () => {
+  vi.stubGlobal('navigator', {})
+  expect(await openNativeShare(LINK, item)).toBe(false)
+  vi.stubGlobal('navigator', { share: () => Promise.reject(new DOMException('blocked', 'NotAllowedError')) })
+  expect(await openNativeShare(LINK, item)).toBe(false)
+})
+
+test('앱 공유 시트의 보낼 곳: 메시지·이메일은 문구+링크, X는 문구와 링크를 따로', () => {
+  const [sms, mail, x] = shareTargets(LINK, TEXT)
+  expect(decodeURIComponent(sms.href)).toBe(`sms:?&body=${TEXT}\n${LINK}`)
+  expect(decodeURIComponent(mail.href)).toBe(`mailto:?subject=첫걸음&body=${TEXT}\n${LINK}`)
+  const tweet = new URL(x.href)
+  expect(tweet.searchParams.get('text')).toBe(TEXT)
+  expect(tweet.searchParams.get('url')).toBe(LINK) // 해시(#1.abc)가 잘리지 않는다
+})
+
+test('clipboard가 있으면 그것으로 복사한다', async () => {
+  const writeText = vi.fn(async (text: string) => void text)
+  vi.stubGlobal('navigator', { clipboard: { writeText } })
+  expect(await copyText(LINK)).toBe(true)
   expect(writeText).toHaveBeenCalledWith(LINK)
 })
 
-test('그 밖의 공유 실패도 링크를 복사한다', async () => {
-  const writeText = stubNavigator({ share: () => Promise.reject(new DOMException('blocked', 'NotAllowedError')) })
-  expect(await shareLink(LINK, item)).toBe('링크를 복사했어요')
-  expect(writeText).toHaveBeenCalledWith(LINK)
-})
-
-// 같은 Wi-Fi의 http 주소처럼 보안 컨텍스트가 아니면 share·clipboard가 아예 없다
-test('share·clipboard가 없으면 입력칸을 선택해 execCommand로 복사하고 입력칸은 지운다', async () => {
+// 같은 Wi-Fi의 http 주소처럼 보안 컨텍스트가 아니면 clipboard가 아예 없다
+test('clipboard가 없으면 입력칸을 선택해 execCommand로 복사하고 입력칸은 지운다', async () => {
   vi.stubGlobal('navigator', {})
   const exec = vi.fn((command: string) => command === 'copy' && document.querySelector('textarea')?.value === LINK)
   document.execCommand = exec
-  expect(await shareLink(LINK, item)).toBe('링크를 복사했어요')
-  expect(exec).toHaveBeenCalledWith('copy')
+  expect(await copyText(LINK)).toBe(true)
   expect(document.querySelector('textarea')).toBeNull()
-})
-
-test('복사까지 막히면 링크가 담긴 입력창을 띄워 직접 복사하게 한다', async () => {
-  vi.stubGlobal('navigator', {})
   document.execCommand = vi.fn(() => false)
-  const prompt = vi.spyOn(window, 'prompt').mockReturnValue(null)
-  expect(await shareLink(LINK, item)).toBeNull()
-  expect(prompt).toHaveBeenCalledWith('이 링크를 길게 눌러 복사해 주세요', LINK)
+  expect(await copyText(LINK)).toBe(false)
 })
 
 test('PNG를 제목 파일명으로 내려받고 10초 뒤 object URL을 해제한다', () => {

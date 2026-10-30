@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useId } from 'react'
 import { type BucketItem, useBucketStore } from '@/entities/bucket-item'
-import { StarCard, useStarCard } from '@/features/share-card'
+import { ShareSheet, StarCard, useStarCard } from '@/features/share-card'
 import { XIcon } from '@/shared/ui/x-icon'
 import { ItemEditForm } from './-components/item-edit-form'
 
@@ -45,7 +45,7 @@ function EditItemPage() {
 // 저장된 내용으로 그린 별 카드. 고친 내용은 저장한 뒤에 카드에 반영된다
 function ShareSection({ item }: { item: BucketItem }) {
   const headingId = useId()
-  const { card, url, png, share, save, notice } = useStarCard(item)
+  const { card, url, png, share, save, sheet, notice } = useStarCard(item)
   return (
     <section aria-labelledby={headingId} className="surface flex flex-col items-center gap-4 p-4">
       <div className="flex w-full flex-col gap-1">
@@ -66,6 +66,7 @@ function ShareSection({ item }: { item: BucketItem }) {
           이미지로 저장
         </button>
       </div>
+      {sheet && <ShareSheet {...sheet} />}
       <p role="status" className="min-h-5 text-sm text-mute">
         {notice}
       </p>
