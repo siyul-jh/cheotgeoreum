@@ -50,12 +50,19 @@ function RootLayout() {
     if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
   }, [])
   useEffect(() => {
-    // '시스템 설정 따름'이면 폰 모드가 바뀔 때 바로 따라간다(직접 고른 모드면 applyTheme이 그대로 둔다)
+    // 다시 적용할 때: 폰 모드가 바뀜('시스템 설정'일 때만 달라진다), 다른 탭에서 바꿈(storage),
+    // 뒤로가기 캐시(bfcache)로 돌아옴(pageshow) — 그 사이 바뀐 설정이 화면에 남지 않게
     applyTheme()
     const media = matchMedia('(prefers-color-scheme: light)')
     const onChange = () => applyTheme()
     media.addEventListener('change', onChange)
-    return () => media.removeEventListener('change', onChange)
+    addEventListener('storage', onChange)
+    addEventListener('pageshow', onChange)
+    return () => {
+      media.removeEventListener('change', onChange)
+      removeEventListener('storage', onChange)
+      removeEventListener('pageshow', onChange)
+    }
   }, [])
   return (
     <QueryClientProvider client={queryClient}>
