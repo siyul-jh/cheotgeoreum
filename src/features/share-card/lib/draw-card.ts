@@ -1,5 +1,5 @@
-import { type BucketItemInput, formatFieldValue } from '@/entities/bucket-item'
 import { STAR_PATH } from '@/shared/ui/star-icon'
+import type { CardModel } from './card-model'
 import { wrapLines } from './card-text'
 
 const CARD_WIDTH = 1080
@@ -69,36 +69,30 @@ const STAR_SIZE = 200
 const LOGO_TOP = 1736
 const CONTENT_BOTTOM = 1640 // 로고 위 여백
 
-export function drawCard(ctx: CanvasRenderingContext2D, item: BucketItemInput) {
+export function drawCard(ctx: CanvasRenderingContext2D, card: CardModel) {
   const measure = (s: string) => ctx.measureText(s).width
   const text = (s: string, x: number, y: number, font: string, color: string) => {
     ctx.font = font
     ctx.fillStyle = color
     ctx.fillText(s, x, y)
   }
-  const filled = {
-    prerequisites: item.prerequisites.length > 0,
-    nextAction: item.nextAction.text !== '' || item.nextAction.dueDate !== null,
-    companions: item.companions.length > 0,
-  }
-  const details = (['prerequisites', 'nextAction', 'companions'] as const).filter((f) => filled[f])
   const blocks: Block[] = []
 
   ctx.font = `84px ${TITLE_FONT}`
-  const titleLines = wrapLines(item.title, 880, 3, measure)
+  const titleLines = wrapLines(card.title, 880, 3, measure)
   blocks.push({
     gap: 60,
     height: titleLines.length * 118,
     draw: (top) => titleLines.forEach((line, i) => text(line, CX, top + i * 118, `84px ${TITLE_FONT}`, INK)),
   })
 
-  if (item.targetPeriod) {
-    const period = formatFieldValue('targetPeriod', item)
+  if (card.period) {
+    const period = card.period
     blocks.push({ gap: 28, height: 60, draw: (top) => text(period, CX, top, `500 42px ${BODY_FONT}`, GOLD) })
   }
 
-  if (item.category) {
-    const chip = item.category
+  if (card.category) {
+    const chip = card.category
     ctx.font = `500 34px ${BODY_FONT}`
     const width = measure(chip) + 64
     blocks.push({
@@ -115,10 +109,10 @@ export function drawCard(ctx: CanvasRenderingContext2D, item: BucketItemInput) {
     })
   }
 
-  if (item.why) {
+  if (card.why) {
     ctx.font = `40px ${BODY_FONT}`
     // 아래 칸이 있으면 2줄로 줄여 한 화면에 담는다
-    const whyLines = wrapLines(item.why, 840, details.length > 0 ? 2 : 3, measure)
+    const whyLines = wrapLines(card.why, 840, card.details.length > 0 ? 2 : 3, measure)
     blocks.push({
       gap: 40,
       height: whyLines.length * 64,
@@ -128,17 +122,17 @@ export function drawCard(ctx: CanvasRenderingContext2D, item: BucketItemInput) {
 
   // 선행 과제·다음 행동·함께할 사람: 이름 + 값 한 줄(넘치면 …)
   ctx.font = `38px ${BODY_FONT}`
-  for (const field of details) {
-    const [value] = wrapLines(formatFieldValue(field, item), 840, 1, measure)
+  card.details.forEach((detail, i) => {
+    const [value] = wrapLines(detail.value, 840, 1, measure)
     blocks.push({
-      gap: field === details[0] ? 64 : 32,
+      gap: i === 0 ? 64 : 32,
       height: 100,
       draw: (top) => {
-        text(DETAIL_LABELS[field], CX, top, `30px ${BODY_FONT}`, MUTE)
+        text(detail.label, CX, top, `30px ${BODY_FONT}`, MUTE)
         text(value, CX, top + 44, `38px ${BODY_FONT}`, INK)
       },
     })
-  }
+  })
 
   // 별 + 내용 전체를 로고 위 공간의 세로 가운데에 둔다
   const contentHeight = STAR_SIZE + blocks.reduce((sum, b) => sum + b.gap + b.height, 0)
@@ -166,8 +160,6 @@ export function drawCard(ctx: CanvasRenderingContext2D, item: BucketItemInput) {
   ctx.fillText('첫걸음', left + 56, LOGO_TOP)
 }
 
-const DETAIL_LABELS = { prerequisites: '선행 과제', nextAction: '다음 행동', companions: '함께할 사람' } as const
-
 // 구글 폰트는 쓰기 전엔 안 받아지고, 한글은 글자 범위별로 나뉘어 있어 카드에 쓸 글자로 명시 로드한다.
 // 못 받으면 font 목록의 sans-serif로 그린다
 async function loadFonts(text: string) {
@@ -183,15 +175,14 @@ async function loadFonts(text: string) {
   }
 }
 
-export async function createCardPng(item: BucketItemInput): Promise<Blob> {
+export async function createCardPng(card: CardModel): Promise<Blob> {
   const canvas = document.createElement('canvas')
   canvas.width = CARD_WIDTH
   canvas.height = CARD_HEIGHT
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('canvas 2d를 쓸 수 없어요')
-  const fields = ['targetPeriod', 'prerequisites', 'nextAction', 'companions'] as const
-  await loadFonts(`${item.title}${item.why}${item.category ?? ''}${fields.map((f) => formatFieldValue(f, item)).join('')} 첫걸음 선행 과제 다음 행동 함께할 사람`)
-  drawCard(ctx, item)
+  await loadFonts(`${card.title}${card.period ?? ''}${card.category ?? ''}${card.why}${card.details.map((d) => d.label + d.value).join('')} 첫걸음`)
+  drawCard(ctx, card)
   return new Promise((resolve, reject) =>
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('PNG를 만들지 못했어요'))), 'image/png'),
   )

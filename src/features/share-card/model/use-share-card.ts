@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { BucketItemInput } from '@/entities/bucket-item'
+import { buildCardModel } from '../lib/card-model'
 import { createCardPng } from '../lib/draw-card'
 import { shareCard } from './share-card'
 
@@ -12,7 +13,7 @@ export function useShareCard(item: BucketItemInput) {
   useEffect(() => {
     let url: string | null = null
     let live = true
-    createCardPng(item)
+    createCardPng(buildCardModel(item))
       .then((png) => {
         if (!live) return
         url = URL.createObjectURL(png)

@@ -7,8 +7,9 @@ export function buildShareText({ title, targetPeriod }: ShareItem): string {
   return `내 버킷리스트에 새 별이 떴어요 ✦ ${title}${period}`
 }
 
+// 파일 이름에 못 쓰는 문자(\/:*?"<>|)와 제어문자는 뺀다
 export function cardFileName(title: string): string {
-  return `첫걸음-${Array.from(title).slice(0, 20).join('')}.png`
+  return `첫걸음-${Array.from(title.replace(/[\\/:*?"<>|\p{Cc}]/gu, '')).slice(0, 20).join('')}.png`
 }
 
 // 띄어쓰기에서 줄을 바꾸고, 한 줄보다 긴 단어는 글자 단위로 자른다. maxLines를 넘으면 마지막 줄 끝을 …로

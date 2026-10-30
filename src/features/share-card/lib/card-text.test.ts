@@ -26,6 +26,10 @@ describe('cardFileName', () => {
     expect(cardFileName('오로라 보기')).toBe('첫걸음-오로라 보기.png')
     expect(cardFileName('가'.repeat(30))).toBe(`첫걸음-${'가'.repeat(20)}.png`)
   })
+  it('파일 이름에 못 쓰는 문자와 제어문자를 뺀다', () => {
+    expect(cardFileName('a/b:c?')).toBe('첫걸음-abc.png')
+    expect(cardFileName('\\|*"<>\u0000\n\u007f끝')).toBe('첫걸음-끝.png')
+  })
 })
 
 describe('wrapLines', () => {

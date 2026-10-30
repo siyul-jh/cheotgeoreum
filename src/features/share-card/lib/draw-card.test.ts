@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { BucketItemInput } from '@/entities/bucket-item'
+import { buildCardModel } from './card-model'
 import { drawCard } from './draw-card'
 
 // jsdom에는 canvas가 없어 fillText만 기록하는 가짜 컨텍스트로 그린다. 글자 하나 = 40px
@@ -37,13 +38,13 @@ afterEach(() => vi.unstubAllGlobals())
 
 test('제목만 있으면 제목과 하단 로고만 쓴다(상태는 쓰지 않는다)', () => {
   const { ctx, texts } = fakeContext()
-  drawCard(ctx, base)
+  drawCard(ctx, buildCardModel(base))
   expect(texts).toEqual(['오로라 보기', '첫걸음'])
 })
 
 test('모든 항목이 있으면 모두 쓴다', () => {
   const { ctx, texts } = fakeContext()
-  drawCard(ctx, {
+  drawCard(ctx, buildCardModel({
     ...base,
     targetPeriod: { kind: 'end', at: '2027-03' },
     why: '하늘이 보고 싶어서',
@@ -51,7 +52,7 @@ test('모든 항목이 있으면 모두 쓴다', () => {
     prerequisites: [{ text: '여권', done: false }, { text: '적금', done: true }],
     nextAction: { text: '항공권 검색', dueDate: '2026-11-03' },
     companions: ['민지'],
-  })
+  }))
   expect(texts).toEqual([
     '오로라 보기',
     '2027년 3월까지',
@@ -72,13 +73,13 @@ test.each([
   [{ kind: 'range', from: '2027', to: '2028' }, '2027년 ~ 2028년'],
 ] as const)('목표 시기는 종류대로 쓴다(까지를 덧붙이지 않는다) %o', (targetPeriod, text) => {
   const { ctx, texts } = fakeContext()
-  drawCard(ctx, { ...base, targetPeriod })
+  drawCard(ctx, buildCardModel({ ...base, targetPeriod }))
   expect(texts).toEqual(['오로라 보기', text, '첫걸음'])
 })
 
 test('긴 제목과 왜는 3줄에서 말줄임한다', () => {
   const { ctx, texts } = fakeContext()
-  drawCard(ctx, { ...base, title: '가'.repeat(100), why: '나'.repeat(200) })
+  drawCard(ctx, buildCardModel({ ...base, title: '가'.repeat(100), why: '나'.repeat(200) }))
   const titleLines = texts.filter((t) => t.startsWith('가'))
   const whyLines = texts.filter((t) => t.startsWith('나'))
   expect(titleLines).toHaveLength(3)
