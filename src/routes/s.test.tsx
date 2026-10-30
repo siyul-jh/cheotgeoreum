@@ -7,6 +7,22 @@ import { routeTree } from '@/routeTree.gen'
 // jsdom에는 canvas가 없다. 카드 그리기는 draw-card 단위 테스트가 맡는다
 vi.mock('@/features/share-card/lib/draw-card', () => ({ createCardPng: async () => new Blob(['png'], { type: 'image/png' }) }))
 
+// 짧은 링크는 서버 저장소에서 내용을 받아온다
+const shortLinks = vi.hoisted(() => new Map<string, string>())
+vi.mock('@/features/share-card/api/short-link', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/features/share-card/api/short-link')>()
+  const { decodeCard } = await import('@/features/share-card/lib/share-link')
+  return {
+    ...original,
+    openSharedCard: async (hash: string) => {
+      if (!original.SHORT_ID.test(hash)) return decodeCard(hash)
+      const payload = shortLinks.get(hash)
+      if (!payload) throw new Error('없음')
+      return decodeCard(payload)
+    },
+  }
+})
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -52,4 +68,24 @@ test.each([
   await open(entry)
   expect(await screen.findByText('카드를 열 수 없어요')).toBeTruthy()
   expect(screen.getByRole('link', { name: '나도 적어보기' }).getAttribute('href')).toBe('/items/new')
+})
+
+test('짧은 링크(# 뒤 10글자 id)는 저장된 내용으로 카드를 연다', async () => {
+  const payload = await encodeCard({
+    title: '제주 걷기',
+    why: '',
+    category: null,
+    targetPeriod: null,
+    prerequisites: [],
+    nextAction: { text: '', dueDate: null },
+    companions: [],
+  })
+  shortLinks.set('Ab3dE9fG2h', payload)
+  await open('/s#Ab3dE9fG2h')
+  expect(within(await screen.findByRole('figure')).getByText('제주 걷기')).toBeTruthy()
+})
+
+test('없거나 만료된 짧은 링크는 열 수 없다고 알린다', async () => {
+  await open('/s#zzzzzzzzzz')
+  expect((await screen.findByRole('alert')).textContent).toBe('카드를 열 수 없어요')
 })

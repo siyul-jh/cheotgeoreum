@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { decodeCard, StarCard, useStarCard } from '@/features/share-card'
+import { openSharedCard, StarCard, useStarCard } from '@/features/share-card'
 import type { ItemValues } from '@/entities/bucket-item'
 
 export const Route = createFileRoute('/s')({ component: SharedCardRoute })
@@ -18,7 +18,7 @@ function SharedCard({ hash }: { hash: string }) {
   const [decoded, setDecoded] = useState<Decoded>({ status: 'loading' })
   useEffect(() => {
     let live = true
-    decodeCard(hash).then(
+    openSharedCard(hash).then(
       (values) => live && setDecoded({ status: 'ok', values }),
       () => live && setDecoded({ status: 'error' }),
     )

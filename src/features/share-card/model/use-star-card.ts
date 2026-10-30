@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ItemValues } from '@/entities/bucket-item'
+import { saveShortLink } from '../api/short-link'
 import { buildCardModel } from '../lib/card-model'
 import { createCardPng } from '../lib/draw-card'
 import { encodeCard, shareUrl } from '../lib/share-link'
@@ -17,8 +18,10 @@ export function useStarCard(item: ItemValues) {
   useEffect(() => {
     let live = true
     encodeCard(item)
-      .then((payload) => {
-        if (live) setUrl(shareUrl(payload))
+      // 짧은 링크를 못 만들면(저장소 미설정·장애) 내용을 다 담은 긴 링크로 공유한다
+      .then(async (payload) => shareUrl(await saveShortLink({ data: { payload } }).catch(() => payload)))
+      .then((link) => {
+        if (live) setUrl(link)
       })
       .catch(() => {
         if (live) setShareNotice('공유 링크를 만들지 못했어요')

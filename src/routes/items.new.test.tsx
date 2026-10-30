@@ -2,7 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore } from '@/entities/bucket-item'
-import { decodeCard } from '@/features/share-card'
+import { decodeCard } from '@/features/share-card/lib/share-link'
 import { createCardPng } from '@/features/share-card/lib/draw-card'
 import { routeTree } from '@/routeTree.gen'
 
