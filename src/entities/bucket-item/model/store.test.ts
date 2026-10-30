@@ -172,6 +172,13 @@ describe('backup', () => {
     ['version 3', JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 })],
     ['깨진 JSON', '{"state":'],
     ['항목 스키마 위반', JSON.stringify({ state: { items: [{ id: 'x' }], customCategories: [] }, version: 2 })],
+    [
+      '중복 id',
+      JSON.stringify({
+        state: { items: [0, 1].map(() => ({ ...input(), id: 'dup', createdAt: '2026-10-01T00:00:00.000Z' })), customCategories: [] },
+        version: 2,
+      }),
+    ],
   ])('parseBackup 거부: %s', (_label, text) => {
     expect(() => parseBackup(text)).toThrow()
   })

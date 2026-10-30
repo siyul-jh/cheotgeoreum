@@ -135,7 +135,8 @@ export const selectCompanionNames = (s: BucketStore): string[] =>
 export type BackupData = Pick<BucketStore, 'items' | 'customCategories'>
 
 const BackupSchema = z.object({
-  items: z.array(BucketItemSchema),
+  // 같은 id가 여럿이면 수정·삭제가 여러 항목에 걸린다
+  items: z.array(BucketItemSchema).refine((a) => new Set(a.map((i) => i.id)).size === a.length),
   customCategories: z.array(z.string().trim().min(1).max(fieldLimits.category)).default([]),
 })
 
