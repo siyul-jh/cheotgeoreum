@@ -4,7 +4,7 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig(
-  { ignores: ['.output', 'dist', '.tanstack', 'scratch', 'src/routeTree.gen.ts'] },
+  { ignores: ['.output', '.vercel', 'dist', '.tanstack', 'scratch', 'src/routeTree.gen.ts'] },
   tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,
   {

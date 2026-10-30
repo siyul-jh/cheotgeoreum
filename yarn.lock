@@ -1246,6 +1246,11 @@ cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
+crossws@^0.4.16, crossws@^0.4.17:
+  version "0.4.17"
+  resolved "https://registry.yarnpkg.com/crossws/-/crossws-0.4.17.tgz#ef7c5366b8f99ac7fbd776517c7322d06cfcd290"
+  integrity sha512-YG2kyfafNXKmu7e6k64yrj6whrw7m5sBIsOSXOlJ/72X3TQWRQuw8DhvXFDcBk8HF77PnTSygnm7xpYCTnFpow==
+
 css-tree@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/css-tree/-/css-tree-3.2.1.tgz#86cac7011561272b30e6b1e042ba6ce047aa7518"
@@ -1321,6 +1326,14 @@ entities@^8.0.0:
   version "8.1.0"
   resolved "https://registry.yarnpkg.com/entities/-/entities-8.1.0.tgz#9632d69619ebdbe0cf0ef22f53088fe5a2163d86"
   integrity sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==
+
+env-runner@^0.3.10:
+  version "0.3.10"
+  resolved "https://registry.yarnpkg.com/env-runner/-/env-runner-0.3.10.tgz#09fa643fee84b2b2671d46a4bbb39da327110bd8"
+  integrity sha512-DOmiJsUH4gUIdLIvTZhO0UmXSPTM6pQbU7hdBt9rfHZQuUaXtGrGOXyL+zfCWuV972q1eF0wjiaVbCjhRM3WeQ==
+  dependencies:
+    crossws "^0.4.16"
+    srvx "^1.0.7"
 
 es-module-lexer@^2.3.2:
   version "2.3.2"
@@ -1539,6 +1552,14 @@ graceful-fs@^4.2.4:
   version "4.2.11"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.11.tgz#4183e4e8bf08bb6e05bbb2f7d2e0c8f712ca40e3"
   integrity sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==
+
+h3@^2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/h3/-/h3-2.0.8.tgz#f46691a063d15297292154181804a3340bfa9c3b"
+  integrity sha512-ENuKlF9kC6E6PrvY1PUyE0qkrnnPTIt2/v48uyEEfTVfgoiqBCE0uwwf++2XrWwT1gxjQBDLQ8PAsmZVniKvTw==
+  dependencies:
+    rou3 "^1.0.0"
+    srvx "^1.0.6"
 
 hashery@^1.4.0, hashery@^1.5.1:
   version "1.5.1"
@@ -1919,6 +1940,18 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
+nitro@3.0.261029-rc:
+  version "3.0.261029-rc"
+  resolved "https://registry.yarnpkg.com/nitro/-/nitro-3.0.261029-rc.tgz#bda0803932d43856a3311ec4ad17a1a3a3834373"
+  integrity sha512-BQvzAV0HgcsJCkDqZAbGYlGNi9ALJznhsihugYAIi+8IcItz320FNaxbAJvn/pMNxGOYo2MGs10mTU9tcnB9jQ==
+  dependencies:
+    crossws "^0.4.17"
+    env-runner "^0.3.10"
+    h3 "^2.0.8"
+    ocache "^0.3.1"
+    rou3 "^1.0.0"
+    srvx "^1.0.8"
+
 node-releases@^2.0.60:
   version "2.0.60"
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.60.tgz#e3104c3ceb4530578f546bcfda551a4a2de06939"
@@ -1928,6 +1961,11 @@ obug@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/obug/-/obug-3.0.0.tgz#2ddfc17d1c1dd8c825eebd127099da307c919299"
   integrity sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw==
+
+ocache@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/ocache/-/ocache-0.3.1.tgz#cf27def55d1b33eaa4cf795de1016594ed9f0cb1"
+  integrity sha512-qeBrhQ0ly6tgXsakgNwLx6diRUppJZIcV5OjVGa5yp9HzztutkaGDDXJqVMo1fKWz5fNDtTp3iPU2fuhHf0+Lg==
 
 optionator@^0.9.3:
   version "0.9.4"
@@ -2083,6 +2121,11 @@ rolldown@~1.2.14:
     "@rolldown/binding-win32-arm64-msvc" "1.2.15"
     "@rolldown/binding-win32-x64-msvc" "1.2.15"
 
+rou3@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/rou3/-/rou3-1.0.0.tgz#86f260b2ed813f99ccbe549d1de9f453c6600fcc"
+  integrity sha512-ySeaQkSrua+ut9g+65I7FHqOFBaY8tV0FmccXItoq0q21se32Q3u4YiW7/RqXSosWgYJaaKwRHXy3BST9PeCNQ==
+
 saxes@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/saxes/-/saxes-6.0.0.tgz#fe5b4a4768df4f14a201b1ba6a65c1f3d9988cc5"
@@ -2137,7 +2180,7 @@ source-map@^0.7.6:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.6.tgz#a3658ab87e5b6429c8a1f3ba0083d4c61ca3ef02"
   integrity sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ==
 
-srvx@^1.0.0:
+srvx@^1.0.0, srvx@^1.0.6, srvx@^1.0.7, srvx@^1.0.8:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/srvx/-/srvx-1.0.8.tgz#ebb17823f9e2ef535e48f42824384cabb2bd121e"
   integrity sha512-ngFS/J6St4PJfHRHGjr78xkPPtbyXtdMOLNE4x/XZunEK3OhV7aGUWMHf9WTUEy6wm1U0W4okkd82ZFFWRVQTw==

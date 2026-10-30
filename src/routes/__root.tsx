@@ -3,12 +3,19 @@ import { HeadContent, Link, Outlet, Scripts, createRootRoute } from '@tanstack/r
 import { useState } from 'react'
 import stylesUrl from '@/styles.css?url'
 
+declare const __OG_IMAGE__: string
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: '첫걸음' },
+      { property: 'og:title', content: '첫걸음' },
+      { property: 'og:description', content: '버킷리스트를 첫걸음부터' },
+      { property: 'og:image', content: __OG_IMAGE__ },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
     ],
     links: [
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
