@@ -14,10 +14,10 @@ export function FloatingStatus({ show, children, className = 'bottom-4' }: { sho
   )
 }
 
-// 모션 축소면 돌지 않는다(글자로 상태를 알린다)
+// 모션 축소 설정이어도 돈다(사용자 결정: 멈춰 있으면 진행 중인지 알 수 없다). 작은 회전이라 화면 전체 움직임보다 부담이 적다
 export function Spinner() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0 text-gold motion-safe:animate-spin" fill="none">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0 animate-spin text-gold" fill="none">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
       <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
     </svg>
