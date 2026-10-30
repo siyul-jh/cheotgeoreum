@@ -25,7 +25,7 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
-test('아이디어를 고르면 제목만 정해지고 AI 초안은 요청하지 않으며 2단계로 간다', async () => {
+test('아이디어를 고르면 제목이 정해져 2단계로 가고, 곧바로 빈 칸 채우기를 요청한다', async () => {
   const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/items/new'] }) })
   render(<RouterProvider router={router} />)
   fireEvent.click(await screen.findByRole('button', { name: '뭘 적을지 모르겠어요' }))
@@ -34,7 +34,12 @@ test('아이디어를 고르면 제목만 정해지고 AI 초안은 요청하지
   await screen.findByText('왜 하고 싶나요?')
   expect(screen.queryByRole('button', { name: '고르기' })).toBeNull()
   expect(screen.getByText('오로라 보기')).toBeTruthy()
-  expect(request).not.toHaveBeenCalled()
+  // 지금 단계(왜) 칸을 먼저, 나머지 칸은 따로 요청한다
+  expect(request).toHaveBeenCalledTimes(2)
+  const [first, rest] = request.mock.calls.map(([input]) => input as { item: { title: string }; blankFields: string[] })
+  expect(first.item.title).toBe('오로라 보기')
+  expect(first.blankFields).toEqual(['why'])
+  expect(rest.blankFields).not.toContain('why')
 })
 
 test('추천받을 때 고른 카테고리는 카테고리 단계에 미리 골라져 있다', async () => {

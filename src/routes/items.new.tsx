@@ -62,13 +62,14 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
     dispatch(action)
   }
 
-  const onFill = () => {
-    const blanks = undecidedAiFields(state)
-    const first = blanks.filter((f) => stepOf(f) === state.current)
+  // s: 방금 dispatch한 결과처럼 아직 렌더되지 않은 상태로도 요청할 수 있게 받는다
+  const fill = (s = state) => {
+    const blanks = undecidedAiFields(s)
+    const first = blanks.filter((f) => stepOf(f) === s.current)
     const rest = blanks.filter((f) => !first.includes(f))
     setNowFields(first)
     for (const [hook, blankFields] of [[now, first], [later, rest]] as const) {
-      if (blankFields.length > 0) hook.request({ item: state.values, blankFields, categories })
+      if (blankFields.length > 0) hook.request({ item: s.values, blankFields, categories })
       else hook.reset()
     }
   }
@@ -77,10 +78,12 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
   const draftState = { status: shown.status, error: shown.error, draft: mergeDrafts(later.draft, now.draft) }
 
   // 아이디어는 제목을 정하고, 추천받을 때 고른 카테고리는 카테고리 단계에 미리 골라 둔다(아직 정하지 않았을 때만).
-  // AI 빈칸 채우기는 사용자가 [빈 칸 채우기]를 눌렀을 때만 돈다
+  // 추천에서 골랐으면 이미 AI에 맡긴 흐름이라 곧바로 빈 칸 채우기도 시작한다(직접 적은 제목은 [빈 칸 채우기]를 눌러야 돈다)
   const onPick = (title: string, category: string | null) => {
     const prefill = category !== null && !state.decided.includes('category') ? { category } : {}
-    dispatchStep({ type: 'decide', field: 'title', patch: { title, ...prefill } })
+    const action: StepFormAction = { type: 'decide', field: 'title', patch: { title, ...prefill } }
+    dispatchStep(action)
+    fill(stepFormReducer(state, action))
     setIdeasOpen(false)
   }
 
@@ -93,7 +96,7 @@ function NewItemPage({ onAnother }: { onAnother: () => void }) {
         state={state}
         dispatch={dispatchStep}
         draftState={draftState}
-        onFill={onFill}
+        onFill={() => fill()}
         onOpenIdeas={() => setIdeasOpen(true)}
         onSave={onSave}
         saveError={saveError}
