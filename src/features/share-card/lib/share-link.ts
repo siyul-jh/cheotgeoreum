@@ -2,33 +2,15 @@ import { BucketItemInputSchema, type ItemValues } from '@/entities/bucket-item'
 
 const ItemValuesSchema = BucketItemInputSchema.omit({ status: true })
 const PREFIX = '1.'
-const MAX_PAYLOAD = 8000
-const MAX_JSON_BYTES = 32 * 1024 // 압축 폭탄 방지: 압축 해제 누적 출력 상한
-
-// code point 단위로 자른 뒤 스키마처럼 trim
-const clip = (s: string, n: number) => Array.from(s).slice(0, n).join('').trim()
-
-// 카드에 보이는 범위로만 잘라 URL 길이를 묶는다(최악 ~4KB). 빈 항목은 스키마 min(1)에 걸리니 버린다
-export function clipForCard(item: ItemValues): ItemValues {
-  return {
-    title: item.title.trim(),
-    why: clip(item.why, 200),
-    category: item.category,
-    targetPeriod: item.targetPeriod,
-    prerequisites: item.prerequisites
-      .slice(0, 10)
-      .map((p) => ({ text: clip(p.text, 60), done: p.done }))
-      .filter((p) => p.text),
-    nextAction: { text: clip(item.nextAction.text, 100), dueDate: item.nextAction.dueDate },
-    companions: item.companions
-      .slice(0, 10)
-      .map((c) => c.trim())
-      .filter(Boolean),
-  }
-}
+// 카드는 말줄임 없이 전부 보이니 링크에도 전부 담는다. 스키마 한도를 모두 채운 항목(4바이트 글자)까지 받을 수 있는 상한
+const MAX_PAYLOAD = 60_000
+const MAX_JSON_BYTES = 64 * 1024 // 압축 폭탄 방지: 압축 해제 누적 출력 상한
 
 export async function encodeCard(item: ItemValues): Promise<string> {
-  const bytes = new TextEncoder().encode(JSON.stringify(clipForCard(item)))
+  // 카드 칸만 담는다(id·status 등 다른 키는 링크에 넣지 않는다)
+  const { title, why, category, targetPeriod, prerequisites, nextAction, companions } = item
+  const json = JSON.stringify({ title, why, category, targetPeriod, prerequisites, nextAction, companions })
+  const bytes = new TextEncoder().encode(json)
   const stream = new Response(bytes).body!.pipeThrough(new CompressionStream('deflate-raw'))
   const deflated = new Uint8Array(await new Response(stream).arrayBuffer())
   // ponytail: Uint8Array.toBase64는 iOS 16.4에 없어 btoa

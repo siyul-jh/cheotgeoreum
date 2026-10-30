@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { expect, test, vi } from 'vitest'
 import { BucketItemInputSchema, type ItemValues } from '@/entities/bucket-item'
-import { clipForCard, decodeCard, encodeCard, shareUrl } from './share-link'
+import { decodeCard, encodeCard, shareUrl } from './share-link'
 
 const ItemValuesSchema = BucketItemInputSchema.omit({ status: true })
 
@@ -15,42 +15,34 @@ const item: ItemValues = {
   companions: ['민지', '준호'],
 }
 
-const roundTrip = async (x: ItemValues) => expect(await decodeCard(await encodeCard(x))).toEqual(ItemValuesSchema.parse(clipForCard(x)))
+const roundTrip = async (x: ItemValues) => expect(await decodeCard(await encodeCard(x))).toEqual(ItemValuesSchema.parse(x))
 
 test('한글·이모지 항목이 그대로 돌아온다', async () => {
   await roundTrip(item)
   expect(await decodeCard(await encodeCard(item))).toEqual(item)
 })
 
-test('긴 텍스트는 카드 표시 범위로 잘려 돌아온다(서로게이트 쌍은 쪼개지 않는다)', async () => {
+test('긴 텍스트도 자르지 않고 전부 돌아온다(카드는 말줄임하지 않는다)', async () => {
   const long: ItemValues = {
     ...item,
-    why: `${'가'.repeat(199)}😀끝`,
-    prerequisites: Array.from({ length: 30 }, (_, i) => ({ text: `${i}${'나'.repeat(70)}`, done: false })),
+    why: `${'가'.repeat(990)}😀끝`,
+    prerequisites: Array.from({ length: 30 }, (_, i) => ({ text: `${i}${'나'.repeat(190)}`, done: false })),
     nextAction: { text: '다'.repeat(200), dueDate: null },
     companions: Array.from({ length: 30 }, (_, i) => `친구${i}`),
   }
   await roundTrip(long)
   const decoded = await decodeCard(await encodeCard(long))
-  expect(decoded.why).toBe(`${'가'.repeat(199)}😀`)
-  expect(decoded.prerequisites).toHaveLength(10)
-  expect(Array.from(decoded.prerequisites[0].text)).toHaveLength(60)
-  expect(decoded.nextAction.text).toBe('다'.repeat(100))
-  expect(decoded.companions).toHaveLength(10)
+  expect(decoded.why).toBe(long.why)
+  expect(decoded.prerequisites).toHaveLength(30)
+  expect(decoded.companions).toHaveLength(30)
 })
 
-test('잘린 뒤 앞뒤 공백은 trim되고 빈 항목은 버린다', async () => {
-  const spaced: ItemValues = {
-    ...item,
-    why: `  ${'가'.repeat(197)}   뒤`,
-    prerequisites: [{ text: `${' '.repeat(60)}x`, done: false }, { text: ' 여권 ', done: true }],
-    companions: ['  ', ' 민지 '],
-  }
-  const clipped = clipForCard(spaced)
-  expect(clipped.why).toBe('가'.repeat(197))
-  expect(clipped.prerequisites).toEqual([{ text: '여권', done: true }])
-  expect(clipped.companions).toEqual(['민지'])
-  await roundTrip(spaced)
+test('카드 칸이 아닌 키는 링크에 담지 않고, 앞뒤 공백은 스키마대로 trim된다', async () => {
+  const extra = { ...item, why: '  하늘  ', status: '계획', id: 'secret' } as ItemValues
+  const decoded = await decodeCard(await encodeCard(extra))
+  expect(decoded.why).toBe('하늘')
+  expect(decoded).not.toHaveProperty('status')
+  expect(decoded).not.toHaveProperty('id')
 })
 
 test('보통 항목 payload는 1.로 시작하고 1,000자 미만이다', async () => {
@@ -80,12 +72,12 @@ test.each([
   await expect(decodeCard(payload)).rejects.toThrow()
 })
 
-test('본문 8,001자는 해독 전에 길이로 거부한다', async () => {
-  await expect(decodeCard(`1.${'A'.repeat(8001)}`)).rejects.toThrow('알 수 없는 공유 링크')
+test('본문 60,001자는 해독 전에 길이로 거부한다', async () => {
+  await expect(decodeCard(`1.${'A'.repeat(60_001)}`)).rejects.toThrow('알 수 없는 공유 링크')
 })
 
-// 압축이 거의 안 되는 4바이트 문자로 카드 표시 한도를 모두 채워도 앱이 만든 링크는 받는 쪽 상한 안에 든다
-test('최악의 항목도 링크가 8,000자를 넘지 않고 그대로 열린다', async () => {
+// 압축이 거의 안 되는 4바이트 문자로 스키마 한도를 모두 채워도 앱이 만든 링크는 받는 쪽 상한 안에 든다
+test('최악의 항목도 링크 상한(60,000자)을 넘지 않고 그대로 열린다', async () => {
   let seed = 7
   const rand = (n: number) =>
     Array.from({ length: n }, () => {
@@ -102,8 +94,8 @@ test('최악의 항목도 링크가 8,000자를 넘지 않고 그대로 열린�
     companions: Array.from({ length: 30 }, () => rand(30)),
   }
   const payload = await encodeCard(worst)
-  expect(payload.length).toBeLessThanOrEqual(8000)
-  await expect(decodeCard(payload)).resolves.toEqual(ItemValuesSchema.parse(clipForCard(worst)))
+  expect(payload.length).toBeLessThanOrEqual(60_000)
+  await expect(decodeCard(payload)).resolves.toEqual(ItemValuesSchema.parse(worst))
 })
 
 test('base64 한 글자 변조는 거부한다', async () => {
@@ -130,6 +122,6 @@ test('압축 폭탄(작은 payload, 큰 출력)은 거부한다', async () => {
 
 test('공유 문구가 URL 뒤에 붙어 와도(%20…) 카드를 연다', async () => {
   const payload = await encodeCard(item)
-  await expect(decodeCard(`${payload}%20내%20버킷리스트에%20새%20별이%20떴어요`)).resolves.toEqual(ItemValuesSchema.parse(clipForCard(item)))
+  await expect(decodeCard(`${payload}%20내%20버킷리스트에%20새%20별이%20떴어요`)).resolves.toEqual(ItemValuesSchema.parse(item))
   await expect(decodeCard(`${payload} 내 버킷리스트에 새 별이 떴어요`)).resolves.toMatchObject({ title: item.title })
 })
