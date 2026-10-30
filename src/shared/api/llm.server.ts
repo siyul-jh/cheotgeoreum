@@ -6,8 +6,10 @@ import type { LlmErrorCode, LlmResult } from '@/shared/lib/llm-result'
 const LLM_TIMEOUT_MS = 60_000
 
 // env는 호출 시점에 읽는다(모듈 스코프 금지, Spike 6)
-export function getModel(): LanguageModel {
-  const { LLM_BASE_URL, LLM_API_KEY, LLM_MODEL } = process.env
+// modelId: 기능별 모델(예: LLM_IDEAS_MODEL). 비어 있으면 LLM_MODEL
+export function getModel(modelId?: string): LanguageModel {
+  const { LLM_BASE_URL, LLM_API_KEY } = process.env
+  const LLM_MODEL = modelId || process.env.LLM_MODEL
   if (!LLM_BASE_URL || !LLM_MODEL) throw new Error('LLM_BASE_URL 또는 LLM_MODEL이 설정되지 않았다')
   // name은 getProviderOptions의 키('llm')와 같아야 한다
   return createOpenAICompatible({ name: 'llm', baseURL: LLM_BASE_URL, apiKey: LLM_API_KEY, supportsStructuredOutputs: true }).chatModel(LLM_MODEL)

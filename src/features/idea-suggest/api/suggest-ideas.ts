@@ -18,5 +18,5 @@ export const suggestIdeas = createServerFn({ method: 'POST' })
       import('./suggest-ideas.server'),
       import('@/shared/api/llm.server'),
     ])
-    return runSuggestIdeas(data, getModel())
+    return runSuggestIdeas(data, getModel(process.env.LLM_IDEAS_MODEL))
   })

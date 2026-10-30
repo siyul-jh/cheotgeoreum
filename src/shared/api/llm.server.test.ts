@@ -138,4 +138,10 @@ describe('getModel', () => {
     vi.stubEnv('LLM_MODEL', 'm')
     expect(() => getModel()).toThrow()
   })
+  it('기능별 모델을 넘기면 그것을, 비어 있으면 LLM_MODEL을 쓴다', () => {
+    vi.stubEnv('LLM_BASE_URL', 'https://integrate.api.nvidia.com/v1')
+    vi.stubEnv('LLM_MODEL', 'base')
+    expect((getModel('ideas') as { modelId: string }).modelId).toBe('ideas')
+    expect((getModel('') as { modelId: string }).modelId).toBe('base')
+  })
 })
