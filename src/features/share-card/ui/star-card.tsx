@@ -36,6 +36,56 @@ const SUN_RAYS = Array.from({ length: 8 }, (_, i) => {
   return [28 + Math.cos(a) * 19, 28 + Math.sin(a) * 19, 28 + Math.cos(a) * r2, 28 + Math.sin(a) * r2].map((n) => Math.round(n))
 })
 
+// ponytail: 구름 [top%, 폭px, 지연s(음수면 이미 떠가는 중), 주기s]
+const CLOUDS = [
+  [8, 64, -6, 38],
+  [24, 44, -24, 52],
+] as const
+// 풀 [left%, bottom px, 지연s]
+const TUFTS = [
+  [8, 14, 0],
+  [30, 18, 0.8],
+  [57, 15, 0.4],
+  [84, 20, 1.2],
+] as const
+
+// 라이트(태양) 모드의 하늘 아래 장면: 떠가는 구름, 초원 언덕, 바람에 흔들리는 풀. 다크의 유성우 자리다
+function Meadow() {
+  return (
+    <div className="hidden light:block">
+      {CLOUDS.map(([top, width, delay, duration]) => (
+        <svg
+          key={top}
+          viewBox="0 0 64 28"
+          className="drift absolute -left-1/4 text-white"
+          style={{ top: `${top}%`, width, animationDelay: `${delay}s`, animationDuration: `${duration}s` }}
+        >
+          <g fill="currentColor">
+            <circle cx={18} cy={17} r={10} />
+            <circle cx={33} cy={12} r={12} />
+            <circle cx={47} cy={17} r={9} />
+            <rect x={8} y={16} width={48} height={11} rx={5.5} />
+          </g>
+        </svg>
+      ))}
+      <svg viewBox="0 0 100 24" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-20 w-full">
+        <path fill="#dcefc9" d="M0 13 Q22 3 48 10 T100 7 V24 H0Z" />
+        <path fill="#bfe0a3" d="M0 18 Q30 10 62 16 T100 14 V24 H0Z" />
+      </svg>
+      {TUFTS.map(([left, bottom, delay]) => (
+        <svg
+          key={left}
+          viewBox="0 0 14 14"
+          className="sway absolute w-3.5 text-[#7fb85f]"
+          style={{ left: `${left}%`, bottom, animationDelay: `${delay}s` }}
+        >
+          <path fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" d="M7 14Q6 7 2 3M7 14Q7 6 7 1M7 14Q8 7 12 4" />
+        </svg>
+      ))}
+    </div>
+  )
+}
+
 // 별이 떠오르는 동안 글자가 위에서부터 차례로 올라온다
 const reveal = (i: number) => ({ animationDelay: `${0.7 + i * 0.12}s` })
 
@@ -49,7 +99,7 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
     <div className={`@container flex w-full flex-col ${fill ? 'flex-1' : ''}`}>
       <figure
         aria-label={`${card.title} 별 카드`}
-        className={`star-card rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-4 text-left light:bg-linear-to-b light:from-[#fff3d1] light:via-card light:via-60% light:to-card`}
+        className={`star-card rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-4 text-left light:bg-linear-to-b light:from-[#d9eefc] light:via-[#fff8e4] light:via-45% light:to-card`}
       >
         <div aria-hidden="true">
           {DOTS.map(([left, top, delay]) => (
@@ -67,6 +117,7 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
               style={{ left: `${left}%`, top: `${top}%`, width, animationDelay: `${delay}s`, animationDuration: `${duration}s` }}
             />
           ))}
+          <Meadow />
         </div>
         {/* ascend 끝(위로 40px, 1.4배)에서도 잘리지 않게 위 여백 pt-14, 정지 상태(원위치)는 제목 위에 있다 */}
         <div className="relative flex shrink-0 justify-center pt-14 pb-2">

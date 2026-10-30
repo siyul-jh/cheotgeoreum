@@ -301,6 +301,23 @@ body {
   }
 }
 
+/* 구름: 카드 왼쪽 밖에서 오른쪽 밖으로 천천히 */
+@keyframes drift {
+  to {
+    left: 110%;
+  }
+}
+
+/* 풀: 밑동을 축으로 바람에 흔들린다 */
+@keyframes sway {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -367,6 +384,13 @@ body {
 /* 태양 햇살이 천천히 돈다 */
 .star-card .spin {
   animation: spin 24s linear infinite;
+}
+.star-card .drift {
+  animation: drift 40s linear infinite;
+}
+.star-card .sway {
+  transform-origin: 50% 100%;
+  animation: sway 2.6s ease-in-out infinite alternate;
 }
 
 /* 상태 전환·눌림은 모션 축소 설정이면 끈다(색은 즉시 바뀐다).
