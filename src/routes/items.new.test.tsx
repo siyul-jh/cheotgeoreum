@@ -162,10 +162,10 @@ test('축하 화면은 제목에 포커스를 두고 별 카드를 이미지가 
   expect(dot?.closest('[aria-hidden="true"]')).not.toBeNull()
 })
 
-test('버튼은 공유하기·이미지로 저장·목록으로·하나 더 적기 순서다', async () => {
+test('버튼은 공유하기·이미지로 저장·하나 더 적기·목록으로 순서다', async () => {
   await saveTitleOnly()
   const names = Array.from(document.querySelectorAll('.btn'), (el) => el.textContent)
-  expect(names).toEqual(['공유하기', '이미지로 저장', '목록으로', '하나 더 적기'])
+  expect(names).toEqual(['공유하기', '이미지로 저장', '하나 더 적기', '목록으로'])
 })
 
 test('[공유하기]는 공유 링크로 공유 시트를 연다', async () => {

@@ -141,12 +141,12 @@ function Celebration({ item, onAnother }: { item: BucketItemInput; onAnother: ()
         <button type="button" className="btn press" disabled={png === null} onClick={save}>
           이미지로 저장
         </button>
-        <Link to="/" className="btn press flex items-center justify-center">
-          목록으로
-        </Link>
         <button type="button" className="btn press" onClick={onAnother}>
           하나 더 적기
         </button>
+        <Link to="/" className="btn press flex items-center justify-center">
+          목록으로
+        </Link>
       </div>
       <p role="status" className="min-h-5 text-sm text-mute">
         {notice}
