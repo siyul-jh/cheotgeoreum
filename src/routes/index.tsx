@@ -97,72 +97,74 @@ function ListPage() {
         </header>
 
         <div className="flex flex-col gap-6">
-          {/* 항목이 하나라도 있으면 늘 보인다(후보가 없으면 빈 상태). md 이상은 글 왼쪽 · 버튼 오른쪽 */}
-          {items.length > 0 && (
-            <section aria-labelledby={heroId} className="surface flex flex-col gap-3 rounded-[20px] p-5">
-              <h2 id={heroId} className="text-[13px] text-mute">
-                오늘의 첫걸음
-              </h2>
-              {stepped ? (
-                <div key="stepped" role="status" className={`rise relative ${HERO_ROW}`}>
-                  <StarBurst count={8} dx={70} dy={50} className="left-10 top-5" />
-                  <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-                    <p className="font-title text-2xl font-bold leading-snug">한 걸음 나아갔어요</p>
-                    <p className="break-words text-sm text-mute">
-                      {stepped.title}에 별 하나가 더 켜졌어요. 다음 첫걸음을 정해 볼까요?
-                    </p>
-                  </div>
+          {/* 늘 보인다(후보가 없거나 꿈이 0개면 빈 상태). md 이상은 글 왼쪽 · 버튼 오른쪽 */}
+          <section aria-labelledby={heroId} className="surface flex flex-col gap-3 rounded-[20px] p-5">
+            <h2 id={heroId} className="text-[13px] text-mute">
+              오늘의 첫걸음
+            </h2>
+            {stepped ? (
+              <div key="stepped" role="status" className={`rise relative ${HERO_ROW}`}>
+                <StarBurst count={8} dx={70} dy={50} className="left-10 top-5" />
+                <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+                  <p className="font-title text-2xl font-bold leading-snug">한 걸음 나아갔어요</p>
+                  <p className="break-words text-sm text-mute">
+                    {stepped.title}에 별 하나가 더 켜졌어요. 다음 첫걸음을 정해 볼까요?
+                  </p>
+                </div>
+                <Link
+                  to="/items/$id"
+                  params={{ id: stepped.id }}
+                  className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
+                >
+                  다음 행동 정하기
+                </Link>
+              </div>
+            ) : today ? (
+              <div key={today.id} className={`rise ${HERO_ROW}`}>
+                <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+                  <p className="break-words font-title text-2xl font-bold leading-snug">{today.nextAction.text}</p>
+                  <p className="break-words text-sm text-gold">
+                    {today.title}
+                    {today.nextAction.dueDate && ` · ${formatDate(today.nextAction.dueDate)}까지`}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={`btn btn-primary press ${HERO_ACTION}`}
+                  onClick={() => {
+                    save(today, { nextAction: { text: '', dueDate: null } })
+                    setStepped(today)
+                  }}
+                >
+                  했어요
+                </button>
+              </div>
+            ) : (
+              <div key="empty" className={`rise ${HERO_ROW}`}>
+                <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+                  <p className="font-title text-2xl font-bold leading-snug">
+                    {items.length === 0 ? '첫 꿈을 띄워 보세요' : '다음 행동을 정해 보세요'}
+                  </p>
+                  <p className="break-words text-sm text-mute">
+                    {needsStep
+                      ? `${needsStep.title}의 첫걸음을 정하면 여기에 보여요.`
+                      : items.length === 0
+                        ? '"+ 새 꿈"으로 꿈을 적고 첫걸음을 정하면 여기에 보여요.'
+                        : '새 꿈을 띄우고 첫걸음을 정해 보세요.'}
+                  </p>
+                </div>
+                {needsStep && (
                   <Link
                     to="/items/$id"
-                    params={{ id: stepped.id }}
+                    params={{ id: needsStep.id }}
                     className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
                   >
                     다음 행동 정하기
                   </Link>
-                </div>
-              ) : today ? (
-                <div key={today.id} className={`rise ${HERO_ROW}`}>
-                  <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-                    <p className="break-words font-title text-2xl font-bold leading-snug">{today.nextAction.text}</p>
-                    <p className="break-words text-sm text-gold">
-                      {today.title}
-                      {today.nextAction.dueDate && ` · ${formatDate(today.nextAction.dueDate)}까지`}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className={`btn btn-primary press ${HERO_ACTION}`}
-                    onClick={() => {
-                      save(today, { nextAction: { text: '', dueDate: null } })
-                      setStepped(today)
-                    }}
-                  >
-                    했어요
-                  </button>
-                </div>
-              ) : (
-                <div key="empty" className={`rise ${HERO_ROW}`}>
-                  <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-                    <p className="font-title text-2xl font-bold leading-snug">다음 행동을 정해 보세요</p>
-                    <p className="break-words text-sm text-mute">
-                      {needsStep
-                        ? `${needsStep.title}의 첫걸음을 정하면 여기에 보여요.`
-                        : '새 꿈을 띄우고 첫걸음을 정해 보세요.'}
-                    </p>
-                  </div>
-                  {needsStep && (
-                    <Link
-                      to="/items/$id"
-                      params={{ id: needsStep.id }}
-                      className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
-                    >
-                      다음 행동 정하기
-                    </Link>
-                  )}
-                </div>
-              )}
-            </section>
-          )}
+                )}
+              </div>
+            )}
+          </section>
 
           {/* 상태 칩(넘치면 다음 줄로, 가로 스크롤 없음) → 카테고리. md 이상은 칩 왼쪽 · 카테고리 오른쪽 */}
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
@@ -208,7 +210,7 @@ function ListPage() {
 
         {visible.length === 0 ? (
           <p className="surface p-6 text-center text-sm text-mute">
-            {items.length === 0 ? '아직 띄운 꿈이 없어요. "+ 새 꿈"으로 첫 별을 띄워 보세요.' : '조건에 맞는 꿈이 없어요.'}
+            {items.length === 0 ? '아직 띄운 꿈이 없어요.' : '조건에 맞는 꿈이 없어요.'}
           </p>
         ) : (
           <ul className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-3">

@@ -86,15 +86,17 @@ test('다음 행동 후보가 없으면 빈 히어로가 다음 행동이 빈 �
   expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
 })
 
-test('그런 항목도 없으면 빈 히어로는 안내 문구만, 항목이 0개면 히어로 없이 빈 목록 안내만 보인다', async () => {
+test('그런 항목도 없으면 빈 히어로는 안내 문구만, 항목이 0개여도 히어로가 첫 꿈을 안내한다', async () => {
   useBucketStore.getState().addItem({ ...base, nextAction: { text: '', dueDate: null } })
   await open()
   const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
   expect(within(hero).queryByRole('link')).toBeNull() // 새 꿈은 아래 고정 버튼 하나만
 
   act(() => useBucketStore.setState({ items: [] }))
-  await waitFor(() => expect(screen.queryByRole('region', { name: '오늘의 첫걸음' })).toBeNull())
-  expect(screen.getByText(/아직 띄운 꿈이 없어요/)).toBeTruthy()
+  await waitFor(() => expect(hero.textContent).toContain('첫 꿈을 띄워 보세요'))
+  expect(hero.textContent).toContain('"+ 새 꿈"')
+  expect(within(hero).queryByRole('link')).toBeNull()
+  expect(screen.getByText('아직 띄운 꿈이 없어요.')).toBeTruthy()
 })
 
 test('머리줄: 보이는 제목, 이룬 수 요약. 새 꿈 버튼은 footer(휴대폰 고정 · md 이상 플로팅)', async () => {
