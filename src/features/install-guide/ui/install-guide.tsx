@@ -10,7 +10,23 @@ export const isStandalone = () =>
 type InstallPromptEvent = Event & { prompt: () => Promise<void> }
 
 const IN_APP = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\//i
-const IOS = /iPhone|iPad|iPod/
+
+// 설치 버튼(beforeinstallprompt)을 못 받는 브라우저별 단계 안내. 메뉴 이름은 각 브라우저 화면에 보이는 그대로
+export function installSteps(ua: string, touch: boolean): string[] {
+  // 아이패드는 데스크톱 Safari처럼 Macintosh로 알려 온다. 터치로 구별한다
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && touch)
+  if (ios && /CriOS/.test(ua)) return ['주소창 오른쪽 공유 버튼(□↑)을 눌러요', "'홈 화면에 추가'를 눌러요", '홈 화면의 첫걸음 아이콘으로 열어요']
+  if (ios) return ['Safari 아래쪽(아이패드는 위쪽) 공유 버튼(□↑)을 눌러요', "'홈 화면에 추가'를 눌러요", '홈 화면의 첫걸음 아이콘으로 열어요']
+  if (/SamsungBrowser/.test(ua)) return ['아래쪽 메뉴(≡)를 눌러요', "'현재 페이지 추가' → '홈 화면'을 눌러요", '홈 화면의 첫걸음 아이콘으로 열어요']
+  if (/Firefox/.test(ua)) return ['Firefox는 앱 설치를 지원하지 않아요', '크롬·엣지·웨일(PC) 또는 Safari(Mac)로 이 주소를 열어 주세요']
+  if (/Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg|Whale/.test(ua))
+    return ["화면 맨 위 메뉴 막대에서 '파일'을 눌러요", "'Dock에 추가'를 누르고 '추가'를 눌러요", 'Dock의 첫걸음 아이콘으로 열어요']
+  // 크롬 계열인데 설치 버튼이 없으면 대개 이미 설치한 경우
+  return [
+    '이미 설치했다면 앱 목록(Launchpad·시작 메뉴·홈 화면)에서 첫걸음을 열어요',
+    "처음이라면 주소창 오른쪽 설치 아이콘(⊕)이나 브라우저 메뉴(⋮)의 '앱 설치'·'홈 화면에 추가'를 눌러요",
+  ]
+}
 
 // 브라우저로 열면 앱 대신 보이는 설치 안내. 설치한 앱으로 열어야 쓸 수 있다
 export function InstallGuide() {
@@ -47,14 +63,17 @@ export function InstallGuide() {
         <button type="button" className="btn btn-primary press w-full" onClick={() => void prompt.prompt()}>
           앱 설치
         </button>
-      ) : IOS.test(ua) ? (
-        <ol className="flex flex-col gap-2 text-left text-mute">
-          <li>1. Safari 아래쪽의 공유 버튼(□↑)을 눌러요</li>
-          <li>2. '홈 화면에 추가'를 눌러요</li>
-          <li>3. 홈 화면의 첫걸음 아이콘으로 열어요</li>
-        </ol>
       ) : (
-        <p className="text-mute">브라우저 메뉴에서 '앱 설치' 또는 '홈 화면에 추가'를 눌러, 설치된 첫걸음으로 열어 주세요.</p>
+        <ol className="flex w-full flex-col gap-2 text-left">
+          {installSteps(ua, navigator.maxTouchPoints > 0).map((step, i) => (
+            <li key={step} className="surface flex items-center gap-3 rounded-[14px] px-3.5 py-3">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gold text-sm font-bold text-on-gold">
+                {i + 1}
+              </span>
+              <span className="min-w-0 flex-1">{step}</span>
+            </li>
+          ))}
+        </ol>
       )}
     </section>
   )
