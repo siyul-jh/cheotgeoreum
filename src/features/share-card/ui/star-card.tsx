@@ -49,7 +49,7 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
     <div className={`@container flex w-full flex-col ${fill ? 'flex-1' : ''}`}>
       <figure
         aria-label={`${card.title} 별 카드`}
-        className={`star-card rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 pb-5 text-left`}
+        className={`star-card rise relative flex flex-1 ${fill ? '' : 'min-h-[calc(100cqw*16/9)]'} w-full flex-col justify-center overflow-hidden rounded-[20px] border border-line bg-night px-5 light:bg-card pb-5 text-left`}
       >
         <div aria-hidden="true">
           {DOTS.map(([left, top, delay]) => (
@@ -72,7 +72,7 @@ export function StarCard({ card, fill = false }: { card: CardModel; fill?: boole
         <div className="relative flex shrink-0 justify-center pt-14 pb-4">
           <div className="ascend relative size-14">
             {/* 은은한 빛무리. 다크는 별, 라이트는 햇살이 도는 태양 */}
-            <span className="glow absolute -inset-5 rounded-full bg-gold/15 blur-xl light:bg-sun/35" />
+            <span className="glow absolute -inset-5 rounded-full bg-gold/15 blur-xl light:bg-sun/30" />
             <StarIcon fill="currentColor" className="relative size-14 text-gold light:hidden" />
             <svg aria-hidden="true" viewBox="0 0 56 56" className="relative hidden size-14 text-sun light:block">
               <g className="spin origin-center [transform-box:fill-box]" stroke="currentColor" strokeWidth={3} strokeLinecap="round">

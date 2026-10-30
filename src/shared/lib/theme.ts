@@ -1,7 +1,7 @@
 export type ThemePref = 'system' | 'light' | 'dark'
 
 const KEY = 'cheotgeoreum:theme'
-const THEME_COLORS = { light: '#dfe9f1', dark: '#12151c' }
+const THEME_COLORS = { light: '#f1f3f6', dark: '#12151c' }
 
 export function getThemePref(): ThemePref {
   try {

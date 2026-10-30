@@ -19,8 +19,11 @@
   --color-gold-hi: #f7d47f;
   --color-gold-edge: #3a3424;
   --color-danger: #f4a09a;
+  /* 주 버튼·선택처럼 금색으로 칠하는 면. 핵심 요소라 두 모드 같은 색 */
+  --color-gold-fill: #f2c14e;
+  --color-gold-fill-hi: #f7d47f;
   --color-on-gold: #12151c; /* 금색 바탕 위 글자 */
-  --color-sun: #e8552a; /* 라이트 모드 태양(주홍) */
+  --color-sun: #f2b01e; /* 라이트 모드 해: 다크에서 낮췄던 채도를 되돌린 금색 */
   --font-sans: 'Noto Sans KR', sans-serif;
   --font-title: 'Gowun Dodum', sans-serif;
 }
@@ -29,30 +32,40 @@
   color-scheme: dark;
 }
 
-/* 라이트(태양): 일월오봉도의 해. 맑은 낮하늘 파랑 바탕, 남색 먹 글자, 주홍 해.
-   강조색(--color-gold 자리)은 글자로도 쓰여 카드·바탕 모두 대비 4.5:1 이상인 짙은 주홍 */
+/* 라이트(태양): 다크 팔레트를 역산했다(참고: brunch.co.kr/@slowmslife/32).
+   - 다크는 밝은 색으로 높이를 나눴다 → 라이트는 그림자로 나눈다(바탕 옅은 회색, 카드 흰색)
+   - 다크가 순수 검정을 피했다 → 바탕은 순수 흰색 대신 밤하늘과 같은 색상 계열의 옅은 회색
+   - 다크에서 밝고 채도를 낮춘 강조색 → 같은 색상을 짙게(글자 대비 4.5:1 이상)
+   - 주 버튼(gold-fill)은 핵심 요소라 두 모드 같은 색 */
 :root[data-theme='light'] {
   color-scheme: light;
-  --color-night: #dfe9f1;
-  --color-card: #f8fbfd;
-  --color-line: #cfdbe5;
-  --color-edge: #b7c8d6;
-  --color-edge-hi: #9cb2c4;
-  --color-ai: #eaf1f6;
-  --color-ink: #16283a;
-  --color-mute: #4a5d70;
-  --color-faint: #526476;
-  --color-dim: #8a9aa8;
-  --color-gold: #b83a12;
-  --color-gold-hi: #9a2f0c;
-  --color-gold-edge: #f0c9b8;
-  --color-danger: #a11d48;
-  --color-on-gold: #ffffff;
+  --color-night: #f1f3f6;
+  --color-card: #ffffff;
+  --color-line: #e3e6eb;
+  --color-edge: #cdd2da;
+  --color-edge-hi: #aab1bc;
+  --color-ai: #eef1f5;
+  --color-ink: #12151c;
+  --color-mute: #4e5566;
+  --color-faint: #5f6677;
+  --color-dim: #a3a9b4;
+  --color-gold: #8a6100;
+  --color-gold-hi: #6f4e00;
+  --color-gold-edge: #ecd697;
+  --color-danger: #b42318;
 }
 
-/* 배경 별은 낮에는 흰 빛 알갱이로 */
+/* 높이는 그림자로: 다크는 카드가 바탕보다 밝아 구분되지만 라이트는 흰 카드가 떠 보여야 한다 */
+[data-theme='light'] .surface,
+[data-theme='light'] .star-card {
+  box-shadow:
+    0 1px 2px rgb(18 21 28 / 0.06),
+    0 4px 14px rgb(18 21 28 / 0.06);
+}
+
+/* 배경 별은 낮에는 금빛 알갱이로 */
 [data-theme='light'] .twinkle {
-  background-color: #ffffff;
+  background-color: var(--color-sun);
 }
 
 /* 한글은 어절 단위로 줄을 바꾼다("보여/요." 방지). 화면보다 긴 한 덩어리만 글자 중간에서 끊는다.
@@ -81,9 +94,9 @@ body {
     min-height: 2.75rem;
   }
   .btn-primary {
-    background: var(--color-gold);
+    background: var(--color-gold-fill);
     color: var(--color-on-gold);
-    border-color: var(--color-gold);
+    border-color: var(--color-gold-fill);
     font-weight: 700;
   }
   .btn:disabled {
@@ -199,8 +212,8 @@ body {
       border-color: var(--color-edge);
     }
     .btn-primary:not(:disabled):hover {
-      background-color: var(--color-gold-hi);
-      border-color: var(--color-gold-hi);
+      background-color: var(--color-gold-fill-hi);
+      border-color: var(--color-gold-fill-hi);
       box-shadow: none;
     }
   }
