@@ -11,11 +11,29 @@ export async function shareLink(url: string, item: Pick<ItemValues, 'title' | 't
     // 사용자가 시트를 닫은 것. 다른 실패는 복사로 넘어간다
     if (error instanceof DOMException && error.name === 'AbortError') return null
   }
+  if (await copyText(url)) return '링크를 복사했어요'
+  // ponytail: 복사까지 막힌 브라우저는 링크가 담긴 기본 입력창을 띄워 직접 복사하게 한다
+  window.prompt('이 링크를 길게 눌러 복사해 주세요', url)
+  return null
+}
+
+// clipboard API는 보안 컨텍스트(https·localhost)에만 있다. 없거나 거부되면 선택+execCommand로 복사한다
+// (같은 Wi-Fi의 http 주소, 일부 인앱 브라우저). execCommand는 폐기 예정이지만 아직 모든 모바일 브라우저가 지원한다
+async function copyText(text: string): Promise<boolean> {
   try {
-    await navigator.clipboard.writeText(url)
-    return '링크를 복사했어요'
+    await navigator.clipboard.writeText(text)
+    return true
   } catch {
-    return '링크를 복사하지 못했어요'
+    const field = document.createElement('textarea')
+    field.value = text
+    field.readOnly = true // iOS에서 키보드가 뜨지 않게
+    field.style.cssText = 'position:fixed;top:0;left:0;opacity:0'
+    document.body.append(field)
+    field.select()
+    field.setSelectionRange(0, text.length) // iOS는 select()만으로 선택되지 않는다
+    const ok = document.execCommand('copy')
+    field.remove()
+    return ok
   }
 }
 

@@ -50,10 +50,22 @@ test('그 밖의 공유 실패도 링크를 복사한다', async () => {
   expect(writeText).toHaveBeenCalledWith(LINK)
 })
 
-test('복사도 못 하면 그렇다고 알린다', async () => {
-  const writeText = stubNavigator({})
-  writeText.mockRejectedValue(new DOMException('denied', 'NotAllowedError'))
-  expect(await shareLink(LINK, item)).toBe('링크를 복사하지 못했어요')
+// 같은 Wi-Fi의 http 주소처럼 보안 컨텍스트가 아니면 share·clipboard가 아예 없다
+test('share·clipboard가 없으면 입력칸을 선택해 execCommand로 복사하고 입력칸은 지운다', async () => {
+  vi.stubGlobal('navigator', {})
+  const exec = vi.fn((command: string) => command === 'copy' && document.querySelector('textarea')?.value === LINK)
+  document.execCommand = exec
+  expect(await shareLink(LINK, item)).toBe('링크를 복사했어요')
+  expect(exec).toHaveBeenCalledWith('copy')
+  expect(document.querySelector('textarea')).toBeNull()
+})
+
+test('복사까지 막히면 링크가 담긴 입력창을 띄워 직접 복사하게 한다', async () => {
+  vi.stubGlobal('navigator', {})
+  document.execCommand = vi.fn(() => false)
+  const prompt = vi.spyOn(window, 'prompt').mockReturnValue(null)
+  expect(await shareLink(LINK, item)).toBeNull()
+  expect(prompt).toHaveBeenCalledWith('이 링크를 길게 눌러 복사해 주세요', LINK)
 })
 
 test('PNG를 제목 파일명으로 내려받고 10초 뒤 object URL을 해제한다', () => {
