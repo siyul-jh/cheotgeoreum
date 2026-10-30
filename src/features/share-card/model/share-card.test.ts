@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { downloadPng, shareLink } from './share-card'
 
 const item = { title: '오로라 보기', targetPeriod: { kind: 'start', at: '2027-03' } as const }
-const TEXT = '내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기 (2027년 3월쯤)'
+const TEXT = '내 버킷리스트에 새 별이 떴어요 ✦\n오로라 보기 (2027년 3월쯤)'
 const LINK = 'http://localhost:3000/s#1.abc'
 
 function stubNavigator(nav: { share?: (d: ShareData) => Promise<void> }) {

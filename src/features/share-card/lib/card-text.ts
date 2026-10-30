@@ -4,7 +4,7 @@ type ShareItem = Pick<BucketItemInput, 'title' | 'targetPeriod'>
 
 export function buildShareText({ title, targetPeriod }: ShareItem): string {
   const period = targetPeriod ? ` (${formatFieldValue('targetPeriod', { targetPeriod })})` : ''
-  return `내 버킷리스트에 새 별이 떴어요 ✦ ${title}${period}`
+  return `내 버킷리스트에 새 별이 떴어요 ✦\n${title}${period}`
 }
 
 // 파일 이름에 못 쓰는 문자(\/:*?"<>|)와 제어문자는 뺀다

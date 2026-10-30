@@ -180,7 +180,7 @@ test('[공유하기]는 공유 링크로 공유 시트를 연다', async () => {
   const data = share.mock.calls[0][0]
   expect(data.url).toMatch(/^http:\/\/localhost(:\d+)?\/s#1\./)
   expect((await decodeCard(data.url!.split('#')[1])).title).toBe('오로라 보기')
-  expect(data.text).toBe('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')
+  expect(data.text).toBe('내 버킷리스트에 새 별이 떴어요 ✦\n오로라 보기')
 })
 
 test('공유 시트를 닫으면 오류 문구가 없고 포커스를 빼앗지 않는다', async () => {

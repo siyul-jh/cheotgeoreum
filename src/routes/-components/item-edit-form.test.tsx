@@ -197,6 +197,6 @@ test('편집 화면에서도 저장된 내용의 별 카드를 보고 링크로 
   fireEvent.click(button)
   await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
   expect(share.mock.calls[0][0].url).toMatch(/\/s#1\./)
-  expect(share.mock.calls[0][0].text).toBe('내 버킷리스트에 새 별이 떴어요 ✦ 오로라 보기')
+  expect(share.mock.calls[0][0].text).toBe('내 버킷리스트에 새 별이 떴어요 ✦\n오로라 보기')
   Reflect.deleteProperty(navigator, 'share')
 })
