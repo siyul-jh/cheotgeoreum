@@ -318,6 +318,16 @@ body {
   }
 }
 
+/* 카테고리 편집 모드: 지울 수 있는 칩이 살짝 흔들린다. rotate 속성이라 눌림(scale)·pop(transform)과 겹치지 않는다 */
+@keyframes wiggle {
+  from {
+    rotate: -1.5deg;
+  }
+  to {
+    rotate: 1.5deg;
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -361,6 +371,9 @@ body {
   }
   .meteor {
     animation: meteor 6s ease-in infinite;
+  }
+  .wiggle {
+    animation: wiggle 0.16s ease-in-out infinite alternate;
   }
 }
 

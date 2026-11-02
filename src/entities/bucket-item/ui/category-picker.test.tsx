@@ -1,23 +1,61 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore } from '../model/store'
-import { CategoryPicker } from './category-picker'
+import { CategoryPicker, LONG_PRESS_MS } from './category-picker'
 
 beforeEach(() => useBucketStore.setState({ items: [], customCategories: ['독서'] }))
 afterEach(cleanup)
 
-test('× → 확인을 누르면 삭제된다', () => {
+function longPress(el: HTMLElement) {
+  vi.useFakeTimers()
+  fireEvent.pointerDown(el)
+  act(() => vi.advanceTimersByTime(LONG_PRESS_MS))
+  fireEvent.pointerUp(el)
+  fireEvent.click(el) // 꾹 누른 뒤 따라오는 click
+  vi.useRealTimers()
+}
+
+test('×는 꾹 누르기 전엔 없고, 꾹 누르면 흔들리며 나온다(선택은 바뀌지 않는다)', () => {
+  const onChange = vi.fn()
+  render(<CategoryPicker value={null} onChange={onChange} />)
+  expect(screen.queryByRole('button', { name: '독서 삭제' })).toBeNull()
+  const chip = screen.getByRole('button', { name: '독서' })
+  longPress(chip)
+  expect(onChange).not.toHaveBeenCalled()
+  expect(screen.getByRole('button', { name: '독서 삭제' })).toBeTruthy()
+  expect(chip.closest('li')!.className).toContain('wiggle')
+  fireEvent.click(screen.getByRole('button', { name: '완료' }))
+  expect(screen.queryByRole('button', { name: '독서 삭제' })).toBeNull()
+})
+
+test('짧게 누르면 선택만 한다', () => {
+  const onChange = vi.fn()
+  render(<CategoryPicker value={null} onChange={onChange} />)
+  const chip = screen.getByRole('button', { name: '독서' })
+  fireEvent.pointerDown(chip)
+  fireEvent.pointerUp(chip)
+  fireEvent.click(chip)
+  expect(onChange).toHaveBeenCalledWith('독서')
+  expect(screen.queryByRole('button', { name: '독서 삭제' })).toBeNull()
+})
+
+test('편집 모드에서 × → 확인을 누르면 삭제되고, 마지막이면 편집 모드도 끝난다', () => {
   const onChange = vi.fn()
   render(<CategoryPicker value="독서" onChange={onChange} />)
+  fireEvent.contextMenu(screen.getByRole('button', { name: '독서' }))
   fireEvent.click(screen.getByRole('button', { name: '독서 삭제' }))
   fireEvent.click(screen.getByRole('button', { name: '삭제' }))
   expect(useBucketStore.getState().customCategories).toEqual([])
   expect(onChange).toHaveBeenCalledWith(null)
+  expect(screen.queryByRole('button', { name: '완료' })).toBeNull()
 })
 
-test('기본 카테고리에는 ×가 없다', () => {
+test('기본 카테고리는 꾹 눌러도 편집 모드가 되지 않는다', () => {
   render(<CategoryPicker value={null} onChange={vi.fn()} />)
+  fireEvent.contextMenu(screen.getByRole('button', { name: '여행' }))
+  expect(screen.queryByRole('button', { name: '완료' })).toBeNull()
+  fireEvent.contextMenu(screen.getByRole('button', { name: '독서' }))
   expect(screen.queryByRole('button', { name: '여행 삭제' })).toBeNull()
   expect(screen.getByRole('button', { name: '독서 삭제' })).toBeTruthy()
 })
