@@ -25,7 +25,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
   if (request.method !== 'GET' || url.origin !== self.location.origin) return
-  if (url.pathname.startsWith('/_serverFn/')) return
+  // 서버 함수·API(인증 세션 등)는 캐시하지 않는다
+  if (url.pathname.startsWith('/_serverFn/') || url.pathname.startsWith('/api/')) return
 
   // SSR이 꺼져 있어 모든 경로의 셸이 같다. 오프라인이면 캐시된 '/'를 준다
   if (request.mode === 'navigate') {
