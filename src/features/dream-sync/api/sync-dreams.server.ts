@@ -101,11 +101,10 @@ export async function runSync(userId: string, chunk: SyncChunk, deps: { tx?: Tx 
 
 // 내 계정의 전체 상태를 id 순으로 1MB까지. 넘치면 nextCursor로 이어 받는다(id 기준이라 서버 시각과 무관)
 async function readSnapshot(query: Query, userId: string, cursor: string | null): Promise<ServerSnapshot> {
-  const [{ rows }, { rows: categoryRows }, { rows: nowRows }] = await Promise.all([
-    query('select id, data, updated_at, deleted_at from dream where user_id = $1 and id > $2 order by id', [userId, cursor ?? '']),
-    query('select name, at, deleted from category_log where user_id = $1 order by name', [userId]),
-    query('select now() as now', []),
-  ])
+  // 한 트랜잭션 연결이라 차례로(동시에 보내면 pg가 경고하고 pg 9에서 막힌다)
+  const { rows } = await query('select id, data, updated_at, deleted_at from dream where user_id = $1 and id > $2 order by id', [userId, cursor ?? ''])
+  const { rows: categoryRows } = await query('select name, at, deleted from category_log where user_id = $1 order by name', [userId])
+  const { rows: nowRows } = await query('select now() as now', [])
   const items: BucketItem[] = []
   const deleted: Tombstone[] = []
   let size = 0
