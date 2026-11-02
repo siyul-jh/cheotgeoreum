@@ -22,10 +22,17 @@ export type BucketStore = {
   updateItem: (id: string, input: BucketItemInput) => void
   deleteItem: (id: string) => void
   addCategory: (name: string) => boolean
+  renameCategory: (from: string, to: string) => boolean
   deleteCategory: (name: string) => void
 }
 
 let requestedPersist = false
+// 기본·내 카테고리, 미분류 이름·필터 값과 겹치지 않는 1~30자
+const canUseName = (name: string, custom: string[]) =>
+  name.length >= 1 &&
+  name.length <= fieldLimits.category &&
+  ![...DEFAULT_CATEGORIES, ...custom, UNCATEGORIZED_LABEL, UNCATEGORIZED_FILTER].includes(name)
+
 function requestPersistOnce() {
   if (requestedPersist) return
   requestedPersist = true
@@ -87,9 +94,20 @@ export const useBucketStore = create<BucketStore>()(
       deleteItem: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
       addCategory: (raw) => {
         const name = raw.trim()
-        const taken = [...DEFAULT_CATEGORIES, ...get().customCategories, UNCATEGORIZED_LABEL, UNCATEGORIZED_FILTER]
-        if (name.length < 1 || name.length > fieldLimits.category || taken.includes(name)) return false
+        if (!canUseName(name, get().customCategories)) return false
         set((s) => ({ customCategories: [...s.customCategories, name] }))
+        return true
+      },
+      // 이름을 바꾸면 그 카테고리의 꿈도 따라 바뀐다. 자리(순서)는 그대로
+      renameCategory: (from, raw) => {
+        const name = raw.trim()
+        const custom = get().customCategories
+        if (name === from) return true
+        if (!custom.includes(from) || !canUseName(name, custom)) return false
+        set((s) => ({
+          customCategories: s.customCategories.map((c) => (c === from ? name : c)),
+          items: s.items.map((i) => (i.category === from ? { ...i, category: name } : i)),
+        }))
         return true
       },
       deleteCategory: (name) => {

@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useId, useState } from 'react'
-import { useBucketStore } from '@/entities/bucket-item'
+import { CategoryNameForm, useBucketStore } from '@/entities/bucket-item'
 import { AccountSection } from '@/features/auth'
 import { BackupActions } from '@/features/backup'
 import { getThemePref, setThemePref, type ThemePref } from '@/shared/lib/theme'
@@ -69,32 +69,64 @@ function ThemeSection() {
 
 function CategorySection() {
   const categories = useBucketStore((s) => s.customCategories)
+  const addCategory = useBucketStore((s) => s.addCategory)
+  const renameCategory = useBucketStore((s) => s.renameCategory)
   const deleteCategory = useBucketStore((s) => s.deleteCategory)
+  const [renaming, setRenaming] = useState<string | null>(null)
   return (
     <section aria-labelledby="settings-categories" className="surface flex flex-col gap-3 p-4">
       <h2 id="settings-categories" className="text-sm font-bold">
         내 카테고리
       </h2>
       {categories.length === 0 ? (
-        <p className="text-[13px] text-mute">직접 만든 카테고리가 없어요. 꿈을 적을 때 추가할 수 있어요.</p>
+        <p className="text-[13px] text-mute">직접 만든 카테고리가 없어요.</p>
       ) : (
         <ul className="flex flex-col">
           {categories.map((c) => (
-            <li key={c} className="flex min-h-11 items-center justify-between gap-3 border-b border-line last:border-b-0">
-              <span className="min-w-0 break-words">{c}</span>
-              <button
-                type="button"
-                aria-label={`${c} 삭제`}
-                className="press min-h-11 shrink-0 px-2 text-sm text-danger"
-                // ponytail: 네이티브 확인창(백업 가져오기와 같은 방식)
-                onClick={() => window.confirm(`'${c}'을 지울까요? 이 카테고리의 꿈은 미분류가 돼요.`) && deleteCategory(c)}
-              >
-                삭제
-              </button>
+            <li key={c} className="flex min-h-11 items-center justify-between gap-3 border-b border-line py-1 last:border-b-0">
+              {renaming === c ? (
+                <div className="min-w-0 flex-1">
+                  <CategoryNameForm
+                    label={`${c} 새 이름`}
+                    submitLabel="저장"
+                    initial={c}
+                    onSubmit={(name) => {
+                      if (!renameCategory(c, name)) return false
+                      setRenaming(null)
+                      return true
+                    }}
+                    onCancel={() => setRenaming(null)}
+                  />
+                </div>
+              ) : (
+                <>
+                  <span className="min-w-0 break-words">{c}</span>
+                  <div className="flex shrink-0">
+                    <button
+                      type="button"
+                      aria-label={`${c} 이름 바꾸기`}
+                      className="press min-h-11 px-2 text-sm text-mute"
+                      onClick={() => setRenaming(c)}
+                    >
+                      이름 바꾸기
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`${c} 삭제`}
+                      className="press min-h-11 px-2 text-sm text-danger"
+                      // ponytail: 네이티브 확인창(백업 가져오기와 같은 방식)
+                      onClick={() => window.confirm(`'${c}'을 지울까요? 이 카테고리의 꿈은 미분류가 돼요.`) && deleteCategory(c)}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
       )}
+      <CategoryNameForm label="새 카테고리 이름" placeholder="새 카테고리 (예: 독서)" submitLabel="추가" onSubmit={addCategory} />
     </section>
   )
 }
