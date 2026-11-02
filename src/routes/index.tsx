@@ -14,6 +14,7 @@ import {
   type BucketItemInput,
   type Status,
 } from '@/entities/bucket-item'
+import { ListShareSheet } from '@/features/share-card'
 import { formatDate } from '@/shared/lib/date'
 import { StarBurst } from '@/shared/ui/star-icon'
 
@@ -58,6 +59,7 @@ function ListPage() {
   const heroId = useId()
   // [했어요]로 다음 행동이 비면 오늘의 첫걸음 후보에서 빠지므로, 축하할 항목을 따로 기억한다
   const [stepped, setStepped] = useState<BucketItem | null>(null)
+  const [sharing, setSharing] = useState(false)
   const today = pickTodayStep(items)
   const doneCount = items.filter((i) => i.status === '완료').length
   // 후보가 없을 때 히어로가 안내할 항목: 다음 행동이 빈 진행 중·계획 항목 먼저, 없으면 막 적은 아이디어 등 끝나지 않은 항목
@@ -92,10 +94,23 @@ function ListPage() {
           {items.length > 0 && (
             <p className="min-w-0 truncate text-sm text-mute">{`${items.length}개 중 ${doneCount}개 이룸`}</p>
           )}
+          {items.length > 0 && (
+            <button
+              type="button"
+              aria-label="목록 공유"
+              className="press ml-auto flex size-11 shrink-0 items-center justify-center rounded-full text-mute"
+              onClick={() => setSharing(true)}
+            >
+              {/* 상자에서 위로 나가는 화살표 */}
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="size-[22px]">
+                <path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M8 10H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2" />
+              </svg>
+            </button>
+          )}
           <Link
             to="/settings"
             aria-label="설정"
-            className="press -mr-2.5 ml-auto flex size-11 shrink-0 items-center justify-center rounded-full text-mute"
+            className={`press -mr-2.5 flex size-11 shrink-0 items-center justify-center rounded-full text-mute ${items.length > 0 ? '' : 'ml-auto'}`}
           >
             {/* 톱니바퀴 */}
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="size-[22px]">
@@ -239,6 +254,8 @@ function ListPage() {
           </ul>
         )}
       </div>
+
+      {sharing && <ListShareSheet items={items} initialIds={visible.map((i) => i.id)} onClose={() => setSharing(false)} />}
 
       {/* 새 꿈 버튼: 휴대폰은 아래 고정 footer의 넓은 버튼, md 이상은 footer 상자를 없애고(contents) 오른쪽 아래 플로팅.
           휴대폰 버튼 폭 26rem = main의 max-w-md(28rem) − px-4 양쪽. 그림자는 filter라 hover의 box-shadow 규칙과 겹치지 않는다 */}

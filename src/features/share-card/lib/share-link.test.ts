@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { expect, test, vi } from 'vitest'
 import { BucketItemInputSchema, type ItemValues } from '@/entities/bucket-item'
-import { decodeCard, encodeCard, shareUrl } from './share-link'
+import { decodeCard, decodeShared, encodeCard, encodeList, MAX_LIST_ITEMS, shareUrl } from './share-link'
 
 const ItemValuesSchema = BucketItemInputSchema.omit({ status: true })
 
@@ -124,4 +124,31 @@ test('공유 문구가 URL 뒤에 붙어 와도(%20…) 카드를 연다', async
   const payload = await encodeCard(item)
   await expect(decodeCard(`${payload}%20내%20버킷리스트에%20새%20별이%20떴어요`)).resolves.toEqual(ItemValuesSchema.parse(item))
   await expect(decodeCard(`${payload} 내 버킷리스트에 새 별이 떴어요`)).resolves.toMatchObject({ title: item.title })
+})
+
+test('목록 링크는 L1.로 시작하고, 제목·카테고리·목표 시기·이룸 여부만 돌아온다', async () => {
+  const items = [
+    { ...item, id: 'a', createdAt: '2026-01-01T00:00:00.000Z', status: '완료' as const },
+    { ...item, title: '하프 마라톤', category: null, targetPeriod: null, id: 'b', createdAt: '2026-01-02T00:00:00.000Z', status: '계획' as const },
+  ]
+  const payload = await encodeList(items)
+  expect(payload.startsWith('L1.')).toBe(true)
+  expect(await decodeShared(payload)).toEqual({
+    kind: 'list',
+    items: [
+      { title: '오로라 보기 🌌', category: '여행', targetPeriod: { kind: 'start', at: '2027-03' }, done: true },
+      { title: '하프 마라톤', category: null, targetPeriod: null, done: false },
+    ],
+  })
+})
+
+test('decodeShared는 카드 링크를 카드로 읽고, 목록 접두사의 깨진 내용은 throw', async () => {
+  expect(await decodeShared(await encodeCard(item))).toEqual({ kind: 'card', values: item })
+  await expect(decodeShared('L1.garbage')).rejects.toThrow()
+  await expect(decodeCard(await encodeList([{ ...item, id: 'a', createdAt: '', status: '계획' }]))).rejects.toThrow()
+})
+
+test(`목록은 ${MAX_LIST_ITEMS}개를 넘으면 열지 않는다`, async () => {
+  const many = Array.from({ length: MAX_LIST_ITEMS + 1 }, (_, i) => ({ ...item, id: String(i), createdAt: '', status: '계획' as const }))
+  await expect(decodeShared(await encodeList(many))).rejects.toThrow()
 })

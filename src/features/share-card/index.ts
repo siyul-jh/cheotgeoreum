@@ -1,4 +1,6 @@
 export { buildCardModel } from './lib/card-model'
-export { openSharedCard } from './api/short-link'
+export { openShared } from './api/short-link'
+export type { ListEntry } from './lib/share-link'
 export { useStarCard } from './model/use-star-card'
 export { StarCard } from './ui/star-card'
+export { ListShareSheet } from './ui/list-share-sheet'

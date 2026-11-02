@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ItemValues } from '@/entities/bucket-item'
 import { saveShortLink } from '../api/short-link'
 import { buildCardModel } from '../lib/card-model'
+import { buildShareText } from '../lib/card-text'
 import { createCardPng } from '../lib/draw-card'
 import { encodeCard, shareUrl } from '../lib/share-link'
 import { downloadPng, shareLink } from './share-card'
@@ -41,7 +42,7 @@ export function useStarCard(item: ItemValues) {
   const share = async () => {
     if (!url) return
     setShareNotice('')
-    setShareNotice((await shareLink(url, item)) ?? '')
+    setShareNotice((await shareLink(url, buildShareText(item))) ?? '')
   }
   const save = () => {
     if (png) downloadPng(png, item.title)

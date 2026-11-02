@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { decodeCard } from '../lib/share-link'
+import { decodeShared } from '../lib/share-link'
 
 // 짧은 링크 id: 카드 내용 해시 앞 10글자(base64url)
 export const SHORT_ID = /^[A-Za-z0-9_-]{10}$/
@@ -20,10 +20,10 @@ export const loadShortLink = createServerFn({ method: 'POST' })
     return loadCard(data.id)
   })
 
-// 받은 링크의 # 뒤: 짧은 id면 서버에서 내용을 받아오고, 아니면(예전 긴 링크) 바로 해독한다
-export async function openSharedCard(hash: string) {
-  if (!SHORT_ID.test(hash)) return decodeCard(hash)
+// 받은 링크의 # 뒤: 짧은 id면 서버에서 내용을 받아오고, 아니면(예전 긴 링크) 바로 해독한다. 카드 한 장 또는 목록
+export async function openShared(hash: string) {
+  if (!SHORT_ID.test(hash)) return decodeShared(hash)
   const payload = await loadShortLink({ data: { id: hash } })
   if (!payload) throw new Error('없거나 만료된 짧은 링크')
-  return decodeCard(payload)
+  return decodeShared(payload)
 }

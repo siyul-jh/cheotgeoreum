@@ -7,6 +7,10 @@ export function buildShareText({ title, targetPeriod }: ShareItem): string {
   return `내 버킷리스트에 새 별이 떴어요 ✦\n${title}${period}`
 }
 
+export function buildListShareText(count: number): string {
+  return `내 버킷리스트를 나눠요 ✦\n꿈 ${count}개`
+}
+
 // 파일 이름에 못 쓰는 문자(\/:*?"<>|)와 제어문자는 뺀다
 export function cardFileName(title: string): string {
   return `첫걸음-${Array.from(title.replace(/[\\/:*?"<>|\p{Cc}]/gu, '')).slice(0, 20).join('')}.png`

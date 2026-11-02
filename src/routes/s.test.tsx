@@ -1,7 +1,7 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
-import { encodeCard } from '@/features/share-card/lib/share-link'
+import { encodeCard, encodeList } from '@/features/share-card/lib/share-link'
 import { routeTree } from '@/routeTree.gen'
 
 // jsdom에는 canvas가 없다. 카드 그리기는 draw-card 단위 테스트가 맡는다
@@ -11,14 +11,14 @@ vi.mock('@/features/share-card/lib/draw-card', () => ({ createCardPng: async () 
 const shortLinks = vi.hoisted(() => new Map<string, string>())
 vi.mock('@/features/share-card/api/short-link', async (importOriginal) => {
   const original = await importOriginal<typeof import('@/features/share-card/api/short-link')>()
-  const { decodeCard } = await import('@/features/share-card/lib/share-link')
+  const { decodeShared } = await import('@/features/share-card/lib/share-link')
   return {
     ...original,
-    openSharedCard: async (hash: string) => {
-      if (!original.SHORT_ID.test(hash)) return decodeCard(hash)
+    openShared: async (hash: string) => {
+      if (!original.SHORT_ID.test(hash)) return decodeShared(hash)
       const payload = shortLinks.get(hash)
       if (!payload) throw new Error('없음')
-      return decodeCard(payload)
+      return decodeShared(payload)
     },
   }
 })
@@ -88,4 +88,26 @@ test('짧은 링크(# 뒤 10글자 id)는 저장된 내용으로 카드를 연�
 test('없거나 만료된 짧은 링크는 열 수 없다고 알린다', async () => {
   await open('/s#zzzzzzzzzz')
   expect((await screen.findByRole('alert')).textContent).toBe('카드를 열 수 없어요')
+})
+
+test('목록 짧은 링크는 받은 버킷리스트로 열고, 이룬 꿈을 표시하며 저장하지 않는다', async () => {
+  localStorage.clear()
+  const setItem = vi.spyOn(Storage.prototype, 'setItem')
+  const base = { why: '', prerequisites: [], nextAction: { text: '', dueDate: null }, companions: [], createdAt: '' }
+  shortLinks.set(
+    'L1st000000',
+    await encodeList([
+      { ...base, id: 'a', title: '오로라 보기', category: '여행', targetPeriod: { kind: 'start', at: '2027-03' }, status: '완료' },
+      { ...base, id: 'b', title: '하프 마라톤', category: null, targetPeriod: null, status: '계획' },
+    ]),
+  )
+  await open('/s#L1st000000')
+  expect(await screen.findByRole('heading', { name: '받은 버킷리스트' })).toBeTruthy()
+  expect(screen.getByText('2개 중 1개 이룸')).toBeTruthy()
+  const rows = screen.getAllByRole('listitem')
+  expect(rows[0].textContent).toContain('오로라 보기 (이룬 꿈)')
+  expect(rows[0].textContent).toContain('여행 · 2027년 3월쯤')
+  expect(rows[1].textContent).toContain('미분류')
+  expect(screen.getByRole('link', { name: '나도 적어보기' })).toBeTruthy()
+  expect(setItem.mock.calls.filter(([key]) => key === 'cheotgeoreum:v1')).toEqual([])
 })

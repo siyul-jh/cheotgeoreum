@@ -1,4 +1,4 @@
-import { decodeCard } from '../lib/share-link'
+import { decodeShared } from '../lib/share-link'
 
 const TTL_SECONDS = 60 * 60 * 24 * 365 // 1년 보관. 지나면 짧은 링크가 열리지 않는다
 
@@ -20,7 +20,7 @@ async function redis(command: string[]): Promise<unknown> {
 // 같은 카드는 같은 id(내용 해시)라 여러 번 열어도 한 번만 저장된다.
 // ponytail: 요청 수 제한 없음. 남용되면 IP별 rate limit 추가
 export async function saveCard(payload: string): Promise<string> {
-  await decodeCard(payload) // 카드가 아닌 것(형식·크기·스키마 위반)은 저장하지 않는다
+  await decodeShared(payload) // 카드·목록이 아닌 것(형식·크기·스키마 위반)은 저장하지 않는다
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload))
   const id = Buffer.from(digest).toString('base64url').slice(0, 10)
   await redis(['SET', `card:${id}`, payload, 'EX', String(TTL_SECONDS), 'NX'])

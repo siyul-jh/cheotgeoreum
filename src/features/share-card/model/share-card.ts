@@ -1,11 +1,10 @@
-import type { ItemValues } from '@/entities/bucket-item'
-import { buildShareText, cardFileName } from '../lib/card-text'
+import { cardFileName } from '../lib/card-text'
 
 // 공유 시트를 열면(또는 닫으면) null, 복사로 넘어가면 화면에 보일 안내 문구
-export async function shareLink(url: string, item: Pick<ItemValues, 'title' | 'targetPeriod'>): Promise<string | null> {
+export async function shareLink(url: string, text: string): Promise<string | null> {
   try {
     // 사용자 활성화가 끊기지 않게 await 전에 부른다. share가 없으면 TypeError로 아래 복사로 간다
-    await navigator.share({ title: '첫걸음', text: buildShareText(item), url })
+    await navigator.share({ title: '첫걸음', text, url })
     return null
   } catch (error) {
     // 사용자가 시트를 닫은 것. 다른 실패는 복사로 넘어간다
