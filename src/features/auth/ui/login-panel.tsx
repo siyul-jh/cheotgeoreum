@@ -12,8 +12,8 @@ export function LoginPanel() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-[13px] text-mute">
-        로그인은 선택이에요. 연결하면 다른 기기에서도 같은 꿈을 볼 수 있어요. 구글과 카카오는 별개 계정이라, 늘 같은 쪽으로
-        로그인하세요.
+        로그인은 선택이에요. 연결하면 다른 기기에서도 같은 꿈을 볼 수 있어요. 로그인한 뒤 다른 쪽도 연결하면 구글·카카오
+        어느 쪽으로 들어와도 같은 계정이에요.
       </p>
       {error && (
         <p role="alert" className="text-[13px] text-danger">

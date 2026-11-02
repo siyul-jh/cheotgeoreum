@@ -1,1 +1,1 @@
-export { LoginPanel } from './ui/login-panel'
+export { AccountSection } from './ui/account-section'

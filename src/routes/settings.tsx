@@ -1,9 +1,8 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useId, useState } from 'react'
 import { useBucketStore } from '@/entities/bucket-item'
-import { LoginPanel } from '@/features/auth'
+import { AccountSection } from '@/features/auth'
 import { BackupActions } from '@/features/backup'
-import { authClient } from '@/shared/api/auth-client'
 import { getThemePref, setThemePref, type ThemePref } from '@/shared/lib/theme'
 import { XIcon } from '@/shared/ui/x-icon'
 
@@ -35,25 +34,6 @@ function SettingsPage() {
         <BackupActions />
       </section>
     </div>
-  )
-}
-
-function AccountSection() {
-  const { data } = authClient.useSession()
-  return (
-    <section aria-labelledby="settings-account" className="surface flex flex-col gap-3 p-4">
-      <h2 id="settings-account" className="text-sm font-bold">
-        계정
-      </h2>
-      {data ? (
-        <p className="text-sm">
-          {/* ponytail: 카카오만 가짜 이메일(@users.invalid)을 쓰니 그걸로 provider를 가린다. 다른 provider가 늘면 listAccounts */}
-          {data.user.name || '이름 없음'} · {data.user.email.endsWith('@users.invalid') ? '카카오' : '구글'} 계정으로 연결됨
-        </p>
-      ) : (
-        <LoginPanel />
-      )}
-    </section>
   )
 }
 

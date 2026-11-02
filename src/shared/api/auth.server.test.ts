@@ -35,3 +35,11 @@ test('카카오: 회원번호로 검증 안 된 가짜 이메일을 만든다(�
     emailVerified: false,
   })
 })
+
+test('계정 연결: 구글·카카오를 직접 연결로만 묶고, 이메일이 같아도 저절로 묶지 않는다', () => {
+  expect(getAuth().options.account?.accountLinking).toEqual({
+    trustedProviders: ['google', 'kakao'],
+    allowDifferentEmails: true,
+    disableImplicitLinking: true,
+  })
+})
