@@ -8,6 +8,8 @@ import stylesUrl from '@/styles.css?url'
 
 declare const __OG_IMAGE__: string
 
+const INSTALL_EXEMPT = ['/s', '/terms', '/privacy']
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -49,8 +51,9 @@ export const Route = createRootRoute({
 function RootLayout() {
   const [queryClient] = useState(() => new QueryClient())
   const pathname = useLocation({ select: (l) => l.pathname })
-  // 배포본은 설치한 앱으로 열어야 쓸 수 있다. 받은 카드(/s)는 메신저 브라우저로 열리니 예외. 개발·테스트는 막지 않는다
-  const needsInstall = import.meta.env.PROD && pathname !== '/s' && !isStandalone()
+  // 배포본은 설치한 앱으로 열어야 쓸 수 있다. 받은 카드(/s)는 메신저 브라우저로 열리고, 약관·처리방침은 OAuth 동의 화면에서 열리니 예외.
+  // 개발·테스트는 막지 않는다
+  const needsInstall = import.meta.env.PROD && !INSTALL_EXEMPT.includes(pathname) && !isStandalone()
   useEffect(() => {
     // 등록 실패는 오프라인 열기만 못 할 뿐이라 조용히 넘긴다
     if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
