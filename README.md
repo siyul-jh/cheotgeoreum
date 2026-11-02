@@ -10,7 +10,8 @@ https://cheotgeoreum-app.vercel.app
 - **AI 도움**: 뭘 적을지 모르면 아이디어를 추천받고, 비어 있는 칸은 [빈 칸 채우기]로 초안을 받아 고쳐 쓴다
 - **오늘의 첫걸음**: 목록 위에서 지금 할 다음 행동 하나를 보여 준다
 - **별 카드**: 저장한 꿈을 카드로 보여 주고, 이미지로 저장하거나 짧은 링크로 공유한다. 받은 사람은 설치 없이 카드를 본다
-- **설정**: 화면 모드(라이트·다크·시스템), 내 카테고리 정리, 데이터 내보내기·가져오기
+- **로그인(선택)**: 구글·카카오로 로그인하고, 설정에서 다른 쪽도 연결하면 어느 쪽으로 들어와도 같은 계정
+- **설정**: 계정, 화면 모드(라이트·다크·시스템), 내 카테고리 정리, 데이터 내보내기·가져오기
 
 ## 설치
 
@@ -22,8 +23,8 @@ https://cheotgeoreum-app.vercel.app
 
 ## 데이터
 
-- 꿈 목록은 **기기 안(localStorage)에만** 저장된다. 서버로 보내지 않는다
-- 기기·브라우저·앱마다 목록이 따로다. 아이폰은 Safari와 홈 화면 앱도 서로 다르다
+- 꿈 목록은 지금 **기기 안(localStorage)에만** 저장된다. 기기·브라우저·앱마다 목록이 따로고, 아이폰은 Safari와 홈 화면 앱도 서로 다르다
+- 로그인하면 계정 정보(이름·연결한 로그인·로그인 기록)가 서버(Neon)에 저장된다. 꿈 목록 서버 동기화는 준비 중이다. 자세한 내용은 앱의 개인정보처리방침
 - 옮기거나 백업하려면 설정 → [데이터 내보내기]로 JSON을 받고, 다른 곳에서 [가져오기]한다. 가져오기는 지금 목록을 통째로 바꾼다
 - 공유한 카드 내용만 짧은 링크용으로 서버에 1년 보관된다
 
@@ -35,10 +36,12 @@ cp .env.example .env   # 값 채우기
 yarn dev
 ```
 
-검사: `yarn typecheck && yarn lint && yarn test && yarn build`
+DB는 Postgres(Neon)에 `db/auth-schema.sql` → `db/schema.sql` 순서로 적용한다. 테이블이 없으면 로그인 API가 500을 낸다
+
+검사: `yarn typecheck && yarn lint && yarn test && yarn build && yarn check:bundle` (GitHub Actions에서도 같은 순서로 돈다)
 
 - 개발 서버에서는 설치 안내 없이 바로 열린다
 - `.env`는 커밋하지 않는다
 - `yarn dev --host`로 LAN에 열면 같은 네트워크의 누구나 AI 기능을 호출할 수 있다. 믿을 수 있는 네트워크에서만 잠깐 연다
 
-TanStack Start · React · Tailwind CSS · zustand · AI SDK · Vercel
+TanStack Start · React · Tailwind CSS · zustand · Better Auth · Postgres(Neon) · AI SDK · Vercel
