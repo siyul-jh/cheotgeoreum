@@ -62,9 +62,11 @@ function ListPage() {
   const [sharing, setSharing] = useState(false)
   const today = pickTodayStep(items)
   const doneCount = items.filter((i) => i.status === '완료').length
-  // 후보가 없을 때 히어로가 안내할 항목: 다음 행동이 빈 진행 중·계획 항목 먼저, 없으면 막 적은 아이디어 등 끝나지 않은 항목
+  // 후보가 없을 때 히어로가 안내할 항목: 다음 행동이 빈 끝나지 않은 꿈 중 무작위 하나(사용자 결정).
+  // 화면을 열 때 한 번 뽑아 보는 동안은 바뀌지 않는다
+  const [seed] = useState(Math.random)
   const stepless = items.filter((i) => i.status !== '완료' && i.status !== '포기' && i.nextAction.text.trim() === '')
-  const needsStep = stepless.find((i) => i.status === '진행 중' || i.status === '계획') ?? stepless[0]
+  const needsStep = stepless[Math.floor(seed * stepless.length)]
 
   const save = ({ id, createdAt, updatedAt, ...input }: BucketItem, patch: Partial<BucketItemInput>) =>
     updateItem(id, { ...input, ...patch })

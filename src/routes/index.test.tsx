@@ -1,6 +1,6 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore, type BucketItemInput } from '@/entities/bucket-item'
 import { routeTree } from '@/routeTree.gen'
 
@@ -76,14 +76,23 @@ test('오늘의 첫걸음: 기한 빠른 항목을 보이고 [했어요]면 다�
   expect(screen.getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
 })
 
-test('다음 행동 후보가 없으면 빈 히어로가 다음 행동이 빈 진행 중·계획 항목 편집으로 안내한다', async () => {
+test.each([
+  [0, '오로라 보기'],
+  [0.99, '하프 마라톤'],
+])('다음 행동 후보가 없으면 다음 행동이 빈 꿈 중 무작위 하나로 안내한다(random %s → %s)', async (random, title) => {
+  vi.spyOn(Math, 'random').mockReturnValue(random)
   const store = useBucketStore.getState()
-  store.addItem({ ...base, nextAction: { text: '', dueDate: null } })
-  const id = store.addItem({ ...base, title: '하프 마라톤', status: '계획', nextAction: { text: '', dueDate: null } })
+  const ids = new Map([
+    ['오로라 보기', store.addItem({ ...base, nextAction: { text: '', dueDate: null } })],
+    ['하프 마라톤', store.addItem({ ...base, title: '하프 마라톤', status: '계획', nextAction: { text: '', dueDate: null } })],
+  ])
+  store.addItem({ ...base, title: '이룬 꿈', status: '완료', nextAction: { text: '', dueDate: null } })
   await open()
   const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
   expect(hero.textContent).toContain('다음 행동을 정해 보세요')
-  expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
+  expect(hero.textContent).toContain(`${title}의 첫걸음을 정하면`)
+  expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${ids.get(title)}`)
+  vi.restoreAllMocks()
 })
 
 test('막 적은 아이디어만 있어도 그 꿈의 다음 행동 정하기로 안내한다', async () => {
