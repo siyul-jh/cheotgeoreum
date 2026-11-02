@@ -61,17 +61,19 @@ async function open(url = '/settings') {
 
 test('로그인 전 설정 계정 섹션: 버튼마다 해당 provider로 로그인하고 설정으로 돌아온다', async () => {
   await open()
-  fireEvent.click(screen.getByRole('button', { name: '구글로 계속하기' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Google 계정으로 계속하기' }))
   expect(social).toHaveBeenCalledWith({ provider: 'google', callbackURL: '/settings', errorCallbackURL: '/settings' })
-  fireEvent.click(screen.getByRole('button', { name: '카카오로 계속하기' }))
+  fireEvent.click(screen.getByRole('button', { name: '카카오 로그인' }))
   expect(social).toHaveBeenCalledWith({ provider: 'kakao', callbackURL: '/settings', errorCallbackURL: '/settings' })
   expect(screen.getByText(/어느 쪽으로 들어와도 같은 계정/)).toBeTruthy()
+  // 이 창이 그대로면 로그인 화면이 다른 창에서 열린 것: 돌아오라고 안내
+  expect(screen.getByRole('status').textContent).toMatch(/이 창으로 돌아오세요/)
 })
 
 test('세션 확인 중엔 로그인 버튼을 보여 주지 않는다', async () => {
   auth.pending = true
   await open()
-  expect(screen.queryByRole('button', { name: '구글로 계속하기' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Google 계정으로 계속하기' })).toBeNull()
   expect(screen.getByText('확인 중…')).toBeTruthy()
 })
 

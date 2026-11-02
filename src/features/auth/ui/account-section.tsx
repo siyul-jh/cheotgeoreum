@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react'
 import { authClient } from '@/shared/api/auth-client'
 import { deleteAccountFn } from '../api/delete-account'
 import { LoginPanel } from './login-panel'
+import { SocialLoginButton } from './social-login-button'
 
 const PROVIDER_NAMES = { google: '구글', kakao: '카카오' } as const
 type Provider = keyof typeof PROVIDER_NAMES
@@ -123,14 +124,11 @@ function LinkedAccounts({
           {providers
             .filter((p) => linked.has(p))
             .map((provider) => (
-              <button
+              <SocialLoginButton
                 key={provider}
-                type="button"
-                className="btn press text-sm"
+                provider={provider}
                 onClick={() => authClient.signIn.social({ provider, callbackURL: '/settings', errorCallbackURL: '/settings' })}
-              >
-                {PROVIDER_NAMES[provider]}로 다시 로그인
-              </button>
+              />
             ))}
         </div>
       )}

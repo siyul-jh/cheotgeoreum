@@ -1,14 +1,15 @@
 import { Link, useLocation } from '@tanstack/react-router'
+import { useState } from 'react'
 import { authClient } from '@/shared/api/auth-client'
+import { SocialLoginButton, type Provider } from './social-login-button'
 
-const PROVIDERS = [
-  ['google', '구글로 계속하기'],
-  ['kakao', '카카오로 계속하기'],
-] as const
+const PROVIDERS: Provider[] = ['google', 'kakao']
 
 export function LoginPanel() {
   // 로그인에 실패하면 Better Auth가 errorCallbackURL에 ?error=코드를 붙여 돌려보낸다
   const error = useLocation({ select: (l) => new URLSearchParams(l.searchStr).get('error') })
+  // 눌렀는데 이 창이 그대로면 로그인 화면이 다른 창(앱 밖 브라우저)에서 열린 것이다
+  const [started, setStarted] = useState(false)
   return (
     <div className="flex flex-col gap-3">
       <p className="text-[13px] text-mute">
@@ -20,16 +21,21 @@ export function LoginPanel() {
           로그인하지 못했어요. 잠시 뒤 다시 시도해 주세요.
         </p>
       )}
-      {PROVIDERS.map(([provider, label]) => (
-        <button
+      {PROVIDERS.map((provider) => (
+        <SocialLoginButton
           key={provider}
-          type="button"
-          className="press min-h-11 rounded-full border border-edge px-4 text-sm font-bold"
-          onClick={() => authClient.signIn.social({ provider, callbackURL: '/settings', errorCallbackURL: '/settings' })}
-        >
-          {label}
-        </button>
+          provider={provider}
+          onClick={() => {
+            setStarted(true)
+            void authClient.signIn.social({ provider, callbackURL: '/settings', errorCallbackURL: '/settings' })
+          }}
+        />
       ))}
+      {started && (
+        <p role="status" className="text-[13px] text-mute">
+          로그인 창이 따로 열렸다면 로그인을 마친 뒤 이 창으로 돌아오세요. 자동으로 반영돼요.
+        </p>
+      )}
       <p className="text-[13px] text-mute">
         계속하면{' '}
         <Link to="/terms" className="underline">
