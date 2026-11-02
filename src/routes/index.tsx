@@ -60,10 +60,9 @@ function ListPage() {
   const [stepped, setStepped] = useState<BucketItem | null>(null)
   const today = pickTodayStep(items)
   const doneCount = items.filter((i) => i.status === '완료').length
-  // 후보가 없을 때 히어로가 안내할 항목: 다음 행동이 빈 첫 진행 중·계획 항목
-  const needsStep = items.find(
-    (i) => (i.status === '진행 중' || i.status === '계획') && i.nextAction.text.trim() === '',
-  )
+  // 후보가 없을 때 히어로가 안내할 항목: 다음 행동이 빈 진행 중·계획 항목 먼저, 없으면 막 적은 아이디어 등 끝나지 않은 항목
+  const stepless = items.filter((i) => i.status !== '완료' && i.status !== '포기' && i.nextAction.text.trim() === '')
+  const needsStep = stepless.find((i) => i.status === '진행 중' || i.status === '계획') ?? stepless[0]
 
   const save = ({ id, createdAt, ...input }: BucketItem, patch: Partial<BucketItemInput>) =>
     updateItem(id, { ...input, ...patch })

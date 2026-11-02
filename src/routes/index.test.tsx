@@ -86,8 +86,16 @@ test('다음 행동 후보가 없으면 빈 히어로가 다음 행동이 빈 �
   expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
 })
 
-test('그런 항목도 없으면 빈 히어로는 안내 문구만, 항목이 0개여도 히어로가 첫 꿈을 안내한다', async () => {
-  useBucketStore.getState().addItem({ ...base, nextAction: { text: '', dueDate: null } })
+test('막 적은 아이디어만 있어도 그 꿈의 다음 행동 정하기로 안내한다', async () => {
+  const id = useBucketStore.getState().addItem({ ...base, nextAction: { text: '', dueDate: null } })
+  await open()
+  const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
+  expect(hero.textContent).toContain('오로라 보기의 첫걸음을 정하면')
+  expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
+})
+
+test('끝난 꿈뿐이면 빈 히어로는 안내 문구만, 항목이 0개여도 히어로가 첫 꿈을 안내한다', async () => {
+  useBucketStore.getState().addItem({ ...base, status: '완료', nextAction: { text: '', dueDate: null } })
   await open()
   const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
   expect(within(hero).queryByRole('link')).toBeNull() // 새 꿈은 아래 고정 버튼 하나만
