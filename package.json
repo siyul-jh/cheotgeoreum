@@ -8,7 +8,8 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:bundle": "! grep -rqE 'betterAuth\\(|new Pool\\(' .output/public && ! grep -rq nvapi .output"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.79",
