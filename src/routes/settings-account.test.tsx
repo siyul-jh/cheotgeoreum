@@ -1,27 +1,33 @@
 // @vitest-environment jsdom
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 import { routeTree } from '@/routeTree.gen'
 
-const { social, linkSocial, auth } = vi.hoisted(() => ({
+const { social, linkSocial, signOut, refetch, deleteAccountFn, auth } = vi.hoisted(() => ({
   social: vi.fn(),
   linkSocial: vi.fn(),
+  signOut: vi.fn(),
+  refetch: vi.fn(),
+  deleteAccountFn: vi.fn(),
   auth: { session: null as { user: { id: string; name: string } } | null, providers: [] as string[], pending: false },
 }))
 vi.mock('@/shared/api/auth-client', () => ({
   authClient: {
     signIn: { social },
     linkSocial,
-    useSession: () => ({ data: auth.session, isPending: auth.pending }),
+    signOut,
+    useSession: () => ({ data: auth.session, isPending: auth.pending, refetch }),
     listAccounts: async () => ({ data: auth.providers.map((providerId) => ({ providerId })) }),
   },
 }))
 
+vi.mock('@/features/auth/api/delete-account', () => ({ deleteAccountFn }))
+
 afterEach(() => {
   cleanup()
-  social.mockReset()
-  linkSocial.mockReset()
+  vi.restoreAllMocks()
+  for (const fn of [social, linkSocial, signOut, refetch, deleteAccountFn]) fn.mockReset()
   auth.session = null
   auth.providers = []
   auth.pending = false
@@ -88,4 +94,40 @@ test('연결에 실패해 ?error= 로 돌아오면 이미 쓰는 로그인일 �
   auth.providers = ['google']
   await open('/settings?error=account_already_linked_to_different_user')
   expect(screen.getByRole('alert').textContent).toMatch(/이미 다른 계정에서 쓰는 로그인/)
+})
+
+test('로그아웃은 signOut만 부른다(이 기기의 꿈은 그대로)', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  await open()
+  fireEvent.click(screen.getByRole('button', { name: '로그아웃' }))
+  expect(signOut).toHaveBeenCalledTimes(1)
+})
+
+test('계정 삭제: 확인을 취소하면 아무것도 안 하고, 확인하면 서버에서 지운 뒤 세션을 다시 읽는다', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  await open()
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false)
+  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
+  expect(deleteAccountFn).not.toHaveBeenCalled()
+
+  confirm.mockReturnValueOnce(true)
+  deleteAccountFn.mockResolvedValueOnce({ ok: true })
+  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
+  await waitFor(() => expect(refetch).toHaveBeenCalledTimes(1))
+})
+
+test('계정 삭제가 reauth면 연결된 쪽으로 다시 로그인하게 하고, 실패하면 알린다', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  auth.providers = ['kakao']
+  await open()
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  deleteAccountFn.mockResolvedValueOnce({ code: 'reauth' })
+  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
+  fireEvent.click(await screen.findByRole('button', { name: '카카오로 다시 로그인' }))
+  expect(social).toHaveBeenCalledWith({ provider: 'kakao', callbackURL: '/settings', errorCallbackURL: '/settings' })
+  expect(refetch).not.toHaveBeenCalled()
+
+  deleteAccountFn.mockRejectedValueOnce(new Error('500'))
+  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
+  expect((await screen.findByText(/계정을 삭제하지 못했어요/)).getAttribute('role')).toBe('alert')
 })
