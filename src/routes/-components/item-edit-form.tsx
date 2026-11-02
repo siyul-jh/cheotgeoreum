@@ -42,7 +42,7 @@ export function ItemEditForm({ item, onDone }: Props) {
   const { request, ...draftState } = useFillBlanks()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   // 저장된 값이 스키마에 안 맞아도 화면은 열리고, 저장 시 검증 오류로 보인다
-  const { id, createdAt, ...defaultValues } = item
+  const { id, createdAt, updatedAt, ...defaultValues } = item
 
   const form = useForm({
     defaultValues,

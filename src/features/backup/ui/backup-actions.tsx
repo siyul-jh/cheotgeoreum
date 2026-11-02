@@ -1,19 +1,7 @@
-import { DateTime } from 'luxon'
 import { useRef, useState, type ChangeEvent } from 'react'
-import { canImport, parseBackup, serializeBackup, useBucketStore } from '@/entities/bucket-item'
+import { canImport, downloadBackup, parseBackup, useBucketStore } from '@/entities/bucket-item'
 
 const MAX_BYTES = 1024 * 1024
-
-function exportBackup() {
-  const { items, customCategories } = useBucketStore.getState()
-  // ponytail: 두 군데뿐이라 shared로 빼지 않음
-  const url = URL.createObjectURL(new Blob([serializeBackup({ items, customCategories })], { type: 'application/json' }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `첫걸음-백업-${DateTime.now().toISODate()}.json`
-  link.click()
-  setTimeout(() => URL.revokeObjectURL(url), 10_000)
-}
 
 export function BackupActions() {
   const fileRef = useRef<HTMLInputElement>(null)
@@ -33,15 +21,15 @@ export function BackupActions() {
       return setMessage('가져올 수 없는 파일이에요')
     }
     // ponytail: 네이티브 확인창
-    if (!window.confirm('지금 데이터를 가져온 파일로 바꿀까요?')) return
-    useBucketStore.setState(data)
+    if (!window.confirm('가져온 꿈을 더하고, 같은 꿈은 가져온 내용으로 덮어써요. 가져올까요?')) return
+    useBucketStore.getState().importBackup(data)
     setMessage('가져왔어요')
   }
 
   return (
     <div className="flex flex-col items-center gap-1 text-sm text-mute">
       <p className="flex items-center gap-2">
-        <button type="button" className="press min-h-11 px-2 underline-offset-4 hover:underline" onClick={exportBackup}>
+        <button type="button" className="press min-h-11 px-2 underline-offset-4 hover:underline" onClick={downloadBackup}>
           데이터 내보내기
         </button>
         <span aria-hidden="true">·</span>

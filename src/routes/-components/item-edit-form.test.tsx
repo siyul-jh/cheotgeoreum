@@ -58,7 +58,7 @@ test('제목을 비우면 오류가 나고 store는 바뀌지 않는다', async 
 })
 
 test('저장된 값이 스키마에 맞지 않아도 편집 화면이 열린다', async () => {
-  useBucketStore.setState({ items: [{ ...base, title: '   ', targetPeriod: { kind: 'start', at: '내년' }, id, createdAt: '2026-10-27T00:00:00.000Z' }] })
+  useBucketStore.setState({ items: [{ ...base, title: '   ', targetPeriod: { kind: 'start', at: '내년' }, id, createdAt: '2026-10-27T00:00:00.000Z', updatedAt: '2026-10-27T00:00:00.000Z' }] })
   await open()
   expect(screen.getByText('항목 편집')).toBeDefined()
   expect((screen.getByLabelText('항목') as HTMLInputElement).value).toBe('   ')
@@ -68,7 +68,7 @@ test('저장된 값이 스키마에 맞지 않아도 편집 화면이 열린다'
 test('구조가 깨진 항목이면 기본 오류 화면 대신 목록 링크를 보인다', async () => {
   const err = vi.spyOn(console, 'error').mockImplementation(() => {})
   const { nextAction: _n, ...broken } = base
-  useBucketStore.setState({ items: [{ ...broken, id, createdAt: '2026-10-27T00:00:00.000Z' } as never] })
+  useBucketStore.setState({ items: [{ ...broken, id, createdAt: '2026-10-27T00:00:00.000Z', updatedAt: '2026-10-27T00:00:00.000Z' } as never] })
   const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [`/items/${id}`] }) })
   render(<RouterProvider router={router} />)
   expect(await screen.findByText('이 화면을 열지 못했어요.')).toBeDefined()

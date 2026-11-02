@@ -88,7 +88,7 @@ it('selectCompanionNames: 중복 제거 후 정렬', () => {
 it('변경이 localStorage에 반영된다', () => {
   s().addItem(input({ title: '저장됨' }))
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: { title: string }[] }; version: number }
-  expect(saved.version).toBe(2)
+  expect(saved.version).toBe(3)
   expect(saved.state.items[0]?.title).toBe('저장됨')
 })
 
@@ -113,7 +113,7 @@ describe('persist', () => {
 
   it('모르는 version으로 저장된 상태는 메모리도 저장소도 덮어쓰지 않는다', async () => {
     s().addItem(input({ title: '내 항목' }))
-    const future = JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 })
+    const future = JSON.stringify({ state: { items: [], customCategories: [] }, version: 4 })
     localStorage.setItem(STORAGE_KEY, future)
     await useBucketStore.persist.rehydrate()
     expect(s().items.map((i) => i.title)).toEqual(['내 항목'])
@@ -121,7 +121,7 @@ describe('persist', () => {
   })
 
   it('모르는 version 저장본을 읽은 뒤 항목을 추가해도 저장소를 덮어쓰지 않는다', async () => {
-    const future = JSON.stringify({ state: { items: [{ id: 'z' }], customCategories: [] }, version: 3 })
+    const future = JSON.stringify({ state: { items: [{ id: 'z' }], customCategories: [] }, version: 4 })
     localStorage.setItem(STORAGE_KEY, future)
     await useBucketStore.persist.rehydrate()
     s().addItem(input({ title: '새 항목' }))
@@ -153,10 +153,116 @@ describe('persist', () => {
       ['e', '숫자', null],
     ])
     expect(s().customCategories).toEqual(['덕질'])
-    // 옮긴 결과가 version 2로 다시 저장된다
+    expect(s().items.map((i) => i.updatedAt)).toEqual(s().items.map((i) => i.createdAt))
+    // 옮긴 결과가 version 3으로 다시 저장된다
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: unknown[] }; version: number }
-    expect(saved.version).toBe(2)
+    expect(saved.version).toBe(3)
     expect(saved.state.items).toHaveLength(5)
+  })
+
+  it('version 2 저장본: 항목 0개 유실, updatedAt = createdAt, 내 카테고리는 오래전 기록, 계정 없음', async () => {
+    const items = [0, 1, 2].map((n) => ({ ...input({ title: `꿈${n}` }), id: `v2-${n}`, createdAt: `2026-10-0${n + 1}T00:00:00.000Z` }))
+    s().claimLocalData('someone') // 메모리 값이 저장본으로 덮이는지 보려고 먼저(set은 저장소에도 쓴다)
+    save({ items, customCategories: ['덕질'] })
+    await useBucketStore.persist.rehydrate()
+    expect(s().items.map((i) => [i.id, i.updatedAt])).toEqual(items.map((i) => [i.id, i.createdAt]))
+    expect(s().categoryLog).toEqual([{ name: '덕질', at: '1970-01-01T00:00:00.000Z', deleted: false }])
+    expect(s().deletedIds).toEqual([])
+    expect(s().ownerId).toBeNull()
+  })
+
+  it('version 3의 동기화 필드가 복원되고, 형식이 틀리면 기본값', async () => {
+    const stored = (state: unknown) => localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, version: 3 }))
+    stored({ items: [], customCategories: [], categoryLog: [{ name: 'a', at: '2026-01-01T00:00:00.000Z', deleted: true }], deletedIds: [{ id: 'x', deletedAt: '2026-01-01T00:00:00.000Z' }], ownerId: 'u1' })
+    await useBucketStore.persist.rehydrate()
+    expect([s().categoryLog.length, s().deletedIds.length, s().ownerId]).toEqual([1, 1, 'u1'])
+    stored({ items: [], customCategories: [], categoryLog: 'x', deletedIds: null, ownerId: 3 })
+    await useBucketStore.persist.rehydrate()
+    expect([s().categoryLog, s().deletedIds, s().ownerId]).toEqual([[], [], null])
+  })
+})
+
+describe('sync fields', () => {
+  beforeEach(() => useBucketStore.setState({ categoryLog: [], deletedIds: [], ownerId: null }))
+
+  it('고치면 updatedAt이 오르고, 지우면 흔적이 남는다', () => {
+    vi.useFakeTimers({ now: new Date('2026-11-01T00:00:00.000Z') })
+    const id = s().addItem(input())
+    vi.setSystemTime(new Date('2026-11-02T00:00:00.000Z'))
+    s().updateItem(id, input({ title: '수정' }))
+    expect(s().items[0].updatedAt).toBe('2026-11-02T00:00:00.000Z')
+    s().deleteItem(id)
+    expect(s().deletedIds).toEqual([{ id, deletedAt: '2026-11-02T00:00:00.000Z' }])
+    vi.useRealTimers()
+  })
+
+  it('카테고리 추가·삭제·이름 바꾸기가 기록에 남는다', () => {
+    s().addCategory('덕질')
+    s().renameCategory('덕질', '공연')
+    s().addCategory('독서')
+    s().deleteCategory('독서')
+    expect(s().categoryLog.map((r) => [r.name, r.deleted])).toEqual([
+      ['덕질', true],
+      ['공연', false],
+      ['독서', true],
+    ])
+    expect(s().customCategories).toEqual(['공연'])
+  })
+
+  it('clearLocalData는 꿈·흔적·카테고리 기록·계정을 모두 비운다', () => {
+    s().addCategory('덕질')
+    s().deleteItem(s().addItem(input()))
+    s().addItem(input())
+    s().claimLocalData('u1')
+    s().clearLocalData()
+    expect([s().items, s().customCategories, s().categoryLog, s().deletedIds, s().ownerId]).toEqual([[], [], [], [], null])
+  })
+
+  it('applySynced: 서버 상태와 병합하고, 받은 흔적만 지우고, 서버 흔적은 deletedIds에 넣지 않는다', () => {
+    const t = (h: number) => `2026-11-01T0${h}:00:00.000Z`
+    const item = (id: string, h: number, title = id) => ({ ...input({ title }), id, createdAt: t(0), updatedAt: t(h) })
+    useBucketStore.setState({
+      items: [item('mine', 2, '이 기기 최신'), item('old', 1, '이 기기 예전')],
+      deletedIds: [{ id: 'gone', deletedAt: t(3) }, { id: 'inflight', deletedAt: t(4) }],
+      customCategories: ['덕질'],
+      categoryLog: [{ name: '덕질', at: t(1), deleted: false }],
+    })
+    s().applySynced(
+      {
+        items: [item('mine', 1, '서버 예전'), item('old', 2, '서버 최신'), item('new', 1, '다른 기기')],
+        deleted: [...Array.from({ length: 100 }, (_, i) => ({ id: `srv${i}`, deletedAt: t(1) })), { id: 'gone', deletedAt: t(3) }],
+        categories: [{ name: '덕질', at: t(2), deleted: true }, { name: '독서', at: t(2), deleted: false }],
+        serverNow: t(5),
+      },
+      ['gone'],
+    )
+    expect(s().items.map((i) => i.title)).toEqual(['이 기기 최신', '서버 최신', '다른 기기'])
+    expect(s().deletedIds.map((d) => d.id)).toEqual(['inflight'])
+    expect(s().customCategories).toEqual(['독서'])
+  })
+
+  it('applySynced: serverNow 뒤에 커밋돼 함께 읽힌 행보다 나중에 지운 꿈은 되살아나지 않는다', () => {
+    const at = (ms: number) => new Date(Date.parse('2026-11-01T05:00:00.000Z') + ms).toISOString()
+    useBucketStore.setState({ items: [], deletedIds: [{ id: 'x', deletedAt: at(20) }] })
+    s().applySynced(
+      { items: [{ ...input({ title: '다른 기기 편집' }), id: 'x', createdAt: at(0), updatedAt: at(10) }], deleted: [], categories: [], serverNow: at(0) },
+      [],
+    )
+    expect(s().items).toEqual([])
+    expect(s().deletedIds[0].deletedAt).toBe(at(11))
+  })
+
+  it('touchAll(after): 기기 시계가 늦어도 after보다 1ms 뒤로 올린다', () => {
+    useBucketStore.setState({ items: [{ ...input(), id: 'a', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' }] })
+    s().touchAll('2999-01-01T00:00:00.000Z')
+    expect(s().items[0].updatedAt).toBe('2999-01-01T00:00:00.001Z')
+  })
+
+  it('applySynced: 기기 시계가 서버보다 1시간 앞서면 서버 시각+1ms로 잘려 계속 이기지 않는다', () => {
+    const future = '2026-11-01T06:00:00.000Z'
+    useBucketStore.setState({ items: [{ ...input({ title: '미래' }), id: 'a', createdAt: future, updatedAt: future }], deletedIds: [] })
+    s().applySynced({ items: [], deleted: [], categories: [], serverNow: '2026-11-01T05:00:00.000Z' }, [])
+    expect(s().items[0].updatedAt).toBe('2026-11-01T05:00:00.001Z')
   })
 })
 
@@ -182,7 +288,7 @@ describe('backup', () => {
   })
 
   it.each([
-    ['version 3', JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 })],
+    ['version 4', JSON.stringify({ state: { items: [], customCategories: [] }, version: 4 })],
     ['깨진 JSON', '{"state":'],
     ['항목 스키마 위반', JSON.stringify({ state: { items: [{ id: 'x' }], customCategories: [] }, version: 2 })],
     [
@@ -196,9 +302,14 @@ describe('backup', () => {
     expect(() => parseBackup(text)).toThrow()
   })
 
-  it('저장값 version이 3이면 canImport는 false', () => {
+  it('version 2 백업도 가져올 수 있다(updatedAt을 채운다)', () => {
+    const v2 = { state: { items: [{ ...input(), id: 'a', createdAt: '2026-10-01T00:00:00.000Z' }], customCategories: [] }, version: 2 }
+    expect(parseBackup(JSON.stringify(v2)).items[0]?.updatedAt).toBe('2026-10-01T00:00:00.000Z')
+  })
+
+  it('저장값 version이 4이면 canImport는 false', () => {
     expect(canImport()).toBe(true)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 }))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 4 }))
     expect(canImport()).toBe(false)
   })
 })

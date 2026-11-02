@@ -8,6 +8,7 @@ import { BackupActions } from './backup-actions'
 const item = (title: string): BucketItem => ({
   id: title,
   createdAt: '2026-10-01T00:00:00.000Z',
+  updatedAt: '2026-10-01T00:00:00.000Z',
   title,
   why: '',
   category: null,
@@ -47,23 +48,25 @@ test('잘못된 파일이면 오류 문구가 뜨고 스토어는 그대로다',
 test('confirm에서 취소하면 그대로, 문구도 없다', async () => {
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
   pick(backup)
-  await waitFor(() => expect(confirm).toHaveBeenCalledWith('지금 데이터를 가져온 파일로 바꿀까요?'))
+  await waitFor(() => expect(confirm).toHaveBeenCalledWith('가져온 꿈을 더하고, 같은 꿈은 가져온 내용으로 덮어써요. 가져올까요?'))
   expect(titles()).toEqual(['지금'])
   expect(screen.getByTestId('backup-message').textContent).toBe('')
 })
 
-test('confirm에서 확인하면 대체되고 localStorage도 바뀐다', async () => {
+test('confirm에서 확인하면 더하고(같은 id는 덮어씀) 지운 흔적은 만들지 않으며 localStorage도 바뀐다', async () => {
   vi.spyOn(window, 'confirm').mockReturnValue(true)
-  pick(backup)
+  pick(serializeBackup({ items: [item('가져옴'), { ...item('지금'), why: '덮어씀' }], customCategories: ['덕질'] }))
   await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toBe('가져왔어요'))
-  expect(titles()).toEqual(['가져옴'])
+  expect(titles()).toEqual(['지금', '가져옴'])
+  expect(useBucketStore.getState().items[0].why).toBe('덮어씀')
+  expect(useBucketStore.getState().deletedIds).toEqual([])
   expect(useBucketStore.getState().customCategories).toEqual(['덕질'])
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { state: { items: BucketItem[] } }
-  expect(saved.state.items.map((i) => i.title)).toEqual(['가져옴'])
+  expect(saved.state.items.map((i) => i.title)).toEqual(['지금', '가져옴'])
 })
 
 test('저장값 version이 더 새면 confirm 없이 거부한다', async () => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 3 }))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { items: [], customCategories: [] }, version: 4 }))
   const confirm = vi.spyOn(window, 'confirm')
   pick(backup)
   await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toBe('더 새 버전 앱의 데이터라 가져올 수 없어요'))

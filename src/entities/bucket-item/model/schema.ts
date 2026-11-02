@@ -58,11 +58,27 @@ export const BucketItemInputSchema = z.object({
 })
 export type BucketItemInput = z.infer<typeof BucketItemInputSchema>
 
+const DateTimeSchema = z.iso.datetime({ offset: true })
+
 export const BucketItemSchema = BucketItemInputSchema.extend({
-  id: z.string(),
-  createdAt: z.iso.datetime({ offset: true }),
+  id: z.string().min(1).max(100),
+  createdAt: DateTimeSchema,
+  // 마지막으로 고친 시각. 동기화는 더 새 쪽을 남긴다
+  updatedAt: DateTimeSchema,
 })
 export type BucketItem = z.infer<typeof BucketItemSchema>
+
+// 지운 꿈의 흔적: 다른 기기에도 지웠다고 알리려고 동기화 전까지 남긴다
+export const TombstoneSchema = z.object({ id: z.string().min(1).max(100), deletedAt: DateTimeSchema })
+export type Tombstone = z.infer<typeof TombstoneSchema>
+
+// 내 카테고리 기록: 이름마다 마지막 추가·삭제와 그 시각
+export const CategoryRecordSchema = z.object({
+  name: z.string().trim().min(1).max(fieldLimits.category),
+  at: DateTimeSchema,
+  deleted: z.boolean(),
+})
+export type CategoryRecord = z.infer<typeof CategoryRecordSchema>
 
 export type ItemValues = Omit<BucketItemInput, 'status'>
 export type ItemField = keyof ItemValues

@@ -66,7 +66,7 @@ function ListPage() {
   const stepless = items.filter((i) => i.status !== '완료' && i.status !== '포기' && i.nextAction.text.trim() === '')
   const needsStep = stepless.find((i) => i.status === '진행 중' || i.status === '계획') ?? stepless[0]
 
-  const save = ({ id, createdAt, ...input }: BucketItem, patch: Partial<BucketItemInput>) =>
+  const save = ({ id, createdAt, updatedAt, ...input }: BucketItem, patch: Partial<BucketItemInput>) =>
     updateItem(id, { ...input, ...patch })
 
   const visible = items.filter(

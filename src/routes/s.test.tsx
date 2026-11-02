@@ -93,7 +93,7 @@ test('없거나 만료된 짧은 링크는 열 수 없다고 알린다', async (
 test('목록 짧은 링크는 받은 버킷리스트로 열고, 이룬 꿈을 표시하며 저장하지 않는다', async () => {
   localStorage.clear()
   const setItem = vi.spyOn(Storage.prototype, 'setItem')
-  const base = { why: '', prerequisites: [], nextAction: { text: '', dueDate: null }, companions: [], createdAt: '' }
+  const base = { why: '', prerequisites: [], nextAction: { text: '', dueDate: null }, companions: [], createdAt: '', updatedAt: '' }
   shortLinks.set(
     'L1st000000',
     await encodeList([

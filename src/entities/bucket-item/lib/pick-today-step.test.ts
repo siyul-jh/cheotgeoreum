@@ -9,6 +9,7 @@ const make = (patch: Partial<BucketItem> & { next?: string; due?: string | null 
   return {
     id: `id${n}`,
     createdAt: `2026-10-${String(10 + n).padStart(2, '0')}T00:00:00.000Z`,
+    updatedAt: '2026-10-01T00:00:00.000Z',
     title: `꿈${n}`,
     why: '',
     category: null,
@@ -35,11 +36,11 @@ describe('pickTodayStep', () => {
     expect(pickTodayStep(items)?.id).toBe(items[2]!.id)
   })
   it('기한이 같으면(없음 포함) 먼저 만든 항목', () => {
-    const older = make({ due: '2026-11-03', createdAt: '2026-01-01T09:00:00+09:00' })
-    const newer = make({ due: '2026-11-03', createdAt: '2026-01-01T01:00:00.000Z' })
+    const older = make({ due: '2026-11-03', createdAt: '2026-01-01T09:00:00+09:00', updatedAt: '2026-01-01T09:00:00+09:00' })
+    const newer = make({ due: '2026-11-03', createdAt: '2026-01-01T01:00:00.000Z', updatedAt: '2026-01-01T01:00:00.000Z' })
     expect(pickTodayStep([newer, older])?.id).toBe(older.id)
-    const a = make({ createdAt: '2026-03-01T00:00:00.000Z' })
-    const b = make({ createdAt: '2026-02-01T00:00:00.000Z' })
+    const a = make({ createdAt: '2026-03-01T00:00:00.000Z', updatedAt: '2026-03-01T00:00:00.000Z' })
+    const b = make({ createdAt: '2026-02-01T00:00:00.000Z', updatedAt: '2026-02-01T00:00:00.000Z' })
     expect(pickTodayStep([a, b])?.id).toBe(b.id)
   })
 })
