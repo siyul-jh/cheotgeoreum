@@ -7,13 +7,20 @@ const PROVIDER_NAMES = { google: '구글', kakao: '카카오' } as const
 type Provider = keyof typeof PROVIDER_NAMES
 
 export function AccountSection() {
-  const { data } = authClient.useSession()
+  const { data, isPending } = authClient.useSession()
   return (
     <section aria-labelledby="settings-account" className="surface flex flex-col gap-3 p-4">
       <h2 id="settings-account" className="text-sm font-bold">
         계정
       </h2>
-      {data ? <LinkedAccounts userId={data.user.id} name={data.user.name} /> : <LoginPanel />}
+      {/* 세션 확인 중엔 비어 있는 data로 로그인 버튼이 잠깐 비치지 않게 자리만 잡는다 */}
+      {isPending ? (
+        <p className="text-sm text-dim">확인 중…</p>
+      ) : data ? (
+        <LinkedAccounts userId={data.user.id} name={data.user.name} />
+      ) : (
+        <LoginPanel />
+      )}
     </section>
   )
 }

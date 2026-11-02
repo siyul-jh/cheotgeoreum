@@ -7,13 +7,13 @@ import { routeTree } from '@/routeTree.gen'
 const { social, linkSocial, auth } = vi.hoisted(() => ({
   social: vi.fn(),
   linkSocial: vi.fn(),
-  auth: { session: null as { user: { id: string; name: string } } | null, providers: [] as string[] },
+  auth: { session: null as { user: { id: string; name: string } } | null, providers: [] as string[], pending: false },
 }))
 vi.mock('@/shared/api/auth-client', () => ({
   authClient: {
     signIn: { social },
     linkSocial,
-    useSession: () => ({ data: auth.session, isPending: false }),
+    useSession: () => ({ data: auth.session, isPending: auth.pending }),
     listAccounts: async () => ({ data: auth.providers.map((providerId) => ({ providerId })) }),
   },
 }))
@@ -24,6 +24,7 @@ afterEach(() => {
   linkSocial.mockReset()
   auth.session = null
   auth.providers = []
+  auth.pending = false
 })
 
 async function open(url = '/settings') {
@@ -39,6 +40,13 @@ test('로그인 전 설정 계정 섹션: 버튼마다 해당 provider로 로그
   fireEvent.click(screen.getByRole('button', { name: '카카오로 계속하기' }))
   expect(social).toHaveBeenCalledWith({ provider: 'kakao', callbackURL: '/settings', errorCallbackURL: '/settings' })
   expect(screen.getByText(/어느 쪽으로 들어와도 같은 계정/)).toBeTruthy()
+})
+
+test('세션 확인 중엔 로그인 버튼을 보여 주지 않는다', async () => {
+  auth.pending = true
+  await open()
+  expect(screen.queryByRole('button', { name: '구글로 계속하기' })).toBeNull()
+  expect(screen.getByText('확인 중…')).toBeTruthy()
 })
 
 test('이용약관·개인정보처리방침 링크가 있다', async () => {
