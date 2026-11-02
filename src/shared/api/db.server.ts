@@ -22,3 +22,22 @@ export function getQuery(): Query {
     return { rows, rowCount: rowCount ?? 0 }
   }
 }
+
+// 한 연결에서 begin~commit. 실패하면 rollback
+export async function withTransaction<T>(fn: (query: Query) => Promise<T>): Promise<T> {
+  const client = await getPool().connect()
+  try {
+    await client.query('begin')
+    const result = await fn(async (text, params) => {
+      const { rows, rowCount } = await client.query(text, params)
+      return { rows, rowCount: rowCount ?? 0 }
+    })
+    await client.query('commit')
+    return result
+  } catch (error) {
+    await client.query('rollback').catch(() => {})
+    throw error
+  } finally {
+    client.release()
+  }
+}

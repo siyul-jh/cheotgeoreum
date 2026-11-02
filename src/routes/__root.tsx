@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HeadContent, Link, Outlet, Scripts, createRootRoute, useLocation } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useDreamSync } from '@/features/dream-sync'
 import { InstallGuide, isStandalone } from '@/features/install-guide'
 import { applyTheme, THEME_BOOT_SCRIPT } from '@/shared/lib/theme'
 import { FLOATING_STACK_ID } from '@/shared/ui/floating-status'
@@ -55,6 +56,7 @@ function RootLayout() {
   // 배포본은 설치한 앱으로 열어야 쓸 수 있다. 받은 카드(/s)는 메신저 브라우저로 열리고, 약관·처리방침은 OAuth 동의 화면에서 열리니 예외.
   // 개발·테스트는 막지 않는다
   const needsInstall = import.meta.env.PROD && !INSTALL_EXEMPT.includes(pathname) && !isStandalone()
+  useDreamSync()
   useEffect(() => {
     // 등록 실패는 오프라인 열기만 못 할 뿐이라 조용히 넘긴다
     if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useLocation } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { authClient } from '@/shared/api/auth-client'
 import { deleteAccountFn } from '../api/delete-account'
 import { LoginPanel } from './login-panel'
@@ -8,7 +8,15 @@ import { LoginPanel } from './login-panel'
 const PROVIDER_NAMES = { google: '구글', kakao: '카카오' } as const
 type Provider = keyof typeof PROVIDER_NAMES
 
-export function AccountSection() {
+type Props = {
+  // 로그인한 계정 아래에 붙일 내용(동기화 패널). signOut은 아래 로그아웃과 같은 절차
+  renderLinked?: (userId: string, signOut: () => void) => ReactNode
+  // 로그아웃 전에 마지막으로 올려 본다. false면 그래도 로그아웃할지 묻는다
+  beforeSignOut?: (userId: string) => Promise<boolean>
+  onAccountDeleted?: () => void
+}
+
+export function AccountSection(props: Props) {
   const { data, isPending, refetch } = authClient.useSession()
   return (
     <section aria-labelledby="settings-account" className="surface flex flex-col gap-3 p-4">
@@ -19,7 +27,15 @@ export function AccountSection() {
       {isPending ? (
         <p className="text-sm text-dim">확인 중…</p>
       ) : data ? (
-        <LinkedAccounts userId={data.user.id} name={data.user.name} onDeleted={() => void refetch()} />
+        <LinkedAccounts
+          {...props}
+          userId={data.user.id}
+          name={data.user.name}
+          onDeleted={() => {
+            props.onAccountDeleted?.()
+            void refetch()
+          }}
+        />
       ) : (
         <LoginPanel />
       )}
@@ -27,7 +43,13 @@ export function AccountSection() {
   )
 }
 
-function LinkedAccounts({ userId, name, onDeleted }: { userId: string; name: string; onDeleted: () => void }) {
+function LinkedAccounts({
+  userId,
+  name,
+  onDeleted,
+  renderLinked,
+  beforeSignOut,
+}: Props & { userId: string; name: string; onDeleted: () => void }) {
   const error = useLocation({ select: (l) => new URLSearchParams(l.searchStr).get('error') })
   const { data: accounts } = useQuery({
     queryKey: ['accounts', userId],
@@ -35,7 +57,13 @@ function LinkedAccounts({ userId, name, onDeleted }: { userId: string; name: str
   })
   const linked = new Set(accounts?.map((a) => a.providerId))
   const providers = Object.keys(PROVIDER_NAMES) as Provider[]
-  const [deleteState, setDeleteState] = useState<'idle' | 'pending' | 'reauth' | 'error'>('idle')
+  const [deleteState, setDeleteState] = useState<'idle' | 'pending' | 'reauth' | 'error' | 'deleted'>('idle')
+
+  const signOut = async () => {
+    const synced = beforeSignOut ? await beforeSignOut(userId) : true
+    if (!synced && !window.confirm('아직 계정에 올라가지 않은 변경이 있을 수 있어요. 그래도 로그아웃할까요?')) return
+    await authClient.signOut()
+  }
 
   const remove = async () => {
     if (!window.confirm('계정을 삭제할까요? 서버의 계정 정보가 지워지고 되돌릴 수 없어요. 이 기기의 꿈은 그대로 남아요.')) return
@@ -43,6 +71,8 @@ function LinkedAccounts({ userId, name, onDeleted }: { userId: string; name: str
     try {
       const result = await deleteAccountFn()
       if ('code' in result) return setDeleteState('reauth')
+      // 같은 렌더에서 계정 아래 내용(동기화 패널)을 먼저 내린다: 세션이 비기 전에 지운 계정으로 다시 잇지 않게
+      setDeleteState('deleted')
       onDeleted()
     } catch {
       setDeleteState('error')
@@ -72,9 +102,10 @@ function LinkedAccounts({ userId, name, onDeleted }: { userId: string; name: str
               {PROVIDER_NAMES[provider]}도 연결하기
             </button>
           ))}
+      {deleteState !== 'deleted' && renderLinked?.(userId, () => void signOut())}
       {/* 로그아웃해도 이 기기의 꿈은 남는다 */}
       <div className="flex gap-2 border-t border-line pt-3">
-        <button type="button" className="btn press flex-1 text-sm" onClick={() => void authClient.signOut()}>
+        <button type="button" className="btn press flex-1 text-sm" onClick={() => void signOut()}>
           로그아웃
         </button>
         <button

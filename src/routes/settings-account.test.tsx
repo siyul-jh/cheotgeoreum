@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { useBucketStore, type BucketItemInput } from '@/entities/bucket-item'
+import { useSyncStatus } from '@/features/dream-sync'
 import { routeTree } from '@/routeTree.gen'
 
-const { social, linkSocial, signOut, refetch, deleteAccountFn, auth } = vi.hoisted(() => ({
+const { social, linkSocial, signOut, refetch, deleteAccountFn, syncDreams, auth } = vi.hoisted(() => ({
+  syncDreams: vi.fn(),
   social: vi.fn(),
   linkSocial: vi.fn(),
   signOut: vi.fn(),
@@ -23,11 +26,28 @@ vi.mock('@/shared/api/auth-client', () => ({
 }))
 
 vi.mock('@/features/auth/api/delete-account', () => ({ deleteAccountFn }))
+vi.mock('@/features/dream-sync/api/sync-dreams', () => ({ syncDreams }))
+
+const dream: BucketItemInput = {
+  title: '오로라 보기', why: '', category: null, targetPeriod: null, prerequisites: [], nextAction: { text: '', dueDate: null },
+  status: '아이디어', companions: [],
+}
+const okSync = async () => ({
+  ackedDeleted: [],
+  rejected: [],
+  snapshot: { items: useBucketStore.getState().items, deleted: [], categories: [], nextCursor: null, serverNow: new Date().toISOString() },
+})
+
+beforeEach(() => {
+  useBucketStore.setState({ items: [], customCategories: [], categoryLog: [], deletedIds: [], ownerId: null })
+  useSyncStatus.setState({ status: 'idle', held: null, lastAt: 0, rejected: 0 })
+  syncDreams.mockImplementation(okSync)
+})
 
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
-  for (const fn of [social, linkSocial, signOut, refetch, deleteAccountFn]) fn.mockReset()
+  for (const fn of [social, linkSocial, signOut, refetch, deleteAccountFn, syncDreams]) fn.mockReset()
   auth.session = null
   auth.providers = []
   auth.pending = false
@@ -96,38 +116,102 @@ test('연결에 실패해 ?error= 로 돌아오면 이미 쓰는 로그인일 �
   expect(screen.getByRole('alert').textContent).toMatch(/이미 다른 계정에서 쓰는 로그인/)
 })
 
-test('로그아웃은 signOut만 부른다(이 기기의 꿈은 그대로)', async () => {
+test('로그아웃: 이 기기 꿈의 주인이면 먼저 올려 보고 signOut. 꿈은 그대로 남는다', async () => {
   auth.session = { user: { id: 'u1', name: '지흠' } }
+  useBucketStore.getState().addItem(dream)
+  useBucketStore.getState().claimLocalData('u1')
   await open()
+  syncDreams.mockClear()
   fireEvent.click(screen.getByRole('button', { name: '로그아웃' }))
-  expect(signOut).toHaveBeenCalledTimes(1)
+  await waitFor(() => expect(signOut).toHaveBeenCalledTimes(1))
+  expect(syncDreams).toHaveBeenCalled()
+  expect(useBucketStore.getState().items).toHaveLength(1)
 })
 
-test('계정 삭제: 확인을 취소하면 아무것도 안 하고, 확인하면 서버에서 지운 뒤 세션을 다시 읽는다', async () => {
+test('로그아웃: 마지막 동기화가 실패하면 묻고, 취소하면 로그아웃하지 않는다', async () => {
+  vi.spyOn(console, 'error').mockImplementation(() => {})
   auth.session = { user: { id: 'u1', name: '지흠' } }
+  useBucketStore.getState().claimLocalData('u1')
   await open()
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false)
-  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
-  expect(deleteAccountFn).not.toHaveBeenCalled()
-
-  confirm.mockReturnValueOnce(true)
-  deleteAccountFn.mockResolvedValueOnce({ ok: true })
-  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
-  await waitFor(() => expect(refetch).toHaveBeenCalledTimes(1))
+  syncDreams.mockRejectedValue(new Error('offline'))
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+  fireEvent.click(screen.getByRole('button', { name: '로그아웃' }))
+  await waitFor(() => expect(confirm).toHaveBeenCalledWith(expect.stringMatching(/올라가지 않은 변경/)))
+  expect(signOut).not.toHaveBeenCalled()
 })
 
-test('계정 삭제가 reauth면 연결된 쪽으로 다시 로그인하게 하고, 실패하면 알린다', async () => {
+test('연결 직후: 이 기기에 꿈이 있으면 옮길지 묻고, [옮기기]면 계정 것이 되어 동기화한다', async () => {
   auth.session = { user: { id: 'u1', name: '지흠' } }
-  auth.providers = ['kakao']
+  useBucketStore.getState().addItem(dream)
   await open()
-  vi.spyOn(window, 'confirm').mockReturnValue(true)
-  deleteAccountFn.mockResolvedValueOnce({ code: 'reauth' })
-  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
-  fireEvent.click(await screen.findByRole('button', { name: '카카오로 다시 로그인' }))
-  expect(social).toHaveBeenCalledWith({ provider: 'kakao', callbackURL: '/settings', errorCallbackURL: '/settings' })
-  expect(refetch).not.toHaveBeenCalled()
+  expect(syncDreams).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: '옮기기' }))
+  expect(useBucketStore.getState().ownerId).toBe('u1')
+  await waitFor(() => expect(syncDreams).toHaveBeenCalled())
+  expect(await screen.findByText('다른 기기와 꿈을 맞춰 두고 있어요.')).toBeTruthy()
+})
 
-  deleteAccountFn.mockRejectedValueOnce(new Error('500'))
-  fireEvent.click(screen.getByRole('button', { name: '계정 삭제' }))
-  expect((await screen.findByText(/계정을 삭제하지 못했어요/)).getAttribute('role')).toBe('alert')
+test('연결 직후: 어느 계정 것도 아닌 빈 기기는 묻지 않고 잇고, 남은 내 카테고리는 지우지 않는다', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  useBucketStore.getState().addCategory('덕질')
+  await open()
+  await waitFor(() => expect(useBucketStore.getState().ownerId).toBe('u1'))
+  expect(useBucketStore.getState().customCategories).toEqual(['덕질'])
+  expect(screen.queryByRole('button', { name: '옮기기' })).toBeNull()
+})
+
+test('다른 계정 표시만 남은 빈 기기(꿈·지운 흔적 없음)는 비우고 이 계정으로 잇는다', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  useBucketStore.getState().claimLocalData('deleted-account')
+  await open()
+  await waitFor(() => expect(useBucketStore.getState().ownerId).toBe('u1'))
+})
+
+test('다른 계정의 꿈이 있는 기기: 올리지 않고 묻는다. 백업 파일을 받은 뒤에야 지울 수 있다', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  useBucketStore.getState().deleteItem(useBucketStore.getState().addItem(dream))
+  useBucketStore.getState().addItem(dream)
+  useBucketStore.getState().claimLocalData('someone-else')
+  await open()
+  expect(screen.getByRole('alert').textContent).toMatch(/다른 계정의 꿈 1개와 아직 올라가지 않은 삭제 1개/)
+  expect(syncDreams).not.toHaveBeenCalled()
+  expect(screen.queryByRole('button', { name: /지우기/ })).toBeNull()
+  URL.createObjectURL = vi.fn(() => 'blob:x')
+  URL.revokeObjectURL = vi.fn()
+  const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  fireEvent.click(screen.getByRole('button', { name: '백업 파일 받기' }))
+  expect(click).toHaveBeenCalledTimes(1)
+  expect(useBucketStore.getState().items).toHaveLength(1)
+  fireEvent.click(screen.getByRole('button', { name: '백업을 확인했어요, 지우기' }))
+  expect(useBucketStore.getState().items).toEqual([])
+  expect(useBucketStore.getState().ownerId).toBe('u1')
+})
+
+test('서버가 받지 않은 꿈이 있으면 이 기기에만 있다고 알린다', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  useBucketStore.getState().addItem(dream)
+  useBucketStore.getState().claimLocalData('u1')
+  syncDreams.mockImplementation(async () => ({ ...(await okSync()), rejected: [{ id: 'x', reason: 'limit' }] }))
+  await open()
+  expect(await screen.findByText(/꿈 1개는 계정에 올라가지 못해/)).toBeTruthy()
+})
+
+test('동기화를 멈췄으면 사라질 꿈 수를 알리고, [그래도 적용]하면 계정 상태를 적용한다', async () => {
+  auth.session = { user: { id: 'u1', name: '지흠' } }
+  const id = useBucketStore.getState().addItem(dream)
+  useBucketStore.getState().claimLocalData('u1')
+  syncDreams.mockImplementation(() => new Promise(() => {})) // 켤 때 동기화는 끝나지 않게
+  useSyncStatus.setState({
+    status: 'held',
+    held: {
+      snapshot: { items: [], deleted: [{ id, deletedAt: '2999-01-01T00:00:00.000Z' }], categories: [], serverNow: '2999-01-01T00:00:00.000Z' },
+      acked: [],
+      key: id,
+    },
+  })
+  await open()
+  expect(screen.getByRole('alert').textContent).toContain('이 기기의 꿈 1개가 사라져요')
+  fireEvent.click(screen.getByRole('button', { name: '그래도 적용' }))
+  expect(useBucketStore.getState().items).toEqual([])
+  expect(useSyncStatus.getState().status).toBe('idle')
 })

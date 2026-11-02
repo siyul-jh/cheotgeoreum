@@ -2,6 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useId, useState } from 'react'
 import { CategoryNameForm, useBucketStore } from '@/entities/bucket-item'
 import { AccountSection } from '@/features/auth'
+import { SyncPanel, requestSync, sendChunk } from '@/features/dream-sync'
 import { BackupActions } from '@/features/backup'
 import { getThemePref, setThemePref, type ThemePref } from '@/shared/lib/theme'
 import { XIcon } from '@/shared/ui/x-icon'
@@ -23,14 +24,20 @@ function SettingsPage() {
         </Link>
         <h1 className="font-title text-xl font-bold">설정</h1>
       </header>
-      <AccountSection />
+      <AccountSection
+        renderLinked={(userId, signOut) => <SyncPanel userId={userId} onSignOut={signOut} />}
+        // 이 기기 꿈의 주인일 때만 올려 본다(다른 계정 꿈을 올리지 않는다)
+        beforeSignOut={(userId) => (useBucketStore.getState().ownerId === userId ? requestSync(sendChunk) : Promise.resolve(true))}
+        // 계정이 지워져도 이 기기의 꿈은 남기고, 어느 계정 것도 아니게 한다
+        onAccountDeleted={() => useBucketStore.setState({ ownerId: null })}
+      />
       <ThemeSection />
       <CategorySection />
       <section aria-labelledby="settings-data" className="surface flex flex-col gap-1 p-4">
         <h2 id="settings-data" className="text-sm font-bold">
           데이터
         </h2>
-        <p className="text-[13px] text-mute">이 기기에만 저장돼요. 다른 기기로 옮길 때 파일로 내보내 가져오세요.</p>
+        <p className="text-[13px] text-mute">로그인하지 않으면 이 기기에만 저장돼요. 파일로 내보내 백업할 수 있어요.</p>
         <BackupActions />
       </section>
     </div>
