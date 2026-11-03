@@ -34,7 +34,7 @@ test('지금 단계 칸을 먼저 따로 요청하고, 나머지 칸은 뒤에�
   await vi.waitFor(() => expect(pending).toHaveLength(2))
   expect(pending.map((p) => p.blankFields)).toEqual([
     ['why'],
-    ['category', 'targetPeriod', 'prerequisites', 'nextActionText', 'nextActionDueDate'],
+    ['category', 'targetPeriod', 'prerequisites', 'nextActionText'],
   ])
 
   await act(async () => pending[0].resolve({ ok: true, data: { ...nul, why: '하늘이 보고 싶어서' } }))

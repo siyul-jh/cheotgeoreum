@@ -70,7 +70,7 @@ export function stepFormReducer(state: StepFormState, action: StepFormAction): S
 export function undecidedAiFields(state: StepFormState): BlankField[] {
   const blanks = getBlankFields(state.values)
   return AI_FIELDS.filter((f) => !state.decided.includes(f))
-    .flatMap((f): BlankField[] => (f === 'nextAction' ? ['nextActionText', 'nextActionDueDate'] : [f]))
+    .map((f): BlankField => (f === 'nextAction' ? 'nextActionText' : f))
     .filter((f) => blanks.includes(f))
 }
 

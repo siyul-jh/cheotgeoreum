@@ -78,14 +78,13 @@ describe('toBucketItemInput', () => {
 })
 
 describe('undecidedAiFields', () => {
-  it('title만 결정됐으면 6개 BlankField 전부', () => {
+  it('title만 결정됐으면 5개 BlankField 전부', () => {
     expect(undecidedAiFields(titled)).toEqual([
       'why',
       'category',
       'targetPeriod',
       'prerequisites',
       'nextActionText',
-      'nextActionDueDate',
     ])
   })
   it('why와 nextAction이 결정됐으면 둘을 빼고, companions는 절대 없다', () => {
@@ -109,6 +108,6 @@ describe('undecidedAiFields', () => {
       ],
       titled,
     )
-    expect(undecidedAiFields(s)).toEqual(['category', 'targetPeriod', 'prerequisites', 'nextActionDueDate'])
+    expect(undecidedAiFields(s)).toEqual(['category', 'targetPeriod', 'prerequisites'])
   })
 })
