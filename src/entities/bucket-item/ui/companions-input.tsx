@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { XIcon } from '@/shared/ui/x-icon'
 import { fieldLimits } from '../model/schema'
@@ -6,16 +6,22 @@ import { selectCompanionNames, useBucketStore } from '../model/store'
 
 type Props = { value: string[]; onChange: (v: string[]) => void }
 
+// 직접 쓰지 않아도 고를 수 있는 기본 선택지. 전에 적은 이름도 뒤에 함께 보인다
+export const COMPANION_PRESETS = ['혼자', '가족', '친구', '연인', '동료'] as const
+
 export function CompanionsInput({ value, onChange }: Props) {
   const names = useBucketStore(useShallow(selectCompanionNames))
-  const listId = useId()
   const [draft, setDraft] = useState('')
+  const suggestions = [...new Set([...COMPANION_PRESETS, ...names])].filter((n) => !value.includes(n))
 
-  const add = () => {
-    const name = draft.trim()
-    if (!name || value.includes(name) || value.length >= fieldLimits.companionCount) return
+  const add = (raw: string) => {
+    const name = raw.trim()
+    if (!name || value.includes(name) || value.length >= fieldLimits.companionCount) return false
     onChange([...value, name])
-    setDraft('')
+    return true
+  }
+  const addDraft = () => {
+    if (add(draft)) setDraft('')
   }
 
   return (
@@ -36,27 +42,37 @@ export function CompanionsInput({ value, onChange }: Props) {
           </li>
         ))}
       </ul>
+      {suggestions.length > 0 && (
+        <ul className="flex flex-wrap gap-2" aria-label="고를 수 있는 사람">
+          {suggestions.map((name) => (
+            <li key={name}>
+              <button
+                type="button"
+                aria-label={`${name} 추가`}
+                className="press min-h-11 rounded-full border border-edge px-3.5 text-sm text-mute"
+                onClick={() => add(name)}
+              >
+                + {name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="flex gap-2">
         <input
           className="field"
           aria-label="함께할 사람 이름"
           placeholder="이름"
-          list={listId}
           value={draft}
           maxLength={fieldLimits.companion}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key !== 'Enter' || e.nativeEvent.isComposing || e.keyCode === 229) return // 229: Safari IME
             e.preventDefault()
-            add()
+            addDraft()
           }}
         />
-        <datalist id={listId}>
-          {names.filter((n) => !value.includes(n)).map((n) => (
-            <option key={n} value={n} />
-          ))}
-        </datalist>
-        <button type="button" className="btn shrink-0" onClick={add}>
+        <button type="button" className="btn shrink-0" onClick={addDraft}>
           추가
         </button>
       </div>
