@@ -15,6 +15,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SRouteImport } from './routes/s'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as ItemsNewRouteImport } from './routes/items.new'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -49,6 +50,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ItemsIdRoute = ItemsIdRouteImport.update({
   id: '/items/$id',
   path: '/items/$id',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/s': typeof SRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/s': typeof SRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/s': typeof SRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/s'
     | '/settings'
     | '/terms'
+    | '/welcome'
     | '/items/$id'
     | '/items/new'
     | '/api/auth/$'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/s'
     | '/settings'
     | '/terms'
+    | '/welcome'
     | '/items/$id'
     | '/items/new'
     | '/api/auth/$'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/s'
     | '/settings'
     | '/terms'
+    | '/welcome'
     | '/items/$id'
     | '/items/new'
     | '/api/auth/$'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   SRoute: typeof SRoute
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
+  WelcomeRoute: typeof WelcomeRoute
   ItemsIdRoute: typeof ItemsIdRoute
   ItemsNewRoute: typeof ItemsNewRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/items/$id': {
       id: '/items/$id'
       path: '/items/$id'
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   SRoute: SRoute,
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
+  WelcomeRoute: WelcomeRoute,
   ItemsIdRoute: ItemsIdRoute,
   ItemsNewRoute: ItemsNewRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

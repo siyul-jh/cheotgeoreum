@@ -2,10 +2,14 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore, type BucketItemInput } from '@/entities/bucket-item'
+import { markWelcomeSeen } from '@/features/onboarding'
 import { routeTree } from '@/routeTree.gen'
 
 afterEach(cleanup)
-beforeEach(() => useBucketStore.setState({ items: [], customCategories: [] }))
+beforeEach(() => {
+  useBucketStore.setState({ items: [], customCategories: [] })
+  markWelcomeSeen() // 처음 안내는 welcome.test가 맡는다
+})
 
 const base: BucketItemInput = {
   title: '오로라 보기', why: '', category: null, targetPeriod: { kind: 'start', at: '2028-02' }, prerequisites: [],

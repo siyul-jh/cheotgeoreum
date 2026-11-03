@@ -40,6 +40,12 @@ function SettingsPage() {
         <p className="text-[13px] text-mute">로그인하지 않으면 이 기기에만 저장돼요. 파일로 내보내 백업할 수 있어요.</p>
         <BackupActions />
       </section>
+      <Link to="/welcome" className="surface press flex min-h-11 items-center justify-between p-4 text-sm font-bold">
+        처음 안내 다시 보기
+        <span aria-hidden="true" className="text-mute">
+          ›
+        </span>
+      </Link>
       <Link to="/feature-request" className="surface press flex min-h-11 items-center justify-between p-4 text-sm font-bold">
         기능 요청하기
         <span aria-hidden="true" className="text-mute">

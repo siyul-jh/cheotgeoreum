@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import { useBucketStore, type BucketItemInput } from '@/entities/bucket-item'
 import { decodeShared } from '@/features/share-card/lib/share-link'
+import { markWelcomeSeen } from '@/features/onboarding'
 import { routeTree } from '@/routeTree.gen'
 
 // jsdom에는 dialog의 showModal·close가 없다
@@ -15,7 +16,10 @@ beforeAll(() => {
     this.dispatchEvent(new Event('close'))
   }
 })
-beforeEach(() => useBucketStore.setState({ items: [], customCategories: [] }))
+beforeEach(() => {
+  useBucketStore.setState({ items: [], customCategories: [] })
+  markWelcomeSeen() // 처음 안내는 welcome.test가 맡는다
+})
 afterEach(() => {
   cleanup()
   Reflect.deleteProperty(navigator, 'share')

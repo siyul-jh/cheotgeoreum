@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, Navigate, createFileRoute } from '@tanstack/react-router'
 import { useId, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import {
@@ -14,6 +14,7 @@ import {
   type BucketItemInput,
   type Status,
 } from '@/entities/bucket-item'
+import { hasSeenWelcome } from '@/features/onboarding'
 import { ListShareSheet } from '@/features/share-card'
 import { formatDate } from '@/shared/lib/date'
 import { StarBurst } from '@/shared/ui/star-icon'
@@ -77,6 +78,9 @@ function ListPage() {
       (status === undefined || i.status === status),
   )
 
+
+  // 꿈이 없고 처음 안내를 안 봤으면 안내부터(이미 쓰던 사람에게는 띄우지 않는다)
+  if (items.length === 0 && !hasSeenWelcome()) return <Navigate to="/welcome" replace />
   return (
     <>
       <div aria-hidden="true" className="pointer-events-none fixed inset-0">
