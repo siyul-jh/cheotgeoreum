@@ -200,3 +200,22 @@ test('편집 화면에서도 저장된 내용의 별 카드를 보고 링크로 
   expect(share.mock.calls[0][0].text).toBe('내 버킷리스트에 새 별이 떴어요 ✦\n오로라 보기')
   Reflect.deleteProperty(navigator, 'share')
 })
+
+test('선행 과제 체크는 [저장] 없이 바로 남고, 고치던 다른 칸은 그대로다', async () => {
+  await open()
+  fireEvent.change(screen.getByLabelText('항목'), { target: { value: '고치는 중' } })
+  fireEvent.click(screen.getByRole('checkbox'))
+  expect(item()).toMatchObject({ title: '오로라 보기', prerequisites: [{ text: '여권', done: true }] })
+  expect((screen.getByLabelText('항목') as HTMLInputElement).value).toBe('고치는 중')
+})
+
+test('선행 과제를 추가하고 저장 전에 체크하면 [저장]할 때 함께 남는다', async () => {
+  await open()
+  const prep = within(screen.getByRole('group', { name: '선행 과제' }))
+  fireEvent.change(prep.getByLabelText('선행 과제'), { target: { value: '비자' } })
+  fireEvent.click(prep.getByRole('button', { name: '추가' }))
+  fireEvent.click(screen.getAllByRole('checkbox')[0])
+  expect(item().prerequisites).toEqual([{ text: '여권', done: false }])
+  click('저장')
+  await waitFor(() => expect(item().prerequisites).toEqual([{ text: '여권', done: true }, { text: '비자', done: false }]))
+})

@@ -38,6 +38,7 @@ const AI_FIELD_LABELS: Record<AiField, string> = {
 export function ItemEditForm({ item, onDone }: Props) {
   const categories = useBucketStore(useShallow(selectCategories))
   const updateItem = useBucketStore((s) => s.updateItem)
+  const setPrerequisites = useBucketStore((s) => s.setPrerequisites)
   const deleteItem = useBucketStore((s) => s.deleteItem)
   const { request, ...draftState } = useFillBlanks()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -148,7 +149,15 @@ export function ItemEditForm({ item, onDone }: Props) {
           {(f) => (
             <fieldset className="flex flex-col gap-1.5 text-sm">
               <legend className="mb-1.5 text-[13px] text-mute">선행 과제</legend>
-              <PrerequisitesInput value={f.state.value} onChange={f.handleChange} />
+              <PrerequisitesInput
+                value={f.state.value}
+                onChange={(v) => {
+                  f.handleChange(v)
+                  // 체크만 바뀌었으면(목록이 저장된 것과 같으면) 바로 남긴다. 추가·삭제는 [저장]에서
+                  if (JSON.stringify(v.map((p) => p.text)) === JSON.stringify(item.prerequisites.map((p) => p.text)))
+                    setPrerequisites(id, v)
+                }}
+              />
             </fieldset>
           )}
         </form.Field>

@@ -36,6 +36,19 @@ export function ItemCard({ item, onToggleDone }: Props) {
       <Link to="/items/$id" params={{ id: item.id }} className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className="break-words font-title text-[17px] font-bold">{item.title}</span>
         <span className="text-[13px] text-mute">{meta}</span>
+        {item.prerequisites.length > 0 && (
+          // <progress>는 Chrome이 accent-color를 무시해 색을 맞출 수 없어 div로 그린다
+          <span
+            role="progressbar"
+            aria-label="선행 과제 진행률"
+            aria-valuemin={0}
+            aria-valuemax={item.prerequisites.length}
+            aria-valuenow={prereqDone}
+            className="block h-1.5 w-full overflow-hidden rounded-full bg-line"
+          >
+            <span className="block h-full rounded-full bg-gold" style={{ width: `${(prereqDone / item.prerequisites.length) * 100}%` }} />
+          </span>
+        )}
         {(text || dueDate) && !done && (
           <span className="break-words text-sm">
             다음 · {text}

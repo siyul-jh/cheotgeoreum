@@ -153,3 +153,12 @@ test('상태 칩은 모든 상태를 한 줄로 고르고, 카테고리 select�
   fireEvent.change(category, { target: { value: '' } })
   expect(router.state.location.search).toEqual({ status: '보류' })
 })
+
+test('선행 과제가 있으면 카드에 진행률 막대를 보인다', async () => {
+  useBucketStore.getState().addItem({ ...base, prerequisites: [{ text: '여권', done: true }, { text: '비자', done: false }, { text: '항공권', done: false }] })
+  useBucketStore.getState().addItem({ ...base, title: '마라톤' })
+  await open()
+  const bar = screen.getByRole('progressbar', { name: '선행 과제 진행률' })
+  expect([bar.getAttribute('aria-valuenow'), bar.getAttribute('aria-valuemax')]).toEqual(['1', '3'])
+  expect(screen.getAllByRole('progressbar')).toHaveLength(1)
+})

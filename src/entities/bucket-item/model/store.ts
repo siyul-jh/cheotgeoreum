@@ -34,6 +34,8 @@ export type BucketStore = {
   ownerId: string | null
   addItem: (input: BucketItemInput) => string
   updateItem: (id: string, input: BucketItemInput) => void
+  // 선행 과제 체크는 [저장] 없이 바로 남긴다
+  setPrerequisites: (id: string, prerequisites: BucketItemInput['prerequisites']) => void
   deleteItem: (id: string) => void
   addCategory: (name: string) => boolean
   renameCategory: (from: string, to: string) => boolean
@@ -160,6 +162,8 @@ export const useBucketStore = create<BucketStore>()(
       },
       updateItem: (id, input) =>
         set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, ...input, updatedAt: now() } : i)) })),
+      setPrerequisites: (id, prerequisites) =>
+        set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, prerequisites, updatedAt: now() } : i)) })),
       deleteItem: (id) =>
         set((s) => ({
           items: s.items.filter((i) => i.id !== id),
