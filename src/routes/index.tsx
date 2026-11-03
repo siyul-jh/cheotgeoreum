@@ -123,7 +123,7 @@ function ListPage() {
         </header>
 
         <div className="flex flex-col gap-6">
-          {/* 늘 보인다(후보가 없거나 꿈이 0개면 빈 상태). md 이상은 글 왼쪽 · 버튼 오른쪽 */}
+          {/* 늘 보인다(후보가 없거나 꿈이 0개면 빈 상태). 버튼은 [했어요] 하나. md 이상은 글 왼쪽 · 버튼 오른쪽 */}
           <section aria-labelledby={heroId} className="surface flex flex-col gap-3 rounded-[20px] p-5">
             <h2 id={heroId} className="text-[13px] text-mute">
               오늘의 첫걸음
@@ -137,13 +137,6 @@ function ListPage() {
                     {stepped.title}에 별 하나가 더 켜졌어요. 다음 첫걸음을 정해 볼까요?
                   </p>
                 </div>
-                <Link
-                  to="/items/$id"
-                  params={{ id: stepped.id }}
-                  className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
-                >
-                  다음 행동 정하기
-                </Link>
               </div>
             ) : today ? (
               <div key={today.id} className={`rise ${HERO_ROW}`}>
@@ -184,15 +177,6 @@ function ListPage() {
                         : '새 꿈을 띄우고 첫걸음을 정해 보세요.'}
                   </p>
                 </div>
-                {needsStep && (
-                  <Link
-                    to="/items/$id"
-                    params={{ id: needsStep.id }}
-                    className={`btn press inline-flex items-center border-gold bg-transparent font-bold text-gold ${HERO_ACTION}`}
-                  >
-                    다음 행동 정하기
-                  </Link>
-                )}
               </div>
             )}
           </section>

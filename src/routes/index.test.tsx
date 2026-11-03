@@ -73,7 +73,7 @@ test('오늘의 첫걸음: 기한 빠른 항목을 보이고 [했어요]면 다�
   fireEvent.click(screen.getByRole('button', { name: '했어요' }))
   expect(useBucketStore.getState().items.find((i) => i.id === id)!.nextAction).toEqual({ text: '', dueDate: null })
   expect(screen.getByRole('status').textContent).toContain('한 걸음 나아갔어요')
-  expect(screen.getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
+  expect(screen.queryByRole('link', { name: '다음 행동 정하기' })).toBeNull()
 })
 
 test.each([
@@ -91,16 +91,17 @@ test.each([
   const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
   expect(hero.textContent).toContain('다음 행동을 정해 보세요')
   expect(hero.textContent).toContain(`${title}의 첫걸음을 정하면`)
-  expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${ids.get(title)}`)
+  expect(within(hero).queryByRole('link')).toBeNull()
+  expect(ids.has(title)).toBe(true)
   vi.restoreAllMocks()
 })
 
-test('막 적은 아이디어만 있어도 그 꿈의 다음 행동 정하기로 안내한다', async () => {
-  const id = useBucketStore.getState().addItem({ ...base, nextAction: { text: '', dueDate: null } })
+test('막 적은 아이디어만 있어도 그 꿈의 첫걸음을 정하라고 안내한다(버튼 없이)', async () => {
+  useBucketStore.getState().addItem({ ...base, nextAction: { text: '', dueDate: null } })
   await open()
   const hero = screen.getByRole('region', { name: '오늘의 첫걸음' })
   expect(hero.textContent).toContain('오로라 보기의 첫걸음을 정하면')
-  expect(within(hero).getByRole('link', { name: '다음 행동 정하기' }).getAttribute('href')).toBe(`/items/${id}`)
+  expect(within(hero).queryByRole('link')).toBeNull()
 })
 
 test('끝난 꿈뿐이면 빈 히어로는 안내 문구만, 항목이 0개여도 히어로가 첫 꿈을 안내한다', async () => {
