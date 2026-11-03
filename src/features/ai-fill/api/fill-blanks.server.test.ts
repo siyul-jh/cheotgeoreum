@@ -167,3 +167,14 @@ describe('runFillBlanks', () => {
     expect(await runFillBlanks(input, model)).toEqual({ ok: false, code: 'llm_unreachable' })
   })
 })
+
+describe('runFillBlanks 하네스', () => {
+  it('작게 쪼개기·루틴·가까운 시기를 지시하고, 단계와 첫 행동의 크기를 정해 준다', async () => {
+    const model = new MockLanguageModelV4({
+      doGenerate: async () => ({ content: [{ type: 'text', text: JSON.stringify(full) }], finishReason: { unified: 'stop', raw: undefined }, usage, warnings: [] }),
+    })
+    await runFillBlanks({ ...input, blankFields: ['targetPeriod', 'prerequisites', 'nextActionText'] }, model)
+    const prompt = JSON.stringify(model.doGenerateCalls[0].prompt)
+    for (const text of ['[작게]', '[루틴]', '[가깝게]', '1~2주', '10~30분', '이번 분기']) expect(prompt).toContain(text)
+  })
+})

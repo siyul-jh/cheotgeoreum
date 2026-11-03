@@ -18,9 +18,9 @@ const open = (path = '/') => {
 }
 const next = () => fireEvent.click(screen.getByRole('button', { name: '다음' }))
 
-test('처음 열면 안내가 뜨고, 다섯 단계를 넘겨 [첫 꿈 적기]로 새 꿈 화면에 간다', async () => {
+test('처음 열면 안내가 뜨고, 여섯 단계를 넘겨 [첫 꿈 적기]로 새 꿈 화면에 간다', async () => {
   const router = open()
-  for (const title of ['버킷리스트란?', '왜 만들까요?', '어떻게 만들까요?', '이런 꿈을 적어요']) {
+  for (const title of ['버킷리스트란?', '왜 만들까요?', '어떻게 만들까요?', '이런 꿈을 적어요', '오래 이어 가려면']) {
     expect(await screen.findByRole('heading', { name: title })).toBeTruthy()
     next()
   }

@@ -24,9 +24,10 @@ const FIELD_GUIDES: Record<BlankField, string> = {
     'targetPeriod: 목표 시기. kind는 "start"(이때쯤) · "end"(이때까지) · "range"(기간: 시작~끝) 중 하나',
     'start는 from만, end는 to만, range는 from을 채우고 끝을 정할 수 있으면 to도 채우되 from이 to보다 늦지 않게(끝을 모르면 to는 null). 쓰지 않는 칸은 null',
     `시점은 "YYYY" 또는 "YYYY-MM", 올해부터 ${TARGET_YEAR_RANGE}년 안`,
+    '먼 언젠가보다 올해·이번 분기처럼 가까운 때를 먼저 고르고, 오래 걸리는 큰 꿈만 몇 년 뒤로',
   ].join('. '),
-  prerequisites: `prerequisites: 먼저 갖추거나 준비할 것. 짧은 문장 ${MAX_PREREQUISITES}개 이하`,
-  nextActionText: 'nextAction.text: 이번 주 안에 할 수 있는 구체적인 첫 행동 한 줄',
+  prerequisites: `prerequisites: 꿈을 이루기까지의 작은 단계. 각 단계는 1~2주 안에 끝낼 수 있게 잘게 쪼개 순서대로, 짧은 문장 ${MAX_PREREQUISITES}개 이하`,
+  nextActionText: 'nextAction.text: 오늘이나 이번 주에 10~30분이면 끝나는 아주 작은 첫 행동 한 줄. 반복할 일이면 일상 속 때(아침 커피 마시며, 잠들기 전 등)를 붙인다',
   nextActionDueDate: 'nextAction.dueDate: 첫 행동 기한. "YYYY-MM-DD", 오늘 이후',
 }
 
@@ -34,6 +35,7 @@ const SYSTEM = [
   '당신은 버킷리스트 작성을 돕는 도우미다.',
   '요청한 칸만 채우고 나머지 키는 null로 둔다. nextAction은 text와 dueDate 중 요청한 쪽만 채운다.',
   '자연스러운 한국어로 짧게 쓴다.',
+  '[작게] 큰 꿈도 부담 없이 시작할 수 있게 작은 단계로 나눈다. [루틴] 반복이 필요한 일은 하루 일과 속 정해진 때에 붙여 쓴다. [가깝게] 죽기 전 언젠가가 아니라 올해·이번 달에 할 수 있게 한다.',
 ].join('\n')
 
 const toText = (value: string | null, max: number) => {
