@@ -27,6 +27,28 @@ test('같은 카드는 같은 10글자 id로, 1년 보관·없을 때만 저장�
   expect(JSON.parse(fetch.mock.calls[0][1].body as string)).toEqual(['SET', `card:${id}`, payload, 'EX', '31536000', 'NX'])
 })
 
+test('뒤에 붙은 글자는 버리고 검증한 부분만 저장한다(같은 카드면 같은 id)', async () => {
+  const fetch = stubRedis('OK')
+  const payload = await encodeCard(item)
+  const id = await saveCard(`${payload} ${'A'.repeat(50_000)}`)
+  expect(id).toBe(await saveCard(payload))
+  expect(JSON.parse(fetch.mock.calls[0][1].body as string)[2]).toBe(payload)
+})
+
+test('IP마다 시간당 30번까지 저장하고, 넘으면 저장하지 않는다', async () => {
+  let count = 0
+  const fetch = stubRedis((init: RequestInit) => {
+    const [command] = JSON.parse(init.body as string) as string[]
+    return command === 'INCR' ? ++count : 'OK'
+  })
+  const payload = await encodeCard(item)
+  for (let i = 0; i < 30; i++) await saveCard(payload, '1.2.3.4')
+  await expect(saveCard(payload, '1.2.3.4')).rejects.toThrow('RATE_LIMITED')
+  const commands = fetch.mock.calls.map(([, init]) => JSON.parse(init.body as string)[0])
+  expect(commands.filter((c) => c === 'EXPIRE')).toHaveLength(1)
+  expect(commands.filter((c) => c === 'SET')).toHaveLength(30)
+})
+
 test('카드가 아닌 것은 저장하지 않는다', async () => {
   const fetch = stubRedis('OK')
   await expect(saveCard('1.garbage')).rejects.toThrow()

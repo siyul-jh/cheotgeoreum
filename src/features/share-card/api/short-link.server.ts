@@ -17,13 +17,26 @@ async function redis(command: string[]): Promise<unknown> {
   return ((await res.json()) as { result: unknown }).result
 }
 
+// 저장소가 차면 오래된 키부터 지워지니, 한 곳에서 대량으로 넣어 남의 링크를 밀어내지 못하게 IP마다 시간당 횟수를 둔다
+const SAVES_PER_HOUR = 30
+// ponytail: 고정 1시간 창(INCR 후 첫 요청에만 EXPIRE). 창 경계에서 최대 2배까지 허용
+async function checkRate(ip: string) {
+  const key = `rl:save:${ip}`
+  const count = Number(await redis(['INCR', key]))
+  if (count === 1) await redis(['EXPIRE', key, '3600'])
+  if (count > SAVES_PER_HOUR) throw new Error('RATE_LIMITED')
+}
+
 // 같은 카드는 같은 id(내용 해시)라 여러 번 열어도 한 번만 저장된다.
-// ponytail: 요청 수 제한 없음. 남용되면 IP별 rate limit 추가
-export async function saveCard(payload: string): Promise<string> {
+// ip가 없으면(로컬 개발) 횟수를 세지 않는다. 실패하면 클라이언트는 긴 링크로 대신한다
+export async function saveCard(payload: string, ip?: string): Promise<string> {
   await decodeShared(payload) // 카드·목록이 아닌 것(형식·크기·스키마 위반)은 저장하지 않는다
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload))
+  // 검증한 부분(접두사+base64url)만 저장한다. 뒤에 붙은 글자는 해독에서 무시되니 저장할 이유가 없다
+  const canonical = /^(?:L1\.|1\.)[A-Za-z0-9_-]+/.exec(payload)![0]
+  if (ip) await checkRate(ip)
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical))
   const id = Buffer.from(digest).toString('base64url').slice(0, 10)
-  await redis(['SET', `card:${id}`, payload, 'EX', String(TTL_SECONDS), 'NX'])
+  await redis(['SET', `card:${id}`, canonical, 'EX', String(TTL_SECONDS), 'NX'])
   return id
 }
 

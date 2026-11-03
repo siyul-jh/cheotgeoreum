@@ -9,8 +9,9 @@ export const SHORT_ID = /^[A-Za-z0-9_-]{10}$/
 export const saveShortLink = createServerFn({ method: 'POST' })
   .validator(z.object({ payload: z.string().max(60_002) }))
   .handler(async ({ data }) => {
-    const { saveCard } = await import('./short-link.server')
-    return saveCard(data.payload)
+    const [{ saveCard }, { getRequestIP }] = await Promise.all([import('./short-link.server'), import('@tanstack/react-start/server')])
+    // Vercel은 x-forwarded-for 첫 값을 실제 접속 IP로 덮어쓴다(클라이언트가 위조할 수 없다)
+    return saveCard(data.payload, getRequestIP({ xForwardedFor: true }))
   })
 
 export const loadShortLink = createServerFn({ method: 'POST' })
