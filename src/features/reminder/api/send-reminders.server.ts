@@ -80,7 +80,9 @@ export async function sendTestReminder(userId: string, endpoint: string, deps: {
   const sub = rows[0]
   if (!sub) return { ok: false as const }
   try {
-    await send(sub, JSON.stringify({ title: '첫걸음 시험 알림', body: '알림이 잘 와요. 목표 시기에 맞춰 이렇게 알려 드릴게요.', url: '/settings' }))
+    const res = await send(sub, JSON.stringify({ title: '첫걸음 시험 알림', body: '알림이 잘 와요. 목표 시기에 맞춰 이렇게 알려 드릴게요.', url: '/settings' }))
+    // 푸시 서버가 받았는지(201) 로그로 남긴다. 주소는 호스트만
+    console.info('[remind] test sent', new URL(endpoint).hostname, (res as { statusCode?: number } | undefined)?.statusCode)
     return { ok: true as const }
   } catch (error) {
     const status = (error as { statusCode?: number }).statusCode

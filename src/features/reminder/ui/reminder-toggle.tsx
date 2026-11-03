@@ -33,7 +33,7 @@ export function ReminderToggle() {
     !supported() || !VAPID_KEY ? 'unsupported' : Notification.permission === 'denied' ? 'denied' : 'loading',
   )
   const [error, setError] = useState(false)
-  const [test, setTest] = useState<'idle' | 'sending' | 'sent' | 'failed' | 'stale'>('idle')
+  const [test, setTest] = useState<'idle' | 'sending' | 'arrived' | 'lost' | 'failed' | 'stale'>('idle')
 
   // 켜져 있는지는 이 기기의 구독이 있는지로 안다
   useEffect(() => {
@@ -71,8 +71,22 @@ export function ReminderToggle() {
     await reg.update().catch(() => {})
     if (reg.waiting || reg.installing) return setTest('stale')
     const sub = await currentSubscription().catch(() => null)
+    // 서비스 워커가 알림을 띄우고 보내는 도착 신호를 15초 기다린다
+    const arrived = new Promise<boolean>((resolve) => {
+      const onMessage = (e: MessageEvent) => {
+        if (e.data?.type !== 'push-received') return
+        navigator.serviceWorker.removeEventListener('message', onMessage)
+        resolve(true)
+      }
+      navigator.serviceWorker.addEventListener('message', onMessage)
+      setTimeout(() => {
+        navigator.serviceWorker.removeEventListener('message', onMessage)
+        resolve(false)
+      }, 15_000)
+    })
     const result = sub ? await sendTestPush({ data: { endpoint: sub.endpoint } }).catch(() => ({ ok: false })) : { ok: false }
-    setTest(result.ok ? 'sent' : 'failed')
+    if (!result.ok) return setTest('failed')
+    setTest((await arrived) ? 'arrived' : 'lost')
   }
 
   if (state === 'loading') return null
@@ -106,9 +120,19 @@ export function ReminderToggle() {
           시험 알림 보내기
         </button>
       )}
-      {test === 'sent' && (
+      {test === 'sending' && (
         <p role="status" className="text-[13px] text-mute">
-          보냈어요. 잠시 뒤 알림이 오는지 확인해 보세요.
+          보내는 중이에요. 도착을 확인하고 있어요(최대 15초).
+        </p>
+      )}
+      {test === 'arrived' && (
+        <p role="status" className="text-[13px] text-mute">
+          이 기기에 도착해 알림을 띄웠어요. 배너가 안 보였다면 알림 센터와 기기 설정의 첫걸음 알림·집중 모드를 확인해 주세요.
+        </p>
+      )}
+      {test === 'lost' && (
+        <p role="alert" className="text-[13px] text-danger">
+          보냈지만 15초 안에 이 기기에 도착하지 않았어요. 알림을 껐다가 다시 켠 뒤 시험해 주세요.
         </p>
       )}
       {test === 'stale' && (

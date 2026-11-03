@@ -52,7 +52,13 @@ self.addEventListener('fetch', (event) => {
 // 알림: 서버가 보낸 { title, body, url }을 띄운다
 self.addEventListener('push', (event) => {
   const { title, body, url } = event.data?.json() ?? {}
-  event.waitUntil(self.registration.showNotification(title ?? '첫걸음', { body, data: { url }, icon: '/icon-192.png' }))
+  event.waitUntil(
+    self.registration
+      .showNotification(title ?? '첫걸음', { body, data: { url }, icon: '/icon-192.png' })
+      // 열린 화면에 도착을 알린다(설정의 시험 알림이 도착 여부를 보여 준다)
+      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+      .then((windows) => windows.forEach((w) => w.postMessage({ type: 'push-received', version: self.__VERSION }))),
+  )
 })
 
 // 누르면 그 꿈 화면을 연다. 같은 앱 경로만 연다(외부 주소로 보내지 않게)
