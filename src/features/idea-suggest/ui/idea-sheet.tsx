@@ -4,6 +4,7 @@ import { fieldLimits, selectCategories, useBucketStore } from '@/entities/bucket
 import { LLM_ERROR_MESSAGES } from '@/shared/lib/llm-result'
 import { FloatingStatus, Spinner } from '@/shared/ui/floating-status'
 import { XIcon } from '@/shared/ui/x-icon'
+import { ideaProfile } from '../model/idea-profile'
 import { useSuggestIdeas } from '../model/use-suggest-ideas'
 
 type Props = {
@@ -90,6 +91,7 @@ export function IdeaSheet({ open, onOpenChange, onPick }: Props) {
               keyword: keyword.trim() || undefined,
               category: category || undefined,
               existingTitles: titles.slice(-500),
+              ...ideaProfile(useBucketStore.getState().items),
             })
             closingForRequest.current = true
             ref.current?.close()

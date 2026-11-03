@@ -59,3 +59,22 @@ describe('runSuggestIdeas', () => {
     expect(await runSuggestIdeas({ existingTitles: [] }, model)).toEqual({ ok: false, code: 'llm_unreachable' })
   })
 })
+
+describe('runSuggestIdeas 하네스', () => {
+  it('안전 규칙에 걸리는 아이디어는 버린다', async () => {
+    const ideas = ['라스베이거스에서 도박으로 한탕', '음주 운전 없이 드라이브', 'c', 'd', 'e', 'f', 'g']
+    const result = await runSuggestIdeas({ existingTitles: [] }, modelReturning(ideas))
+    expect(result).toEqual({ ok: true, data: ['c', 'd', 'e', 'f', 'g'] })
+  })
+  it('지시문에 품질 기준·안전 규칙, 프롬프트에 자주 적는 분야와 함께할 사람을 넣는다', async () => {
+    const model = modelReturning(eight)
+    await runSuggestIdeas({ existingTitles: [], topCategories: ['여행', '건강'], companions: ['가족'] }, model)
+    const sent = JSON.stringify(model.doGenerateCalls[0].prompt)
+    for (const text of ['나쁜 예', '[안전]', '자주 적는 분야: 여행, 건강', '함께하고 싶은 사람: 가족']) expect(sent).toContain(text)
+  })
+  it('카테고리를 골랐으면 자주 적는 분야는 넣지 않는다', async () => {
+    const model = modelReturning(eight)
+    await runSuggestIdeas({ category: '배움', existingTitles: [], topCategories: ['여행'], companions: [] }, model)
+    expect(JSON.stringify(model.doGenerateCalls[0].prompt)).not.toContain('자주 적는 분야')
+  })
+})
