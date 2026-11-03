@@ -3,6 +3,7 @@ import { HeadContent, Link, Outlet, Scripts, createRootRoute, useLocation } from
 import { useEffect, useState } from 'react'
 import { useDreamSync } from '@/features/dream-sync'
 import { InstallGuide, isStandalone } from '@/features/install-guide'
+import { resaveReminder } from '@/features/reminder'
 import { applyTheme, THEME_BOOT_SCRIPT } from '@/shared/lib/theme'
 import { FLOATING_STACK_ID } from '@/shared/ui/floating-status'
 import { PullToRefresh } from '@/shared/ui/pull-to-refresh'
@@ -59,7 +60,7 @@ function RootLayout() {
   useDreamSync()
   useEffect(() => {
     // 등록 실패는 오프라인 열기만 못 할 뿐이라 조용히 넘긴다
-    if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
+    if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then(() => resaveReminder(), () => {})
   }, [])
   useEffect(() => {
     // 다시 적용할 때: 폰 모드가 바뀜('시스템 설정'일 때만 달라진다), 다른 탭에서 바꿈(storage),
