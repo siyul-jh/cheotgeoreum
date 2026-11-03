@@ -1,5 +1,7 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useActionState, useState } from 'react'
-import { REQUEST_LIMITS, sendFeatureRequest, type SendResult } from '../api/send-request'
+import { REQUEST_LIMITS, sendFeatureRequest, type SendResult } from '../api/feature-requests'
+import { REQUESTS_QUERY_KEY } from './request-list'
 
 const ERROR_TEXT = {
   rate: '요청을 너무 자주 보냈어요. 한 시간 뒤에 다시 보내 주세요.',
@@ -11,10 +13,13 @@ export function FeatureRequestForm({ submit = sendFeatureRequest }: { submit?: t
   // 제어 입력: 폼 action이 끝나면 React가 비제어 입력을 비우는데, 실패했을 때 쓴 글이 사라지면 안 된다
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
-  const [state, action, pending] = useActionState(
-    (): Promise<SendResult> => submit({ data: { title, body } }).catch(() => ({ ok: false, code: 'error' }) as const),
-    null,
-  )
+  const queryClient = useQueryClient()
+  const [state, action, pending] = useActionState(async (): Promise<SendResult> => {
+    const result = await submit({ data: { title, body } }).catch(() => ({ ok: false, code: 'error' }) as const)
+    // 보낸 요청이 아래 목록에 바로 보이게
+    if (result.ok) void queryClient.invalidateQueries({ queryKey: REQUESTS_QUERY_KEY })
+    return result
+  }, null)
   if (state?.ok)
     return (
       <div role="status" className="flex flex-col gap-2 text-sm">
