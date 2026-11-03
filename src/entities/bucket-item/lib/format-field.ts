@@ -20,7 +20,8 @@ export function formatFieldValue(field: ItemField, values: Partial<ItemValues>):
       return values.category ?? SKIPPED_LABEL
     case 'targetPeriod': {
       const period = values.targetPeriod
-      if (!period) return SKIPPED_LABEL
+      // 시기를 정하지 않은 건 건너뛴 게 아니라 '언젠가'다
+      if (!period) return '언젠가'
       switch (period.kind) {
         case 'start':
           return `${formatPoint(period.at)}쯤`

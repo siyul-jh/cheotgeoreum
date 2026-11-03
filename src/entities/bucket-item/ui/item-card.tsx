@@ -13,7 +13,7 @@ export function ItemCard({ item, onToggleDone }: Props) {
   const meta = [
     item.category ?? UNCATEGORIZED_LABEL,
     item.status,
-    item.targetPeriod && formatFieldValue('targetPeriod', item),
+    formatFieldValue('targetPeriod', item),
     item.prerequisites.length > 0 && `선행 과제 ${prereqDone}/${item.prerequisites.length}`,
   ]
     .filter(Boolean)

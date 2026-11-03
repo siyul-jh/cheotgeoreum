@@ -19,9 +19,12 @@ describe('formatFieldValue', () => {
   it('빈 값은 건너뜀', () => {
     expect(formatFieldValue('why', { why: '' })).toBe('건너뜀')
     expect(formatFieldValue('category', { category: null })).toBe('건너뜀')
-    expect(formatFieldValue('targetPeriod', { targetPeriod: null })).toBe('건너뜀')
     expect(formatFieldValue('prerequisites', { prerequisites: [] })).toBe('건너뜀')
     expect(formatFieldValue('nextAction', { nextAction: { text: '', dueDate: null } })).toBe('건너뜀')
     expect(formatFieldValue('companions', {})).toBe('건너뜀')
+  })
+
+  it('목표 시기를 비우면 건너뜀이 아니라 언젠가', () => {
+    expect(formatFieldValue('targetPeriod', { targetPeriod: null })).toBe('언젠가')
   })
 })
