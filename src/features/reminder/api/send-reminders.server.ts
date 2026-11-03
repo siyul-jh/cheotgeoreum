@@ -16,6 +16,18 @@ const defaultSend: Send = (sub, payload) => {
   return webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload)
 }
 
+type Dream = Row['dreams'][number]
+const isLive = (d: Dream) => d.status !== '완료' && d.status !== '포기'
+
+function reminderPayload(due: Dream[]) {
+  const first = due[0]!
+  return JSON.stringify({
+    title: '꿈을 떠올려 볼 날이에요',
+    body: due.length === 1 ? first.title : `${first.title} 외 ${due.length - 1}개`,
+    url: due.length === 1 ? `/items/${first.id}` : '/',
+  })
+}
+
 // 오늘이 목표 시기의 알림 날인 꿈을 사용자마다 묶어 1통씩 보낸다. 같은 날 다시 돌려도 한 번만 간다
 export async function sendReminders(now: Date, deps: { query?: Query; send?: Send } = {}) {
   const query = deps.query ?? getQuery()
@@ -34,17 +46,12 @@ export async function sendReminders(now: Date, deps: { query?: Query; send?: Sen
   for (const r of rows) byUser.set(r.user_id, [...(byUser.get(r.user_id) ?? []), r])
   const result = { users: 0, sent: 0, failed: 0, pruned: 0 }
   for (const [userId, subs] of byUser) {
-    const due = subs[0]!.dreams.filter((d) => d.status !== '완료' && d.status !== '포기' && shouldRemind(d.targetPeriod, today))
+    const due = subs[0]!.dreams.filter((d) => isLive(d) && shouldRemind(d.targetPeriod, today))
     if (due.length === 0) continue
     const claimed = await query('insert into reminder_log (user_id, sent_on) values ($1, $2) on conflict do nothing', [userId, today])
     if (claimed.rowCount === 0) continue
     result.users += 1
-    const first = due[0]!
-    const payload = JSON.stringify({
-      title: '꿈을 떠올려 볼 날이에요',
-      body: due.length === 1 ? first.title : `${first.title} 외 ${due.length - 1}개`,
-      url: due.length === 1 ? `/items/${first.id}` : '/',
-    })
+    const payload = reminderPayload(due)
     let delivered = 0
     let failed = 0
     for (const sub of subs) {
@@ -71,16 +78,25 @@ export async function sendReminders(now: Date, deps: { query?: Query; send?: Sen
   return result
 }
 
-// 설정의 '시험 알림'. 이 기기(본인 구독)에만, 기록 없이 바로 보낸다
+// 설정의 '시험 알림'. 실제 알림과 같은 모양으로 이 기기(본인 구독)에만, 기록 없이 바로 보낸다
+// 오늘 알릴 꿈이 있으면 그 꿈, 없으면 목표 시기가 있는 꿈, 그것도 없으면 살아 있는 꿈으로 미리 보여 준다
 // ponytail: 횟수 제한 없음. 본인 기기에만 가므로 남용해도 자기만 시끄럽다. 푸시 서버가 막는다는 말이 나오면 Upstash 제한
-export async function sendTestReminder(userId: string, endpoint: string, deps: { query?: Query; send?: Send } = {}) {
+export async function sendTestReminder(userId: string, endpoint: string, deps: { query?: Query; send?: Send; now?: Date } = {}) {
   const query = deps.query ?? getQuery()
   const send = deps.send ?? defaultSend
   const { rows } = (await query('select endpoint, p256dh, auth from push_subscription where endpoint = $1 and user_id = $2', [endpoint, userId])) as { rows: Sub[] }
   const sub = rows[0]
   if (!sub) return { ok: false as const }
   try {
-    const res = await send(sub, JSON.stringify({ title: '첫걸음 시험 알림', body: '알림이 잘 와요. 목표 시기에 맞춰 이렇게 알려 드릴게요.', url: '/settings' }))
+    const { rows: dreams } = (await query(
+      `select id, data->>'title' as title, data->'targetPeriod' as "targetPeriod", data->>'status' as status from dream where user_id = $1 and data is not null`,
+      [userId],
+    )) as { rows: Dream[] }
+    const live = dreams.filter(isLive)
+    const today = seoulToday(deps.now ?? new Date())
+    const pick = [live.filter((d) => shouldRemind(d.targetPeriod, today)), live.filter((d) => d.targetPeriod), live].find((l) => l.length > 0)
+    const payload = pick ? reminderPayload(pick) : JSON.stringify({ title: '꿈을 떠올려 볼 날이에요', body: '목표 시기를 정한 꿈이 있으면 이렇게 알려 드려요.', url: '/' })
+    const res = await send(sub, payload)
     // 푸시 서버가 받았는지(201) 로그로 남긴다. 주소는 호스트만
     console.info('[remind] test sent', new URL(endpoint).hostname, (res as { statusCode?: number } | undefined)?.statusCode)
     return { ok: true as const }

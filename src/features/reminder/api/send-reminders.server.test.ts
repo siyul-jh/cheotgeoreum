@@ -79,6 +79,25 @@ describe('sendTestReminder', () => {
     expect((await db.query('select * from reminder_log')).rows).toHaveLength(0)
   })
 
+  test('실제 알림과 같은 모양: 오늘 알릴 꿈 → 목표 시기 있는 꿈 → 아무 꿈 순으로 고른다', async () => {
+    await subscribe('u1', 1)
+    const send = vi.fn<Send>(async () => {})
+    const test = () => sendTestReminder('u1', 'https://fcm.googleapis.com/1', { query, send, now: NOW })
+    const sent = (i: number) => JSON.parse(send.mock.calls[i]![1])
+    await test()
+    expect(sent(0)).toMatchObject({ title: '꿈을 떠올려 볼 날이에요', url: '/' })
+    await dream('u1', 'a', '언젠가 꿈', null)
+    await test()
+    expect(sent(1)).toEqual({ title: '꿈을 떠올려 볼 날이에요', body: '언젠가 꿈', url: '/items/a' })
+    await dream('u1', 'b', '5월 꿈', '2027-05')
+    await test()
+    expect(sent(2).body).toBe('5월 꿈')
+    await dream('u1', 'c', '3월 꿈', '2027-03')
+    await dream('u1', 'd', '이룬 꿈', '2027-03', '완료')
+    await test()
+    expect(sent(3)).toEqual({ title: '꿈을 떠올려 볼 날이에요', body: '3월 꿈', url: '/items/c' })
+  })
+
   test('사라진 구독(410)이면 지운다', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     await subscribe('u1', 1)
