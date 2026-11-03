@@ -35,6 +35,22 @@ describe('items', () => {
     }
   })
 
+  it('달성 기록: 완료가 되는 순간 이룬 시각을 남기고, 다시 저장해도 유지, 완료를 풀면 지운다. 소감은 남는다', () => {
+    const id = s().addItem(input())
+    expect(s().items[0]!.achievedAt).toBeNull()
+    s().updateItem(id, input({ status: '완료' }))
+    const at = s().items[0]!.achievedAt
+    expect(at).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+    s().setReflection(id, '생각보다 추웠다')
+    s().updateItem(id, input({ status: '완료', why: '고침' }))
+    expect(s().items[0]).toMatchObject({ achievedAt: at, reflection: '생각보다 추웠다' })
+    s().updateItem(id, input({ status: '진행 중' }))
+    expect(s().items[0]).toMatchObject({ achievedAt: null, reflection: '생각보다 추웠다' })
+    // 이미 이룬 일을 바로 '완료'로 적어도 기록된다(역방향 버킷리스트)
+    s().addItem(input({ status: '완료' }))
+    expect(s().items[1]!.achievedAt).toBe(s().items[1]!.createdAt)
+  })
+
   it('추가, 수정, 삭제', () => {
     const id = s().addItem(input())
     expect(s().items).toHaveLength(1)

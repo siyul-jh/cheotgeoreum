@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useId } from 'react'
-import { type BucketItem, useBucketStore } from '@/entities/bucket-item'
+import { useId, useState } from 'react'
+import { type BucketItem, fieldLimits, useBucketStore } from '@/entities/bucket-item'
+import { formatFullDate } from '@/shared/lib/date'
 import { StarCard, useStarCard } from '@/features/share-card'
 import { XIcon } from '@/shared/ui/x-icon'
 import { ItemEditForm } from './-components/item-edit-form'
@@ -37,8 +38,57 @@ function EditItemPage() {
         <h1 className="font-title text-xl font-bold">항목 편집</h1>
       </header>
       <ItemEditForm key={item.id} item={item} onDone={() => void navigate({ to: '/' })} />
+      {item.status === '완료' && <AchievementSection key={`done-${item.id}`} item={item} />}
       <ShareSection key={`share-${item.id}`} item={item} />
     </div>
+  )
+}
+
+// 이룬 꿈의 기록: 이룬 날과 한 줄 소감(저장된 상태가 '완료'일 때만)
+function AchievementSection({ item }: { item: BucketItem }) {
+  const headingId = useId()
+  const setReflection = useBucketStore((s) => s.setReflection)
+  const [text, setText] = useState(item.reflection ?? '')
+  const [saved, setSaved] = useState(false)
+  const changed = text.trim() !== (item.reflection ?? '')
+  return (
+    <section aria-labelledby={headingId} className="surface flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-1">
+        <h2 id={headingId} className="text-sm font-bold">
+          이룬 기록
+        </h2>
+        <p className="text-[13px] text-mute">{item.achievedAt ? `${formatFullDate(item.achievedAt)}에 이뤘어요.` : '이룬 날이 기록되지 않았어요.'}</p>
+      </div>
+      <form
+        className="flex flex-col gap-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          setReflection(item.id, text.trim())
+          setSaved(true)
+        }}
+      >
+        <label className="flex flex-col gap-1 text-sm">
+          한 줄 소감
+          <textarea
+            value={text}
+            maxLength={fieldLimits.reflection}
+            rows={2}
+            placeholder="해 보니 어땠나요? (예: 생각보다 추웠지만 평생 기억날 밤)"
+            className="field resize-none"
+            onChange={(e) => {
+              setText(e.target.value)
+              setSaved(false)
+            }}
+          />
+        </label>
+        <button type="submit" className="btn press self-end px-6" disabled={!changed}>
+          소감 저장
+        </button>
+        <p role="status" className="min-h-5 text-sm text-mute">
+          {saved && !changed ? '저장했어요.' : ''}
+        </p>
+      </form>
+    </section>
   )
 }
 

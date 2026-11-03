@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { formatDate } from '@/shared/lib/date'
+import { formatDate, formatFullDate } from '@/shared/lib/date'
 import { UNCATEGORIZED_LABEL, type BucketItem } from '../model/schema'
 import { formatFieldValue } from '../lib/format-field'
 import { StatusIcon } from './status-icon'
@@ -15,6 +15,7 @@ export function ItemCard({ item, onToggleDone }: Props) {
     item.status,
     formatFieldValue('targetPeriod', item),
     item.prerequisites.length > 0 && `선행 과제 ${prereqDone}/${item.prerequisites.length}`,
+    done && item.achievedAt && `${formatFullDate(item.achievedAt)} 이룸`,
   ]
     .filter(Boolean)
     .join(' · ')
@@ -49,6 +50,7 @@ export function ItemCard({ item, onToggleDone }: Props) {
             <span className="block h-full rounded-full bg-gold" style={{ width: `${(prereqDone / item.prerequisites.length) * 100}%` }} />
           </span>
         )}
+        {done && item.reflection && <span className="break-words text-sm">“{item.reflection}”</span>}
         {(text || dueDate) && !done && (
           <span className="break-words text-sm">
             다음 · {text}

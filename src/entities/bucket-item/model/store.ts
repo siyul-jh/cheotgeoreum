@@ -36,6 +36,7 @@ export type BucketStore = {
   updateItem: (id: string, input: BucketItemInput) => void
   // 선행 과제 체크는 [저장] 없이 바로 남긴다
   setPrerequisites: (id: string, prerequisites: BucketItemInput['prerequisites']) => void
+  setReflection: (id: string, reflection: string) => void
   deleteItem: (id: string) => void
   addCategory: (name: string) => boolean
   renameCategory: (from: string, to: string) => boolean
@@ -156,14 +157,24 @@ export const useBucketStore = create<BucketStore>()(
         const id =
           crypto.randomUUID?.() ?? Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('')
         const at = now()
-        set((s) => ({ items: [...s.items, { ...input, id, createdAt: at, updatedAt: at }] }))
+        set((s) => ({ items: [...s.items, { ...input, id, createdAt: at, updatedAt: at, achievedAt: input.status === '완료' ? at : null }] }))
         requestPersistOnce()
         return id
       },
+      // '완료'가 되는 순간 이룬 시각을 남기고, 완료를 풀면 지운다(소감은 다시 완료할 때를 위해 둔다)
       updateItem: (id, input) =>
-        set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, ...input, updatedAt: now() } : i)) })),
+        set((s) => ({
+          items: s.items.map((i) => {
+            if (i.id !== id) return i
+            const at = now()
+            const achievedAt = input.status !== '완료' ? null : i.status === '완료' ? (i.achievedAt ?? null) : at
+            return { ...i, ...input, achievedAt, updatedAt: at }
+          }),
+        })),
       setPrerequisites: (id, prerequisites) =>
         set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, prerequisites, updatedAt: now() } : i)) })),
+      setReflection: (id, reflection) =>
+        set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, reflection, updatedAt: now() } : i)) })),
       deleteItem: (id) =>
         set((s) => ({
           items: s.items.filter((i) => i.id !== id),

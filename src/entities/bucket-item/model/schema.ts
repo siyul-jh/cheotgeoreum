@@ -15,6 +15,7 @@ export const fieldLimits = {
   keyword: 50,
   prerequisiteCount: 30,
   companionCount: 30,
+  reflection: 200,
 } as const
 
 export const IsoDateSchema = z.iso.date()
@@ -65,6 +66,9 @@ export const BucketItemSchema = BucketItemInputSchema.extend({
   createdAt: DateTimeSchema,
   // 마지막으로 고친 시각. 동기화는 더 새 쪽을 남긴다
   updatedAt: DateTimeSchema,
+  // 달성 기록: '완료'로 바꾼 시각과 소감. 이전 버전 꿈에는 없어서 optional(저장 형식 마이그레이션 없이)
+  achievedAt: DateTimeSchema.nullable().optional(),
+  reflection: z.string().trim().max(fieldLimits.reflection).optional(),
 })
 export type BucketItem = z.infer<typeof BucketItemSchema>
 
