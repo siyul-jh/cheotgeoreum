@@ -3,12 +3,15 @@ import { StarIcon } from '@/shared/ui/star-icon'
 
 type Step = { title: string; body: React.ReactNode }
 
+// 기본 카테고리마다 하나씩
 const EXAMPLES = [
   ['아이슬란드에서 오로라 보기', '여행'],
   ['하프 마라톤 완주하기', '건강'],
+  ['새로 배운 언어로 현지인과 대화하기', '배움'],
   ['부모님과 제주 한 달 살기', '관계'],
-  ['직접 만든 도자기로 밥 먹기', '배움'],
-  ['비상금 1,000만 원 모으기', '재정'],
+  ['내 이름으로 작은 가게 열기', '커리어'],
+  ['빚 없이 비상금 1,000만 원 모으기', '재정'],
+  ['열기구 타고 해 뜨는 하늘 보기', '경험'],
 ] as const
 
 const STEPS: Step[] = [
@@ -16,7 +19,8 @@ const STEPS: Step[] = [
     title: '버킷리스트란?',
     body: (
       <>
-        <p>살면서 꼭 해 보고 싶은 일을 적은 목록이에요.</p>
+        <p>세상을 떠나기 전 살면서 꼭 해 보고, 보고, 이루고 싶은 일을 적은 목록이에요.</p>
+        <p>영어 표현 &ldquo;kick the bucket&rdquo;(죽다를 에둘러 이르는 말)에서 온 말이에요.</p>
         <p className="text-mute">거창하지 않아도 돼요. 작은 일부터 큰 꿈까지, &lsquo;언젠가 해 보고 싶다&rsquo;면 모두 버킷리스트예요.</p>
       </>
     ),
@@ -27,6 +31,7 @@ const STEPS: Step[] = [
       <ul className="flex flex-col gap-3">
         <li>막연한 바람도 적어 두면 목표가 돼요.</li>
         <li>바쁜 하루 속에서 나에게 정말 중요한 게 뭔지 떠올리게 해요.</li>
+        <li>&lsquo;그때 해 볼걸&rsquo; 하는 후회를 줄여 줘요.</li>
         <li>하나씩 이룰 때마다 나만의 기록이 쌓여요.</li>
       </ul>
     ),
@@ -36,10 +41,11 @@ const STEPS: Step[] = [
     body: (
       <>
         <ol className="flex list-decimal flex-col gap-3 pl-5">
-          <li>해 보고 싶은 일을 한 줄로, 구체적으로 적어요.</li>
-          <li>왜 하고 싶은지 적어요.</li>
-          <li>언제쯤 할지 정해요. 몰라도 괜찮아요.</li>
-          <li>가장 먼저 할 일 하나를 정해요.</li>
+          <li>나에게 중요한 것, 나를 설레게 하는 순간을 떠올려요.</li>
+          <li>할 수 있을지는 따지지 말고 떠오르는 대로 많이 적어요.</li>
+          <li>한 줄로 구체적으로 써요. &lsquo;여행 가기&rsquo;보다 &lsquo;교토에서 벚꽃 보기&rsquo;처럼요.</li>
+          <li>가장 먼저 할 일 하나를 정하면 시작이 쉬워져요.</li>
+          <li>마음이 바뀌면 언제든 고치고 지워도 돼요.</li>
         </ol>
         <p className="text-mute">무엇을 적을지 막막하면 &lsquo;뭘 적을지 모르겠어요&rsquo;를 눌러 추천을 받아 보세요.</p>
       </>
@@ -61,7 +67,7 @@ const STEPS: Step[] = [
   },
   {
     title: '모든 꿈은 첫걸음에서 시작돼요',
-    body: <p className="text-mute">오늘, 마음속 꿈 하나를 꺼내 적어 보세요.</p>,
+    body: <p className="text-mute">적지 않은 꿈은 바람으로 남아요. 오늘, 마음속 꿈 하나를 꺼내 적어 보세요.</p>,
   },
 ]
 
