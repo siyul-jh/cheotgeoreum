@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FeatureRequestRouteImport } from './routes/feature-request'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SRouteImport } from './routes/s'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -21,6 +22,11 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeatureRequestRoute = FeatureRequestRouteImport.update({
+  id: '/feature-request',
+  path: '/feature-request',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -61,6 +67,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/feature-request': typeof FeatureRequestRoute
   '/privacy': typeof PrivacyRoute
   '/s': typeof SRoute
   '/settings': typeof SettingsRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/feature-request': typeof FeatureRequestRoute
   '/privacy': typeof PrivacyRoute
   '/s': typeof SRoute
   '/settings': typeof SettingsRoute
@@ -82,6 +90,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/feature-request': typeof FeatureRequestRoute
   '/privacy': typeof PrivacyRoute
   '/s': typeof SRoute
   '/settings': typeof SettingsRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/feature-request'
     | '/privacy'
     | '/s'
     | '/settings'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/feature-request'
     | '/privacy'
     | '/s'
     | '/settings'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/feature-request'
     | '/privacy'
     | '/s'
     | '/settings'
@@ -125,6 +137,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FeatureRequestRoute: typeof FeatureRequestRoute
   PrivacyRoute: typeof PrivacyRoute
   SRoute: typeof SRoute
   SettingsRoute: typeof SettingsRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feature-request': {
+      id: '/feature-request'
+      path: '/feature-request'
+      fullPath: '/feature-request'
+      preLoaderRoute: typeof FeatureRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -197,6 +217,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FeatureRequestRoute: FeatureRequestRoute,
   PrivacyRoute: PrivacyRoute,
   SRoute: SRoute,
   SettingsRoute: SettingsRoute,

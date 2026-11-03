@@ -21,15 +21,17 @@ function PrivacyPage() {
           <li>로그인 기록: 접속 IP 주소, 브라우저 정보(User-Agent)</li>
           <li>로그인 연동 토큰(카카오·구글이 발급한 접근 토큰)</li>
           <li>연결 후 저장한 꿈·내 카테고리와 지운 꿈의 기록(다른 기기에도 지우기 위해)</li>
+          <li>짧은 링크 만들기·기능 요청: 남용을 막기 위한 접속 IP 주소(1시간 뒤 자동 삭제)</li>
+          <li>기능 요청: 직접 적은 제목·내용(공개 GitHub 이슈로 게시되어 누구나 볼 수 있음)</li>
         </ul>
       </section>
       <section>
         <h2>2. 목적</h2>
-        <p>로그인과 여러 기기 간 데이터 동기화에만 씁니다. 광고나 판매에 쓰지 않습니다.</p>
+        <p>로그인, 여러 기기 간 데이터 동기화, 남용 방지, 요청받은 기능의 개발에만 씁니다. 광고나 판매에 쓰지 않습니다.</p>
       </section>
       <section>
         <h2>3. 보유 기간</h2>
-        <p>계정을 삭제(탈퇴)하면 즉시 파기합니다.</p>
+        <p>계정을 삭제(탈퇴)하면 즉시 파기합니다. 기능 요청은 계정과 연결되지 않아 함께 지워지지 않으니, 지우려면 아래 연락처로 알려 주세요.</p>
       </section>
       <section>
         <h2>4. 처리 위탁·국외 이전</h2>
@@ -37,7 +39,8 @@ function PrivacyPage() {
         <ul className="list-disc pl-5">
           <li>Vercel Inc.(미국): 앱 호스팅·서버 실행</li>
           <li>Neon(미국): 계정·꿈 데이터베이스</li>
-          <li>Upstash(미국): 공유한 카드·목록의 짧은 링크 저장</li>
+          <li>Upstash(미국): 공유한 카드·목록의 짧은 링크 저장, 남용 방지용 접속 IP 임시 저장</li>
+          <li>GitHub Inc.(미국): 기능 요청 게시(공개 이슈)</li>
           <li>NVIDIA(미국): AI 기능을 쓸 때 입력한 꿈 내용을 AI 응답 생성에 사용(NVIDIA NIM)</li>
         </ul>
       </section>
@@ -60,7 +63,7 @@ function PrivacyPage() {
           </a>
         </p>
       </section>
-      <p className="text-mute">시행일: 2026년 11월 2일</p>
+      <p className="text-mute">시행일: 2026년 11월 3일</p>
     </article>
   )
 }
