@@ -78,10 +78,13 @@ function ThemeSection() {
   const [pref, setPref] = useState(getThemePref)
   const name = useId()
   return (
-    <fieldset className="surface flex min-w-0 flex-col gap-3 p-4">
-      <legend className="float-left text-sm font-bold">화면 모드</legend>
+    // legend는 iOS Safari가 카드 테두리 위에 걸쳐 그려 다른 카드처럼 제목+radiogroup으로 둔다
+    <section className="surface flex flex-col gap-3 p-4">
+      <h2 id={`${name}-title`} className="text-sm font-bold">
+        화면 모드
+      </h2>
       {/* 폭이 모자라면 줄을 바꿔 카드 밖으로 넘치지 않게 */}
-      <div className="flex flex-wrap gap-2">
+      <div role="radiogroup" aria-labelledby={`${name}-title`} className="flex flex-wrap gap-2">
         {THEMES.map(([value, label]) => (
           <label
             key={value}
@@ -101,7 +104,7 @@ function ThemeSection() {
           </label>
         ))}
       </div>
-    </fieldset>
+    </section>
   )
 }
 
