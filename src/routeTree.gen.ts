@@ -19,6 +19,7 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as ItemsIdRouteImport } from './routes/items.$id'
 import { Route as ItemsNewRouteImport } from './routes/items.new'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCronRemindRouteImport } from './routes/api/cron/remind'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronRemindRoute = ApiCronRemindRouteImport.update({
+  id: '/api/cron/remind',
+  path: '/api/cron/remind',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/remind': typeof ApiCronRemindRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/remind': typeof ApiCronRemindRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/items/$id': typeof ItemsIdRoute
   '/items/new': typeof ItemsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/remind': typeof ApiCronRemindRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/items/$id'
     | '/items/new'
     | '/api/auth/$'
+    | '/api/cron/remind'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/items/$id'
     | '/items/new'
     | '/api/auth/$'
+    | '/api/cron/remind'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/items/$id'
     | '/items/new'
     | '/api/auth/$'
+    | '/api/cron/remind'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   ItemsIdRoute: typeof ItemsIdRoute
   ItemsNewRoute: typeof ItemsNewRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCronRemindRoute: typeof ApiCronRemindRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/remind': {
+      id: '/api/cron/remind'
+      path: '/api/cron/remind'
+      fullPath: '/api/cron/remind'
+      preLoaderRoute: typeof ApiCronRemindRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   ItemsIdRoute: ItemsIdRoute,
   ItemsNewRoute: ItemsNewRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCronRemindRoute: ApiCronRemindRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

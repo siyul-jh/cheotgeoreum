@@ -18,9 +18,9 @@ create table push_subscription (
   p256dh text not null, auth text not null,
   created_at timestamptz not null default now()
 );
+-- 알림은 사용자당 하루 1통(그날 알릴 꿈을 묶는다). 같은 날 두 번 보내지 않게 날짜만 남긴다
 create table reminder_log (
   user_id text not null references "user"(id) on delete cascade,
-  milestone_id text not null, due_date date not null,
-  sent_at timestamptz not null default now(),
-  primary key (user_id, milestone_id, due_date)
+  sent_on date not null,
+  primary key (user_id, sent_on)
 );

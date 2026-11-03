@@ -4,6 +4,7 @@ import { CategoryNameForm, useBucketStore } from '@/entities/bucket-item'
 import { AccountSection } from '@/features/auth'
 import { SyncPanel, requestSync, sendChunk } from '@/features/dream-sync'
 import { BackupActions } from '@/features/backup'
+import { ReminderToggle, turnOffReminder } from '@/features/reminder'
 import { getThemePref, setThemePref, type ThemePref } from '@/shared/lib/theme'
 import { XIcon } from '@/shared/ui/x-icon'
 
@@ -25,10 +26,17 @@ function SettingsPage() {
         <h1 className="font-title text-xl font-bold">설정</h1>
       </header>
       <AccountSection
-        renderLinked={(userId, signOut) => <SyncPanel userId={userId} onSignOut={signOut} />}
+        renderLinked={(userId, signOut) => (
+          <>
+            <SyncPanel userId={userId} onSignOut={signOut} />
+            <ReminderToggle />
+          </>
+        )}
         // 이 기기 꿈의 주인일 때만 올려 본다(다른 계정 꿈을 올리지 않는다)
         beforeSignOut={(userId) => (useBucketStore.getState().ownerId === userId ? requestSync(sendChunk) : Promise.resolve(true))}
         // 계정이 지워져도 이 기기의 꿈은 남기고, 어느 계정 것도 아니게 한다
+        // 다른 사람이 이 기기로 로그인해도 앞사람의 알림이 오지 않게
+        onSignOut={turnOffReminder}
         onAccountDeleted={() => useBucketStore.setState({ ownerId: null })}
       />
       <ThemeSection />

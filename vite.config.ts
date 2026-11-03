@@ -29,6 +29,13 @@ function serviceWorker(): Plugin {
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [tailwindcss(), tanstackStart(), nitro(), viteReact(), serviceWorker()],
+  plugins: [
+    tailwindcss(),
+    tanstackStart(),
+    // 알림: 매일 UTC 23시(서울 아침 8시쯤, Hobby는 ±59분)
+    nitro({ vercel: { config: { version: 3, crons: [{ path: '/api/cron/remind', schedule: '0 23 * * *' }] } } }),
+    viteReact(),
+    serviceWorker(),
+  ],
   define: { __OG_IMAGE__: JSON.stringify(host ? `https://${host}/og.png` : '/og.png') },
 })

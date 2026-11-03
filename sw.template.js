@@ -48,3 +48,22 @@ self.addEventListener('fetch', (event) => {
     ),
   )
 })
+
+// 알림: 서버가 보낸 { title, body, url }을 띄운다
+self.addEventListener('push', (event) => {
+  const { title, body, url } = event.data?.json() ?? {}
+  event.waitUntil(self.registration.showNotification(title ?? '첫걸음', { body, data: { url }, icon: '/icon-192.png' }))
+})
+
+// 누르면 그 꿈 화면을 연다. 같은 앱 경로만 연다(외부 주소로 보내지 않게)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const raw = event.notification.data?.url
+  const url = typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      const open = windows[0]
+      return open ? open.focus().then((w) => w.navigate(url)) : self.clients.openWindow(url)
+    }),
+  )
+})

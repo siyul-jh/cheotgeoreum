@@ -14,6 +14,8 @@ type Props = {
   renderLinked?: (userId: string, signOut: () => void) => ReactNode
   // 로그아웃 전에 마지막으로 올려 본다. false면 그래도 로그아웃할지 묻는다
   beforeSignOut?: (userId: string) => Promise<boolean>
+  // 로그아웃을 확정한 뒤, 세션을 끊기 직전(이 기기 알림 끄기 등)
+  onSignOut?: () => Promise<void>
   onAccountDeleted?: () => void
 }
 
@@ -50,6 +52,7 @@ function LinkedAccounts({
   onDeleted,
   renderLinked,
   beforeSignOut,
+  onSignOut,
 }: Props & { userId: string; name: string; onDeleted: () => void }) {
   const error = useLocation({ select: (l) => new URLSearchParams(l.searchStr).get('error') })
   const { data: accounts } = useQuery({
@@ -63,6 +66,7 @@ function LinkedAccounts({
   const signOut = async () => {
     const synced = beforeSignOut ? await beforeSignOut(userId) : true
     if (!synced && !window.confirm('아직 계정에 올라가지 않은 변경이 있을 수 있어요. 그래도 로그아웃할까요?')) return
+    await onSignOut?.()
     await authClient.signOut()
   }
 
