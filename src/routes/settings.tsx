@@ -5,6 +5,7 @@ import { AccountSection } from '@/features/auth'
 import { SyncPanel, requestSync, sendChunk } from '@/features/dream-sync'
 import { BackupActions } from '@/features/backup'
 import { ReminderToggle, turnOffReminder } from '@/features/reminder'
+import { authClient } from '@/shared/api/auth-client'
 import { getThemePref, setThemePref, type ThemePref } from '@/shared/lib/theme'
 import { XIcon } from '@/shared/ui/x-icon'
 
@@ -26,12 +27,7 @@ function SettingsPage() {
         <h1 className="font-title text-xl font-bold">설정</h1>
       </header>
       <AccountSection
-        renderLinked={(userId, signOut) => (
-          <>
-            <SyncPanel userId={userId} onSignOut={signOut} />
-            <ReminderToggle />
-          </>
-        )}
+        renderLinked={(userId, signOut) => <SyncPanel userId={userId} onSignOut={signOut} />}
         // 이 기기 꿈의 주인일 때만 올려 본다(다른 계정 꿈을 올리지 않는다)
         beforeSignOut={(userId) => (useBucketStore.getState().ownerId === userId ? requestSync(sendChunk) : Promise.resolve(true))}
         // 계정이 지워져도 이 기기의 꿈은 남기고, 어느 계정 것도 아니게 한다
@@ -39,6 +35,7 @@ function SettingsPage() {
         onSignOut={turnOffReminder}
         onAccountDeleted={() => useBucketStore.setState({ ownerId: null })}
       />
+      <ReminderSection />
       <ThemeSection />
       <CategorySection />
       <section aria-labelledby="settings-data" className="surface flex flex-col gap-1 p-4">
@@ -64,17 +61,31 @@ function SettingsPage() {
   )
 }
 
+// 구독을 계정에 묶어 서버가 보내므로 계정을 연결해야 켤 수 있다
+function ReminderSection() {
+  const { data, isPending } = authClient.useSession()
+  return (
+    <section aria-labelledby="settings-reminder" className="surface flex flex-col gap-2 p-4">
+      <h2 id="settings-reminder" className="text-sm font-bold">
+        알림
+      </h2>
+      {isPending ? null : data ? <ReminderToggle /> : <p className="text-[13px] text-mute">계정을 연결하면 목표 시기 알림을 켤 수 있어요.</p>}
+    </section>
+  )
+}
+
 function ThemeSection() {
   const [pref, setPref] = useState(getThemePref)
   const name = useId()
   return (
-    <fieldset className="surface flex flex-col gap-3 p-4">
+    <fieldset className="surface flex min-w-0 flex-col gap-3 p-4">
       <legend className="float-left text-sm font-bold">화면 모드</legend>
-      <div className="grid grid-cols-3 gap-2">
+      {/* 폭이 모자라면 줄을 바꿔 카드 밖으로 넘치지 않게 */}
+      <div className="flex flex-wrap gap-2">
         {THEMES.map(([value, label]) => (
           <label
             key={value}
-            className="press flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-edge px-2 text-center text-sm has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:font-bold has-[:checked]:text-night has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-gold"
+            className="press flex min-h-11 flex-1 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border border-edge px-3 text-center text-sm has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:font-bold has-[:checked]:text-night has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-gold"
           >
             <input
               type="radio"

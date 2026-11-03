@@ -33,7 +33,7 @@ export function ReminderToggle() {
     !supported() || !VAPID_KEY ? 'unsupported' : Notification.permission === 'denied' ? 'denied' : 'loading',
   )
   const [error, setError] = useState(false)
-  const [test, setTest] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
+  const [test, setTest] = useState<'idle' | 'sending' | 'sent' | 'failed' | 'stale'>('idle')
 
   // 켜져 있는지는 이 기기의 구독이 있는지로 안다
   useEffect(() => {
@@ -66,6 +66,10 @@ export function ReminderToggle() {
 
   const sendTest = async () => {
     setTest('sending')
+    // 새 서비스 워커가 기다리는 중이면 옛 워커(알림 처리 없음)가 받아 화면에 안 뜬다. 앱을 완전히 닫아야 바뀐다
+    const reg = await navigator.serviceWorker.ready
+    await reg.update().catch(() => {})
+    if (reg.waiting || reg.installing) return setTest('stale')
     const sub = await currentSubscription().catch(() => null)
     const result = sub ? await sendTestPush({ data: { endpoint: sub.endpoint } }).catch(() => ({ ok: false })) : { ok: false }
     setTest(result.ok ? 'sent' : 'failed')
@@ -73,9 +77,9 @@ export function ReminderToggle() {
 
   if (state === 'loading') return null
   return (
-    <div className="flex flex-col gap-2 border-t border-line pt-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-bold">목표 시기 알림</span>
+        <span className="text-sm">목표 시기 알림</span>
         {(state === 'on' || state === 'off') && (
           <button
             type="button"
@@ -105,6 +109,11 @@ export function ReminderToggle() {
       {test === 'sent' && (
         <p role="status" className="text-[13px] text-mute">
           보냈어요. 잠시 뒤 알림이 오는지 확인해 보세요.
+        </p>
+      )}
+      {test === 'stale' && (
+        <p role="alert" className="text-[13px] text-danger">
+          앱이 새 버전으로 바뀌는 중이에요. 앱을 완전히 닫았다가(위로 쓸어 올려 종료) 다시 열고 눌러 주세요.
         </p>
       )}
       {test === 'failed' && (
