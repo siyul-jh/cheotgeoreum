@@ -70,3 +70,22 @@ export async function sendReminders(now: Date, deps: { query?: Query; send?: Sen
   }
   return result
 }
+
+// 설정의 '시험 알림'. 이 기기(본인 구독)에만, 기록 없이 바로 보낸다
+// ponytail: 횟수 제한 없음. 본인 기기에만 가므로 남용해도 자기만 시끄럽다. 푸시 서버가 막는다는 말이 나오면 Upstash 제한
+export async function sendTestReminder(userId: string, endpoint: string, deps: { query?: Query; send?: Send } = {}) {
+  const query = deps.query ?? getQuery()
+  const send = deps.send ?? defaultSend
+  const { rows } = (await query('select endpoint, p256dh, auth from push_subscription where endpoint = $1 and user_id = $2', [endpoint, userId])) as { rows: Sub[] }
+  const sub = rows[0]
+  if (!sub) return { ok: false as const }
+  try {
+    await send(sub, JSON.stringify({ title: '첫걸음 시험 알림', body: '알림이 잘 와요. 목표 시기에 맞춰 이렇게 알려 드릴게요.', url: '/settings' }))
+    return { ok: true as const }
+  } catch (error) {
+    const status = (error as { statusCode?: number }).statusCode
+    if (status === 404 || status === 410) await query('delete from push_subscription where endpoint = $1', [endpoint])
+    console.error('[remind] test send failed', status)
+    return { ok: false as const }
+  }
+}

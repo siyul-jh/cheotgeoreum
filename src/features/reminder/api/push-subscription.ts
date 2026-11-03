@@ -21,3 +21,10 @@ export const deletePushSubscription = createServerFn({ method: 'POST' })
     const [{ requireUserId }, { deletePush }] = await Promise.all([import('@/shared/api/auth.server'), import('./push-subscription.server')])
     await deletePush(await requireUserId(), data.endpoint)
   })
+
+export const sendTestPush = createServerFn({ method: 'POST' })
+  .validator(z.object({ endpoint: z.string().max(1000) }))
+  .handler(async ({ data }) => {
+    const [{ requireUserId }, { sendTestReminder }] = await Promise.all([import('@/shared/api/auth.server'), import('./send-reminders.server')])
+    return sendTestReminder(await requireUserId(), data.endpoint)
+  })

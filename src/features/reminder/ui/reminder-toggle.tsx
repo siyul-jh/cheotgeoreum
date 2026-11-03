@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { deletePushSubscription, savePushSubscription, type PushSubscriptionInput } from '../api/push-subscription'
+import { deletePushSubscription, savePushSubscription, sendTestPush, type PushSubscriptionInput } from '../api/push-subscription'
 
 const VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined
 
@@ -33,6 +33,7 @@ export function ReminderToggle() {
     !supported() || !VAPID_KEY ? 'unsupported' : Notification.permission === 'denied' ? 'denied' : 'loading',
   )
   const [error, setError] = useState(false)
+  const [test, setTest] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
 
   // 켜져 있는지는 이 기기의 구독이 있는지로 안다
   useEffect(() => {
@@ -63,6 +64,13 @@ export function ReminderToggle() {
     setState('off')
   }
 
+  const sendTest = async () => {
+    setTest('sending')
+    const sub = await currentSubscription().catch(() => null)
+    const result = sub ? await sendTestPush({ data: { endpoint: sub.endpoint } }).catch(() => ({ ok: false })) : { ok: false }
+    setTest(result.ok ? 'sent' : 'failed')
+  }
+
   if (state === 'loading') return null
   return (
     <div className="flex flex-col gap-2 border-t border-line pt-3">
@@ -84,6 +92,26 @@ export function ReminderToggle() {
       <p className="text-[13px] text-mute">
         {NOTICE[state] ?? '매일 보내지 않아요. 꿈의 목표 시기에 맞춰 7·3·1일 전과 당일 등에만 알려 드려요. 목표 시기가 언젠가인 꿈은 알리지 않아요.'}
       </p>
+      {state === 'on' && (
+        <button
+          type="button"
+          className="press min-h-11 self-start text-sm text-mute underline underline-offset-4 disabled:opacity-50"
+          disabled={test === 'sending'}
+          onClick={() => void sendTest()}
+        >
+          시험 알림 보내기
+        </button>
+      )}
+      {test === 'sent' && (
+        <p role="status" className="text-[13px] text-mute">
+          보냈어요. 잠시 뒤 알림이 오는지 확인해 보세요.
+        </p>
+      )}
+      {test === 'failed' && (
+        <p role="alert" className="text-[13px] text-danger">
+          시험 알림을 보내지 못했어요. 알림을 껐다가 다시 켜 보세요.
+        </p>
+      )}
       {error && (
         <p role="alert" className="text-[13px] text-danger">
           알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.

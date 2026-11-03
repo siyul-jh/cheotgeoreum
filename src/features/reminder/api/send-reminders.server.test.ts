@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 import { createTestDb } from '@/features/dream-sync/api/test-db'
-import { sendReminders, seoulToday, type Send } from './send-reminders.server'
+import { sendReminders, sendTestReminder, seoulToday, type Send } from './send-reminders.server'
 
 const { db } = await createTestDb()
 afterAll(() => db.close())
@@ -66,5 +66,24 @@ describe('sendReminders', () => {
     const ok = vi.fn<Send>(async () => {})
     expect((await run(ok)).sent).toBe(1)
     vi.restoreAllMocks()
+  })
+})
+
+describe('sendTestReminder', () => {
+  test('본인 구독에만 보내고, 남의 구독이면 보내지 않는다', async () => {
+    await subscribe('u1', 1)
+    const send = vi.fn<Send>(async () => {})
+    expect(await sendTestReminder('u1', 'https://fcm.googleapis.com/1', { query, send })).toEqual({ ok: true })
+    expect(await sendTestReminder('u2', 'https://fcm.googleapis.com/1', { query, send })).toEqual({ ok: false })
+    expect(send).toHaveBeenCalledTimes(1)
+    expect((await db.query('select * from reminder_log')).rows).toHaveLength(0)
+  })
+
+  test('사라진 구독(410)이면 지운다', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    await subscribe('u1', 1)
+    const send = vi.fn<Send>(async () => Promise.reject(Object.assign(new Error('gone'), { statusCode: 410 })))
+    expect(await sendTestReminder('u1', 'https://fcm.googleapis.com/1', { query, send })).toEqual({ ok: false })
+    expect((await db.query('select * from push_subscription')).rows).toHaveLength(0)
   })
 })
